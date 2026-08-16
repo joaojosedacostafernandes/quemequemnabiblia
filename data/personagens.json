@@ -129,7 +129,7 @@
       "resumo": "Filho mais novo de Jacob, e o único, com José, nascido de Raquel — que morre ao dá-lo à luz, perto de Belém. Depois da suposta morte de José, torna-se o filho mais amado de Jacob, e é por ele que Judá se oferece como refém no Egito.",
       "contexto": "O seu nome original, Ben-Oni (\"filho da minha dor\"), dado por Raquel moribunda, é mudado por Jacob para Benjamim (\"filho da minha mão direita\") — uma mudança de nome que, como outras na Bíblia, marca uma nova fase na história da família.",
       "relacoes": "Filho de Jacob e Raquel. Irmão mais novo de José." },
-    { "id": "arao", "nome": "Arão", "tipo": "sacerdote", "tier": "standard", "x": 1420, "y": 440, "era": "O Êxodo", "refs": "Êx 4; 7; 28",
+    { "id": "arao", "nome": "Arão", "tipo": "sacerdote", "tier": "standard", "x": 1460, "y": 440, "era": "O Êxodo", "refs": "Êx 4; 7; 28",
       "resumo": "Irmão mais velho de Moisés e Miriam. Torna-se o porta-voz de Moisés perante o Faraó (Êx 4:14-16) e, mais tarde, o primeiro sumo sacerdote de Israel (Êx 28) — dele descende toda a linhagem sacerdotal levítica.",
       "contexto": "A instituição de um sacerdócio hereditário, ligado a uma única família dentro da tribo de Levi, é uma das estruturas religiosas centrais que o livro do Êxodo estabelece para o culto de Israel.",
       "relacoes": "Filho de Anrão e Jocabede, descendentes de Levi. Irmão de Moisés e Miriam." },

@@ -17,18 +17,22 @@ Promotora: Isabel, diretora técnica de uma farmácia militar, católica, envolv
 
 ## O que foi feito
 
-### Protótipo "Constelação Bíblica"
+### Protótipo "Constelação Bíblica" → redesign visual e de conteúdo, já no repositório
 
-Publicado como Artifact (privado, conta da Isabel):
-**https://claude.ai/code/artifact/db49ef11-59ed-4cee-ba20-cf7c01c4b171**
+O protótipo inicial (20 personagens) foi publicado como Artifact e é a origem do conceito. Esse Artifact continua acessível mas está desatualizado:
+https://claude.ai/code/artifact/db49ef11-59ed-4cee-ba20-cf7c01c4b171
 
-- 20 personagens de Génesis e Êxodo (Adão, Eva, Caim, Abel, Set, Noé, Sem, Abraão, Sara, Agar, Ismael, Isaac, Rebeca, Esaú, Jacob, Raquel, Lia, José, Moisés, Miriam).
-- Grafo em forma de mapa de estrelas/constelação — nós = personagens, ligações = relações familiares. Ordenado da esquerda (mais antigo) para a direita (mais recente).
-- 4 tipos de linha: pai/mãe (cheia), casamento (tracejado curto), irmãos (pontilhado), "várias gerações depois" (tracejado dourado, com referência bíblica, ex: "9 gerações · Gn 11" para Sem → Abraão).
-- Clicar num nó abre um cartão com época, referências, resumo e família.
-- Pan/zoom por arrasto e botões; em mobile o cartão vira "bottom sheet".
-- Conceito visual: metáfora de céu noturno/constelação (liga-se a Gn 15:5, "a tua descendência será como as estrelas do céu"). Tema escuro único, deliberado (não segue claro/escuro do sistema). Tipografia serif (Georgia) para nomes/títulos + sans do sistema para o resto. Sem bibliotecas externas — tudo em SVG/JS puro, ficheiro único self-contained.
-- **Ficheiro fonte ainda não está na pasta do projeto** — existe apenas no scratchpad temporário da sessão anterior (`constelacao-biblica.html`) e publicado como Artifact. Se for preciso recuperar/editar o código-fonte fora do Artifact, terá de ser reconstruído ou pedido via leitura do Artifact (WebFetch ao URL).
+**O código a usar/manter é agora o deste repositório**, não o Artifact. Um plano de 7 tarefas ("redesign-visual-conteudo", 2026-08-16) reescreveu o motor e ampliou o conteúdo para 34 personagens de Génesis e Êxodo. Ficheiros:
+
+- `index.html` — estrutura da página.
+- `style.css` — visual (tema claro pergaminho/âmbar, tipografia serif Georgia para nomes + sans do sistema para o resto; layout responsivo com painel lateral em desktop e "bottom sheet" em mobile via `@media (max-width: 720px)`).
+- `app.js` — motor do grafo: lê `data/personagens.json` via `fetch`, desenha nós/ligações em SVG, pan/zoom por arrasto e botões, abre o painel de detalhe ao clicar num nó.
+- `data/personagens.json` — os dados: 34 personagens (`personagens[]`, cada um com id/nome/tipo/tier/x/y/era/refs/resumo/contexto/relacoes) e 53 ligações (`edges[]` — pai/mãe, casamento, irmãos, "várias gerações depois").
+- `assets/icons/` — ícones SVG por `tipo` de personagem.
+
+⚠️ **`index.html` não pode ser aberto diretamente com `file://`** — o `fetch("data/personagens.json")` falha por CORS na maioria dos browsers. É preciso servir a pasta por `http://` (ex: skill `run`, ou qualquer servidor estático simples).
+
+QA final (2026-08-16): mobile viewport confirmado (instruções e rodapé escondem-se, painel abre como bottom sheet com botão "Fechar ×" funcional); as 34 personagens confirmadas com contexto/resumo/relações preenchidos (verificado via clique real em todas, usando Chrome DevTools Protocol já que não havia Node/Python disponíveis na máquina). Corrigida uma sobreposição visual: a ligação de irmãos Arão↔Miriam passava em cima do medalhão de Moisés (os três estavam alinhados); Arão foi deslocado ligeiramente (`x: 1420` → `1460`).
 
 ### Configuração do projeto
 
@@ -58,7 +62,7 @@ Criado `.claude/settings.json` na raiz do projeto com dois plugins:
 1. A Isabel precisa de ver e dar feedback ao protótipo — validar se o conceito visual "mapa de estrelas" resulta bem para crianças, ou se prefere outra estética (ex: árvore genealógica clássica, mais colorido/ilustrado).
 2. Validar o nível de detalhe dos cartões de personagem (resumo + família) — ajustar para catequese se necessário.
 3. Decidir o processo de expansão de conteúdo: cobrir o resto da Bíblia (Reis, Profetas, Evangelhos, Atos, Cartas...) é um trabalho grande de curadoria, não só técnico — decidir se a Isabel vai levantando os dados ou se isso é feito em conjunto, por "famílias"/blocos narrativos.
-4. Ainda não há repositório git nem ficheiros de código na pasta do projeto — quando o protótipo for aprovado, criar a estrutura real do site ali (dados + motor de grafo) em vez de manter tudo apenas como Artifact.
+4. ~~Ainda não há repositório git nem ficheiros de código na pasta do projeto~~ — feito: o código (`index.html`/`style.css`/`app.js`/`data/personagens.json`) já está no repositório, ver secção "O que foi feito" acima. Falta ainda decidir onde/como publicar (hosting gratuito) para a Isabel poder ver a versão a correr fora desta sessão.
 5. Confirmar após reiniciar a sessão que os plugins **superpowers** e **frontend-design** ativaram corretamente.
 
 ## Memória guardada
