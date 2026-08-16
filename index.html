@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Os Personagens da Bíblia</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div>
+      <span class="eyebrow">Génesis &amp; Êxodo</span>
+      <h1>Os Personagens da Bíblia</h1>
+    </div>
+    <p class="instructions">Toca numa personagem para abrires a sua história. Arrasta para navegar, usa os botões para ampliar.</p>
+    <div class="legend" id="legend"></div>
+  </header>
+
+  <div class="stage">
+    <div class="graph-wrap">
+      <svg id="graph" class="graph" viewBox="0 0 1560 660" role="img" aria-label="Mapa de personagens bíblicas e as suas relações">
+        <g id="edges"></g>
+        <g id="nodes"></g>
+      </svg>
+      <div class="controls">
+        <button id="zoomIn" type="button" aria-label="Ampliar">+</button>
+        <button id="zoomOut" type="button" aria-label="Reduzir">&minus;</button>
+        <button id="zoomReset" type="button" aria-label="Repor vista">&#8634;</button>
+      </div>
+    </div>
+
+    <aside id="panel">
+      <button class="panel-close" id="panelClose" type="button">Fechar &times;</button>
+      <div id="panelBody">
+        <p class="panel-empty">Escolhe uma personagem no mapa para conheceres a sua história, o contexto histórico, as referências bíblicas e a família.</p>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="note">Os Personagens da Bíblia — Paróquia da Póvoa de Santa Iria.</footer>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
