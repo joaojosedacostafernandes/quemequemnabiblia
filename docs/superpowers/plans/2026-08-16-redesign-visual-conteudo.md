@@ -869,7 +869,7 @@ git commit -m "Add graph/card rendering engine reading from data/personagens.jso
 
   <div class="stage">
     <div class="graph-wrap">
-      <svg id="graph" viewBox="0 0 1560 660" role="img" aria-label="Mapa de personagens bíblicas e as suas relações">
+      <svg id="graph" class="graph" viewBox="0 0 1560 660" role="img" aria-label="Mapa de personagens bíblicas e as suas relações">
         <g id="edges"></g>
         <g id="nodes"></g>
       </svg>
@@ -1015,11 +1015,11 @@ Note: Jacob's 12 children are deliberately **not** connected to each other with 
 
 In `index.html`, change:
 ```html
-      <svg id="graph" viewBox="0 0 1560 660" role="img" aria-label="Mapa de personagens bíblicas e as suas relações">
+      <svg id="graph" class="graph" viewBox="0 0 1560 660" role="img" aria-label="Mapa de personagens bíblicas e as suas relações">
 ```
 to:
 ```html
-      <svg id="graph" viewBox="0 0 1700 720" role="img" aria-label="Mapa de personagens bíblicas e as suas relações">
+      <svg id="graph" class="graph" viewBox="0 0 1700 720" role="img" aria-label="Mapa de personagens bíblicas e as suas relações">
 ```
 
 - [ ] **Step 3: Verify the JSON parses and counts are right**
