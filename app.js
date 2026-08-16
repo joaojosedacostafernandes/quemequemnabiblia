@@ -82,6 +82,17 @@
         });
         portrait.setAttributeNS("http://www.w3.org/1999/xlink", "href", n.retrato);
         g.appendChild(portrait);
+        portrait.addEventListener("error", function () {
+          console.warn('Retrato em falta ou inválido para "' + n.id + '" (' + n.retrato + ') — a usar o ícone por tipo como reserva.');
+          portrait.remove();
+          var iconSize = r * 1.3;
+          var icon = el("image", {
+            class: "icon", x: n.x - iconSize / 2, y: n.y - iconSize / 2,
+            width: iconSize, height: iconSize, href: iconHref(n.tipo)
+          });
+          icon.setAttributeNS("http://www.w3.org/1999/xlink", "href", iconHref(n.tipo));
+          g.appendChild(icon);
+        });
       } else {
         var iconSize = r * 1.3;
         var icon = el("image", {
