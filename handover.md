@@ -59,7 +59,7 @@ Criado `.claude/settings.json` na raiz do projeto com dois plugins:
 
 ## Por decidir / próximos passos
 
-1. A Isabel precisa de ver e dar feedback ao protótipo — validar se o conceito visual "mapa de estrelas" resulta bem para crianças, ou se prefere outra estética (ex: árvore genealógica clássica, mais colorido/ilustrado).
+1. A Isabel precisa de ver e dar feedback ao novo visual "Livro de Ilustrações" (já implementado nesta branch, substituindo o conceito anterior "mapa de estrelas") — validar se resulta bem para crianças, nomeadamente a legibilidade dos ícones nas personagens de menor destaque ("tier": "minor").
 2. Validar o nível de detalhe dos cartões de personagem (resumo + família) — ajustar para catequese se necessário.
 3. Decidir o processo de expansão de conteúdo: cobrir o resto da Bíblia (Reis, Profetas, Evangelhos, Atos, Cartas...) é um trabalho grande de curadoria, não só técnico — decidir se a Isabel vai levantando os dados ou se isso é feito em conjunto, por "famílias"/blocos narrativos.
 4. ~~Ainda não há repositório git nem ficheiros de código na pasta do projeto~~ — feito: o código (`index.html`/`style.css`/`app.js`/`data/personagens.json`) já está no repositório, ver secção "O que foi feito" acima. Falta ainda decidir onde/como publicar (hosting gratuito) para a Isabel poder ver a versão a correr fora desta sessão.

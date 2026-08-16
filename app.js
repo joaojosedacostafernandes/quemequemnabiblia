@@ -53,9 +53,10 @@
       edgeEls.push(line);
       if (e[3]) {
         var mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
-        var label = el("text", { class: "edge-label", x: mx, y: my - 5, "text-anchor": "middle" });
+        var label = el("text", { class: "edge-label", x: mx, y: my - 5, "text-anchor": "middle", "data-a": e[0], "data-b": e[1] });
         label.textContent = e[3];
         edgeLayer.appendChild(label);
+        edgeEls.push(label);
       }
     });
 
@@ -65,7 +66,7 @@
 
     var nodeEls = {};
     NODES.forEach(function (n) {
-      var r = radius[n.tier];
+      var r = radius[n.tier] || radius.standard;
       var g = el("g", { class: "node tier-" + n.tier, tabindex: "0", role: "button", "aria-label": n.nome });
       g.appendChild(el("circle", { class: "halo", cx: n.x, cy: n.y, r: r + 7 }));
       g.appendChild(el("circle", { class: "medallion", cx: n.x, cy: n.y, r: r }));
@@ -76,6 +77,11 @@
       });
       icon.setAttributeNS("http://www.w3.org/1999/xlink", "href", iconHref(n.tipo));
       g.appendChild(icon);
+      icon.addEventListener("error", function () {
+        console.warn('Ícone em falta para o tipo "' + n.tipo + '" (personagem "' + n.id + '") — a usar o ícone "povo" como reserva.');
+        icon.setAttribute("href", iconHref("povo"));
+        icon.setAttributeNS("http://www.w3.org/1999/xlink", "href", iconHref("povo"));
+      });
       var label = el("text", { x: n.x, y: n.y + r + 15, "text-anchor": "middle" });
       label.textContent = n.nome;
       g.appendChild(label);

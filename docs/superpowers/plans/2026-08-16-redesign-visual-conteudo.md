@@ -722,7 +722,6 @@ git commit -m "Add Livro de Ilustrações visual system"
 
     function renderCard(n) {
       panelBody.innerHTML =
-        '<button class="panel-close" id="panelCloseInner" type="button">Fechar &times;</button>' +
         '<p class="card-era">' + n.era + '</p>' +
         '<h2 class="card-name">' + n.nome + '</h2>' +
         '<p class="card-refs">' + n.refs + '</p>' +
@@ -731,7 +730,6 @@ git commit -m "Add Livro de Ilustrações visual system"
         '<p class="card-contexto">' + n.contexto + '</p>' +
         '<p class="card-section-title">Família</p>' +
         '<p class="card-relations">' + n.relacoes + '</p>';
-      document.getElementById("panelCloseInner").addEventListener("click", closePanel);
     }
 
     function closePanel() {
