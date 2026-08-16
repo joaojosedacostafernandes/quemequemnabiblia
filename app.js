@@ -173,15 +173,23 @@
       zoomBy(ev.deltaY > 0 ? 1.1 : 0.9, px, py);
     }, { passive: false });
 
-    var dragging = false, dragStart = null;
+    var dragging = false, dragStart = null, pointerDownAt = null, activePointerId = null;
+    var DRAG_THRESHOLD = 4;
     graphSvg.addEventListener("pointerdown", function (ev) {
-      dragging = true;
-      graphSvg.classList.add("dragging");
+      dragging = false;
+      activePointerId = ev.pointerId;
+      pointerDownAt = { x: ev.clientX, y: ev.clientY };
       dragStart = { x: ev.clientX, y: ev.clientY, vx: view.x, vy: view.y };
-      graphSvg.setPointerCapture(ev.pointerId);
     });
     graphSvg.addEventListener("pointermove", function (ev) {
-      if (!dragging) return;
+      if (dragStart === null || ev.pointerId !== activePointerId) return;
+      if (!dragging) {
+        var moved = Math.hypot(ev.clientX - pointerDownAt.x, ev.clientY - pointerDownAt.y);
+        if (moved < DRAG_THRESHOLD) return;
+        dragging = true;
+        graphSvg.classList.add("dragging");
+        graphSvg.setPointerCapture(activePointerId);
+      }
       var rect = graphSvg.getBoundingClientRect();
       var dx = (ev.clientX - dragStart.x) * (view.w / rect.width);
       var dy = (ev.clientY - dragStart.y) * (view.h / rect.height);
@@ -192,6 +200,7 @@
     ["pointerup", "pointercancel", "pointerleave"].forEach(function (evt) {
       graphSvg.addEventListener(evt, function () {
         dragging = false;
+        dragStart = null;
         graphSvg.classList.remove("dragging");
       });
     });
