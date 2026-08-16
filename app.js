@@ -36,6 +36,7 @@
     NODES.forEach(function (n) { byId[n.id] = n; });
 
     var graphSvg = document.getElementById("graph");
+    var defsLayer = document.getElementById("defs");
     var edgeLayer = document.getElementById("edges");
     var nodeLayer = document.getElementById("nodes");
     var panelBody = document.getElementById("panelBody");
@@ -70,18 +71,31 @@
       var g = el("g", { class: "node tier-" + n.tier, tabindex: "0", role: "button", "aria-label": n.nome });
       g.appendChild(el("circle", { class: "halo", cx: n.x, cy: n.y, r: r + 7 }));
       g.appendChild(el("circle", { class: "medallion", cx: n.x, cy: n.y, r: r }));
-      var iconSize = r * 1.3;
-      var icon = el("image", {
-        class: "icon", x: n.x - iconSize / 2, y: n.y - iconSize / 2,
-        width: iconSize, height: iconSize, href: iconHref(n.tipo)
-      });
-      icon.setAttributeNS("http://www.w3.org/1999/xlink", "href", iconHref(n.tipo));
-      g.appendChild(icon);
-      icon.addEventListener("error", function () {
-        console.warn('Ícone em falta para o tipo "' + n.tipo + '" (personagem "' + n.id + '") — a usar o ícone "povo" como reserva.');
-        icon.setAttribute("href", iconHref("povo"));
-        icon.setAttributeNS("http://www.w3.org/1999/xlink", "href", iconHref("povo"));
-      });
+      if (n.retrato) {
+        var clipId = "clip-" + n.id;
+        var clip = el("clipPath", { id: clipId });
+        clip.appendChild(el("circle", { cx: n.x, cy: n.y, r: r }));
+        defsLayer.appendChild(clip);
+        var portrait = el("image", {
+          class: "portrait", x: n.x - r, y: n.y - r,
+          width: r * 2, height: r * 2, href: n.retrato, "clip-path": "url(#" + clipId + ")"
+        });
+        portrait.setAttributeNS("http://www.w3.org/1999/xlink", "href", n.retrato);
+        g.appendChild(portrait);
+      } else {
+        var iconSize = r * 1.3;
+        var icon = el("image", {
+          class: "icon", x: n.x - iconSize / 2, y: n.y - iconSize / 2,
+          width: iconSize, height: iconSize, href: iconHref(n.tipo)
+        });
+        icon.setAttributeNS("http://www.w3.org/1999/xlink", "href", iconHref(n.tipo));
+        g.appendChild(icon);
+        icon.addEventListener("error", function () {
+          console.warn('Ícone em falta para o tipo "' + n.tipo + '" (personagem "' + n.id + '") — a usar o ícone "povo" como reserva.');
+          icon.setAttribute("href", iconHref("povo"));
+          icon.setAttributeNS("http://www.w3.org/1999/xlink", "href", iconHref("povo"));
+        });
+      }
       var label = el("text", { x: n.x, y: n.y + r + 15, "text-anchor": "middle" });
       label.textContent = n.nome;
       g.appendChild(label);
@@ -110,7 +124,11 @@
     }
 
     function renderCard(n) {
+      var portraitHtml = n.retrato
+        ? '<img class="card-portrait" src="' + n.retrato + '" alt="Retrato de ' + n.nome + '">'
+        : '';
       panelBody.innerHTML =
+        portraitHtml +
         '<p class="card-era">' + n.era + '</p>' +
         '<h2 class="card-name">' + n.nome + '</h2>' +
         '<p class="card-refs">' + n.refs + '</p>' +

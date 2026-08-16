@@ -1,7 +1,7 @@
 {
   "layout": { "width": 1700, "height": 720 },
   "personagens": [
-    { "id": "adao", "nome": "Adão", "tipo": "patriarca", "tier": "major", "x": 80, "y": 300, "era": "As origens", "refs": "Gn 2–3",
+    { "id": "adao", "nome": "Adão", "tipo": "patriarca", "retrato": "assets/retratos/adao.svg", "tier": "major", "x": 80, "y": 300, "era": "As origens", "refs": "Gn 2–3",
       "resumo": "O primeiro ser humano, formado por Deus a partir do pó da terra e colocado no Jardim do Éden para o cultivar. A sua desobediência ao comer do fruto proibido marca o início da história da salvação — mas também abre caminho para a promessa de redenção que atravessa toda a Bíblia.",
       "contexto": "Situa-se numa época sem registo arqueológico direto — a tradição bíblica coloca as origens da humanidade no Crescente Fértil, a região entre os rios Tigre e Eufrates onde surgiram as primeiras comunidades agrícolas.",
       "relacoes": "Não tem pais bíblicos — é o primeiro homem. Casado com Eva. Pai de Caim, Abel e Set." },
