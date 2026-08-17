@@ -16,5 +16,5 @@
   <ellipse cx="58.5" cy="44" rx="3.3" ry="3.8" fill="#fffaf0"/>
   <circle cx="58" cy="44.5" r="1.9" fill="#2a1810"/>
   <path d="M49 46 Q47.3 52.5 50 54.5 Q51.7 54.5 50.3 52.5" stroke="#c99a6b" stroke-width="1.1" fill="none" stroke-linecap="round"/>
-  <path d="M43 61 Q50 61.8 57 60.5" stroke="#8a4a2f" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M42 60.5 Q48 62.5 52 61 L58 59.5" stroke="#8a4a2f" stroke-width="1.5" fill="none" stroke-linecap="round"/>
 </svg>
