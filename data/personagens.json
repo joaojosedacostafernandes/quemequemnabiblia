@@ -220,7 +220,27 @@
     { "id": "golias", "nome": "Golias", "tipo": "estrangeiro", "retrato": "assets/retratos/golias.svg", "tier": "standard", "x": 2240, "y": 380, "era": "1 Samuel · Saul e David", "refs": "1 Sm 17",
       "resumo": "Guerreiro gigante filisteu de Gate que desafia diariamente o exército israelita para um combate individual — até ser derrotado pelo jovem David com uma simples funda e uma pedra, num dos episódios mais conhecidos de toda a Bíblia.",
       "contexto": "A descrição detalhada da sua armadura pesada (1 Sm 17:5-7) contrasta deliberadamente com a simplicidade das armas de David, reforçando o tema central do episódio: a vitória não depende do poder militar.",
-      "relacoes": "Sem relações familiares registadas — figura estrangeira, sem ligação de sangue às restantes personagens deste grafo." }
+      "relacoes": "Sem relações familiares registadas — figura estrangeira, sem ligação de sangue às restantes personagens deste grafo." },
+    { "id": "abigail", "nome": "Abigail", "tipo": "matriarca", "retrato": "assets/retratos/abigail.svg", "tier": "minor", "x": 2380, "y": 350, "era": "1 Samuel · Saul e David", "refs": "1 Sm 25",
+      "resumo": "Mulher \"sensata e formosa\", casada com o rico e insensato Nabal, intervém com sabedoria e diplomacia para impedir que David massacre a casa do marido depois de um insulto — e, após a morte súbita de Nabal, torna-se esposa de David.",
+      "contexto": "É apresentada no texto como um contraponto de sensatez à impulsividade tanto de Nabal como do próprio David nesse momento da sua vida em fuga.",
+      "relacoes": "Viúva de Nabal. Segunda esposa de David." },
+    { "id": "mical", "nome": "Mical", "tipo": "matriarca", "retrato": "assets/retratos/mical.svg", "tier": "minor", "x": 2380, "y": 200, "era": "1 Samuel · Saul e David", "refs": "1 Sm 18–19; 2 Sm 6",
+      "resumo": "Filha mais nova de Saul, apaixona-se por David e torna-se sua primeira esposa, ajudando-o a escapar quando o pai tenta matá-lo. Mais tarde, já rei, David recupera-a como esposa, mas o casamento deteriora-se.",
+      "contexto": "É a única mulher na Bíblia hebraica explicitamente descrita como apaixonando-se por um homem (1 Sm 18:20) — um pormenor pouco comum no estilo narrativo do texto.",
+      "relacoes": "Filha de Saul. Irmã de Jónatas. Primeira esposa de David." },
+    { "id": "betsabe", "nome": "Betsabé", "tipo": "matriarca", "retrato": "assets/retratos/betsabe.svg", "tier": "standard", "x": 2480, "y": 280, "era": "2 Samuel · O reinado de David", "refs": "2 Sm 11–12; 1 Rs 1–2",
+      "resumo": "Esposa de Urias, o hitita, é vista a banhar-se por David, que a engravida e depois manda matar Urias em combate para encobrir o adultério. Depois de casar com David, torna-se mãe de Salomão e assegura, já viúva, que ele suceda ao trono.",
+      "contexto": "O profeta Natã confronta David sobre este episódio com uma parábola (2 Sm 12), um dos momentos mais marcantes de responsabilização moral de um rei em toda a Bíblia.",
+      "relacoes": "Esposa de Urias, o hitita, depois de David. Mãe de Salomão." },
+    { "id": "absalao", "nome": "Absalão", "tipo": "povo", "retrato": "assets/retratos/absalao.svg", "tier": "standard", "x": 2550, "y": 340, "era": "2 Samuel · O reinado de David", "refs": "2 Sm 13–18",
+      "resumo": "Filho de David, conhecido pela sua beleza e pelo seu longo cabelo, revolta-se contra o pai e chega a tomar Jerusalém temporariamente. Morre tragicamente preso pelo cabelo num carvalho durante a batalha final contra as forças do pai.",
+      "contexto": "A dor de David pela morte de Absalão (\"Meu filho Absalão... quem me dera ter morrido eu em teu lugar!\", 2 Sm 18:33) é um dos momentos mais comoventes de luto paterno em toda a Bíblia.",
+      "relacoes": "Filho de David. Meio-irmão de Salomão." },
+    { "id": "natan", "nome": "Natã", "tipo": "profeta", "retrato": "assets/retratos/natan.svg", "tier": "minor", "x": 2480, "y": 180, "era": "2 Samuel · O reinado de David", "refs": "2 Sm 7; 12; 1 Rs 1",
+      "resumo": "Profeta da corte de David, transmite-lhe a promessa de uma dinastia eterna (2 Sm 7) e, mais tarde, confronta-o corajosamente com uma parábola depois do episódio com Betsabé, levando o rei ao arrependimento.",
+      "contexto": "Ser profeta da corte, e não um outsider, torna a sua coragem ao confrontar o próprio rei ainda mais notável dentro do contexto político da época.",
+      "relacoes": "Conselheiro e profeta de confiança de David. Sem relações familiares registadas." }
   ],
   "edges": [
     ["adao", "caim", "parent"], ["eva", "caim", "parent"],
@@ -257,6 +277,11 @@
     ["gideao", "abimeleque", "parent"],
     ["rute", "booz", "spouse"],
     ["saul", "jonatas", "parent"],
-    ["jonatas", "mical", "sibling"]
+    ["jonatas", "mical", "sibling"],
+    ["saul", "mical", "parent"],
+    ["david", "mical", "spouse"],
+    ["david", "abigail", "spouse"],
+    ["david", "betsabe", "spouse"],
+    ["david", "absalao", "parent"]
   ]
 }
