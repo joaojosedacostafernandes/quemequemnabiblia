@@ -200,7 +200,27 @@
     { "id": "eli", "nome": "Eli", "tipo": "sacerdote", "retrato": "assets/retratos/eli.svg", "tier": "standard", "x": 2100, "y": 200, "era": "1 Samuel · Ana e Samuel", "refs": "1 Sm 1–4",
       "resumo": "Sumo sacerdote e último juiz de Silo, cria Samuel no templo depois de Ana o entregar. Os seus próprios filhos, Hofni e Finéias, corrompem o sacerdócio, trazendo julgamento sobre a sua casa.",
       "contexto": "A sua morte, ao cair de uma cadeira ao saber que a Arca da Aliança foi capturada pelos filisteus (1 Sm 4:18), marca simbolicamente o fim de uma era de liderança sacerdotal falhada, abrindo caminho para Samuel.",
-      "relacoes": "Cria Samuel, filho de Ana, no templo de Silo. Pai de Hofni e Finéias." }
+      "relacoes": "Cria Samuel, filho de Ana, no templo de Silo. Pai de Hofni e Finéias." },
+    { "id": "samuel", "nome": "Samuel", "tipo": "profeta", "retrato": "assets/retratos/samuel.svg", "tier": "major", "x": 2170, "y": 150, "era": "1 Samuel · Ana e Samuel", "refs": "1 Sm 1–25",
+      "resumo": "Último dos juízes e primeiro dos grandes profetas de Israel, ouve a voz de Deus ainda criança no templo. Unge Saul como primeiro rei de Israel, e mais tarde David, quando Saul se afasta de Deus.",
+      "contexto": "A transição que Samuel medeia — de uma confederação de tribos lideradas por juízes para uma monarquia unificada — é uma das mudanças políticas mais significativas de toda a história bíblica de Israel.",
+      "relacoes": "Filho de Ana e Elcana, criado por Eli. Unge Saul e, mais tarde, David como reis." },
+    { "id": "saul", "nome": "Saul", "tipo": "rei", "retrato": "assets/retratos/saul.svg", "tier": "major", "x": 2240, "y": 80, "era": "1 Samuel · Saul e David", "refs": "1 Sm 9–31",
+      "resumo": "Escolhido por sorte divina e ungido por Samuel, torna-se o primeiro rei de Israel. Vitorioso no início, vai-se progressivamente afastando de Deus por desobediência e ciúme de David, terminando a vida em derrota e suicídio numa batalha contra os filisteus.",
+      "contexto": "O pedido do povo por \"um rei como as outras nações\" (1 Sm 8:5) é apresentado no texto como uma rejeição implícita do governo direto de Deus — a monarquia nasce já marcada por essa tensão.",
+      "relacoes": "Pai de Jónatas e de Mical. Sogro de David, que persegue por ciúme depois de Deus escolher David para o suceder." },
+    { "id": "jonatas", "nome": "Jónatas", "tipo": "povo", "retrato": "assets/retratos/jonatas.svg", "tier": "standard", "x": 2310, "y": 40, "era": "1 Samuel · Saul e David", "refs": "1 Sm 14; 18–20; 31",
+      "resumo": "Filho mais velho de Saul e herdeiro do trono, torna-se o melhor amigo de David e ajuda-o repetidamente a escapar da ira do próprio pai, apesar de isso significar abdicar do seu direito à coroa. Morre ao lado de Saul na batalha do monte Gilboa.",
+      "contexto": "A amizade entre Jónatas e David (1 Sm 18:1, \"a alma de Jónatas ficou ligada à alma de David\") é um dos relatos de lealdade mais celebrados da Bíblia hebraica.",
+      "relacoes": "Filho de Saul. Irmão de Mical. Amigo íntimo de David, seu cunhado." },
+    { "id": "david", "nome": "David", "tipo": "rei", "retrato": "assets/retratos/david.svg", "tier": "major", "x": 2310, "y": 300, "era": "1 Samuel · Saul e David", "refs": "1 Sm 16 – 1 Rs 2",
+      "resumo": "Pastor mais novo de oito irmãos, ungido em segredo por Samuel, torna-se herói nacional ao derrotar o gigante filisteu Golias com uma funda. Sucede a Saul como segundo rei de Israel, unifica o reino e, apesar de graves falhas morais, é lembrado como o maior rei de Israel e antepassado do Messias esperado.",
+      "contexto": "A dinastia davídica tornar-se-ia a base da esperança messiânica judaica e, na tradição cristã, da genealogia de Jesus — a promessa de um \"trono para sempre\" feita a David (2 Sm 7) atravessa o resto da Bíblia.",
+      "relacoes": "Filho de Jessé, bisneto de Rute e Booz. Casa com Mical, filha de Saul, e mais tarde com Betsabé. Pai de Absalão e de Salomão, entre outros filhos. Amigo íntimo de Jónatas." },
+    { "id": "golias", "nome": "Golias", "tipo": "estrangeiro", "retrato": "assets/retratos/golias.svg", "tier": "standard", "x": 2240, "y": 380, "era": "1 Samuel · Saul e David", "refs": "1 Sm 17",
+      "resumo": "Guerreiro gigante filisteu de Gate que desafia diariamente o exército israelita para um combate individual — até ser derrotado pelo jovem David com uma simples funda e uma pedra, num dos episódios mais conhecidos de toda a Bíblia.",
+      "contexto": "A descrição detalhada da sua armadura pesada (1 Sm 17:5-7) contrasta deliberadamente com a simplicidade das armas de David, reforçando o tema central do episódio: a vitória não depende do poder militar.",
+      "relacoes": "Sem relações familiares registadas — figura estrangeira, sem ligação de sangue às restantes personagens deste grafo." }
   ],
   "edges": [
     ["adao", "caim", "parent"], ["eva", "caim", "parent"],
@@ -235,6 +255,8 @@
     ["jacob", "benjamim", "parent"], ["raquel", "benjamim", "parent"],
     ["arao", "moises", "sibling"], ["arao", "miriam", "sibling"],
     ["gideao", "abimeleque", "parent"],
-    ["rute", "booz", "spouse"]
+    ["rute", "booz", "spouse"],
+    ["saul", "jonatas", "parent"],
+    ["jonatas", "mical", "sibling"]
   ]
 }
