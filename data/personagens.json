@@ -160,7 +160,27 @@
     { "id": "jael", "nome": "Jael", "tipo": "povo", "retrato": "assets/retratos/jael.svg", "tier": "minor", "x": 1780, "y": 460, "era": "Os Juízes", "refs": "Jz 4:17-22; 5:24-27",
       "resumo": "Mulher quenita que dá refúgio ao general cananeu Sísera em fuga, e o mata enquanto dorme, cumprindo a profecia de Débora de que a vitória seria atribuída a uma mulher.",
       "contexto": "Os quenitas eram um povo nómada aliado de Israel — a hospitalidade que Jael oferece a Sísera (e depois trai) reflete os códigos de hospitalidade do Próximo Oriente Antigo, tornando o seu ato ainda mais chocante para os ouvintes originais.",
-      "relacoes": "Esposa de Héber, o quenita. Sem outras relações registadas." }
+      "relacoes": "Esposa de Héber, o quenita. Sem outras relações registadas." },
+    { "id": "gideao", "nome": "Gideão", "tipo": "povo", "retrato": "assets/retratos/gideao.svg", "tier": "major", "x": 1850, "y": 560, "era": "Os Juízes", "refs": "Jz 6–8",
+      "resumo": "Chamado por Deus enquanto se esconde para debulhar trigo, lidera apenas 300 homens escolhidos a derrotar um enorme exército midianita, provando que a vitória vem de Deus e não do número de soldados.",
+      "contexto": "O teste dos 300 homens (Jz 7) — escolhidos pela forma como bebiam água — é um dos episódios mais conhecidos do livro dos Juízes, usado ainda hoje como exemplo de liderança e fé.",
+      "relacoes": "Pai de Abimeleque, entre setenta filhos. Recusa ser feito rei, mas o seu filho Abimeleque tenta tornar-se um." },
+    { "id": "abimeleque", "nome": "Abimeleque", "tipo": "rei", "retrato": "assets/retratos/abimeleque.svg", "tier": "minor", "x": 1920, "y": 620, "era": "Os Juízes", "refs": "Jz 9",
+      "resumo": "Filho de Gideão que mata os seus setenta meio-irmãos para se tornar governante de Siquém, tornando-se um contraexemplo do juiz ideal — movido por ambição, não por chamado divino.",
+      "contexto": "A sua história é frequentemente lida como uma advertência bíblica contra a monarquia hereditária não escolhida por Deus, preparando o terreno para as tensões que voltam a surgir com Saul.",
+      "relacoes": "Filho de Gideão. Mata os seus meios-irmãos para reclamar o poder." },
+    { "id": "jefte", "nome": "Jefté", "tipo": "povo", "retrato": "assets/retratos/jefte.svg", "tier": "standard", "x": 1920, "y": 180, "era": "Os Juízes", "refs": "Jz 11–12",
+      "resumo": "Filho rejeitado pela sua família por ser filho de uma prostituta, torna-se um líder militar respeitado e derrota os amonitas — mas faz um voto precipitado que acaba por custar a vida da sua própria filha.",
+      "contexto": "O voto de Jefté é um dos episódios mais debatidos da Bíblia, lido por uns como um exemplo trágico das consequências de promessas precipitadas feitas a Deus.",
+      "relacoes": "Filho de Gileade e de uma prostituta. Pai de uma filha não nomeada no texto." },
+    { "id": "sansao", "nome": "Sansão", "tipo": "povo", "retrato": "assets/retratos/sansao.svg", "tier": "major", "x": 1990, "y": 280, "era": "Os Juízes", "refs": "Jz 13–16",
+      "resumo": "Nazireu dotado de força sobrenatural desde o nascimento, luta sozinho contra os filisteus ao longo de várias histórias — até ser traído por Dalila, que descobre o segredo da sua força no cabelo nunca cortado.",
+      "contexto": "O voto de nazireu (Nm 6) incluía nunca cortar o cabelo, nunca beber vinho e nunca tocar num cadáver — Sansão quebra os três votos ao longo da sua história, um padrão que a narrativa usa para mostrar o seu carácter impulsivo.",
+      "relacoes": "Filho de Manoá, da tribo de Dã. Nunca chega a ter filhos ou esposa reconhecida no texto — Dalila é a sua companheira, não esposa formal." },
+    { "id": "dalila", "nome": "Dalila", "tipo": "estrangeiro", "retrato": "assets/retratos/dalila.svg", "tier": "standard", "x": 1990, "y": 380, "era": "Os Juízes", "refs": "Jz 16:4-22",
+      "resumo": "Mulher filisteia que, subornada pelos chefes filisteus, descobre repetidamente o segredo da força de Sansão até o convencer a revelar que está no seu cabelo, entregando-o assim aos seus inimigos.",
+      "contexto": "Ao contrário de Jael, que trai um inimigo de Israel, Dalila trai um herói israelita a favor dos filisteus — a narrativa bíblica trata-a sempre como uma figura do lado adversário, nunca israelita.",
+      "relacoes": "Sem relações familiares registadas. Associada aos chefes filisteus que a subornam." }
   ],
   "edges": [
     ["adao", "caim", "parent"], ["eva", "caim", "parent"],
@@ -193,6 +213,7 @@
     ["jacob", "gad", "parent"],
     ["jacob", "aser", "parent"],
     ["jacob", "benjamim", "parent"], ["raquel", "benjamim", "parent"],
-    ["arao", "moises", "sibling"], ["arao", "miriam", "sibling"]
+    ["arao", "moises", "sibling"], ["arao", "miriam", "sibling"],
+    ["gideao", "abimeleque", "parent"]
   ]
 }
