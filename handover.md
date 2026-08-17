@@ -22,17 +22,18 @@ Promotora: Isabel, diretora técnica de uma farmácia militar, católica, envolv
 O protótipo inicial (20 personagens) foi publicado como Artifact e é a origem do conceito. Esse Artifact continua acessível mas está desatualizado:
 https://claude.ai/code/artifact/db49ef11-59ed-4cee-ba20-cf7c01c4b171
 
-**O código a usar/manter é agora o deste repositório**, não o Artifact. Um plano de 7 tarefas ("redesign-visual-conteudo", 2026-08-16) reescreveu o motor e ampliou o conteúdo para 34 personagens de Génesis e Êxodo. Ficheiros:
+**O código a usar/manter é agora o deste repositório**, não o Artifact. Um plano de 7 tarefas ("redesign-visual-conteudo", 2026-08-16) reescreveu o motor e ampliou o conteúdo; desde então o conteúdo cresceu ao longo de várias sessões até cobrir de Génesis/Êxodo ao reino dividido de Judá/Israel (Juízes e Reis incluídos). Ficheiros:
 
 - `index.html` — estrutura da página.
 - `style.css` — visual (tema claro pergaminho/âmbar, tipografia serif Georgia para nomes + sans do sistema para o resto; layout responsivo com painel lateral em desktop e "bottom sheet" em mobile via `@media (max-width: 720px)`).
 - `app.js` — motor do grafo: lê `data/personagens.json` via `fetch`, desenha nós/ligações em SVG, pan/zoom por arrasto e botões, abre o painel de detalhe ao clicar num nó.
-- `data/personagens.json` — os dados: 34 personagens (`personagens[]`, cada um com id/nome/tipo/tier/x/y/era/refs/resumo/contexto/relacoes) e 53 ligações (`edges[]` — pai/mãe, casamento, irmãos, "várias gerações depois").
+- `data/personagens.json` — os dados: 71 personagens (`personagens[]`, cada um com id/nome/tipo/retrato/tier/x/y/era/refs/resumo/contexto/relacoes) e 69 ligações (`edges[]` — pai/mãe, casamento, irmãos, "várias gerações depois").
 - `assets/icons/` — ícones SVG por `tipo` de personagem.
+- `assets/retratos/` — retratos SVG individuais por personagem, referenciados pelo campo `retrato` de cada entrada em `personagens.json`.
 
 ⚠️ **`index.html` não pode ser aberto diretamente com `file://`** — o `fetch("data/personagens.json")` falha por CORS na maioria dos browsers. É preciso servir a pasta por `http://` (ex: skill `run`, ou qualquer servidor estático simples).
 
-QA final (2026-08-16): mobile viewport confirmado (instruções e rodapé escondem-se, painel abre como bottom sheet com botão "Fechar ×" funcional); as 34 personagens confirmadas com contexto/resumo/relações preenchidos (verificado via clique real em todas, usando Chrome DevTools Protocol já que não havia Node/Python disponíveis na máquina). Corrigida uma sobreposição visual: a ligação de irmãos Arão↔Miriam passava em cima do medalhão de Moisés (os três estavam alinhados); Arão foi deslocado ligeiramente (`x: 1420` → `1460`).
+QA final (2026-08-16, sessão inicial): mobile viewport confirmado (instruções e rodapé escondem-se, painel abre como bottom sheet com botão "Fechar ×" funcional); as 34 personagens então existentes confirmadas com contexto/resumo/relações preenchidos (verificado via clique real em todas, usando Chrome DevTools Protocol já que não havia Node/Python disponíveis na máquina). Corrigida uma sobreposição visual: a ligação de irmãos Arão↔Miriam passava em cima do medalhão de Moisés (os três estavam alinhados); Arão foi deslocado ligeiramente (`x: 1420` → `1460`).
 
 ### Configuração do projeto
 
@@ -61,7 +62,7 @@ Criado `.claude/settings.json` na raiz do projeto com dois plugins:
 
 1. A Isabel precisa de ver e dar feedback ao novo visual "Livro de Ilustrações" (já implementado nesta branch, substituindo o conceito anterior "mapa de estrelas") — validar se resulta bem para crianças, nomeadamente a legibilidade dos ícones nas personagens de menor destaque ("tier": "minor").
 2. Validar o nível de detalhe dos cartões de personagem (resumo + família) — ajustar para catequese se necessário.
-3. Decidir o processo de expansão de conteúdo: cobrir o resto da Bíblia (Reis, Profetas, Evangelhos, Atos, Cartas...) é um trabalho grande de curadoria, não só técnico — decidir se a Isabel vai levantando os dados ou se isso é feito em conjunto, por "famílias"/blocos narrativos.
+3. Expansão de conteúdo: Génesis, Êxodo, Juízes e Reis (reino dividido de Judá/Israel) já estão cobertos — 71 personagens no total. Falta o resto da Bíblia (Profetas, Evangelhos, Atos, Cartas...), que continua a ser um trabalho grande de curadoria, não só técnico — decidir se a Isabel vai levantando os dados ou se isso é feito em conjunto, por "famílias"/blocos narrativos.
 4. ~~Ainda não há repositório git nem ficheiros de código na pasta do projeto~~ — feito: o código (`index.html`/`style.css`/`app.js`/`data/personagens.json`) já está no repositório, ver secção "O que foi feito" acima. Falta ainda decidir onde/como publicar (hosting gratuito) para a Isabel poder ver a versão a correr fora desta sessão.
 5. Confirmar após reiniciar a sessão que os plugins **superpowers** e **frontend-design** ativaram corretamente.
 
