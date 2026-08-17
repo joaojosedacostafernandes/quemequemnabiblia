@@ -1,5 +1,5 @@
 {
-  "layout": { "width": 2900, "height": 820 },
+  "layout": { "width": 3050, "height": 820 },
   "personagens": [
     { "id": "adao", "nome": "Adão", "tipo": "patriarca", "retrato": "assets/retratos/adao.svg", "tier": "major", "x": 80, "y": 300, "era": "As origens", "refs": "Gn 2–3",
       "resumo": "O primeiro ser humano, formado por Deus a partir do pó da terra e colocado no Jardim do Éden para o cultivar. A sua desobediência ao comer do fruto proibido marca o início da história da salvação — mas também abre caminho para a promessa de redenção que atravessa toda a Bíblia.",
@@ -280,11 +280,27 @@
     { "id": "ezequias", "nome": "Ezequias", "tipo": "rei", "retrato": "assets/retratos/ezequias.svg", "tier": "minor", "x": 2850, "y": 280, "era": "1-2 Reis · O reino dividido", "refs": "2 Rs 18–20",
       "resumo": "Rei de Judá lembrado como um dos grandes reformadores religiosos, remove os altares idólatras espalhados pelo reino e confia em Deus perante o cerco assírio a Jerusalém, que é levantado milagrosamente.",
       "contexto": "O seu reinado coincide com a ameaça do poderoso Império Assírio, que já tinha destruído o Reino de Israel (norte) em 722 a.C. — Judá sobrevive onde o norte caiu.",
-      "relacoes": "Descendente de Salomão, 12 gerações depois (2 Rs 15-18)." },
+      "relacoes": "Filho de Acaz. Descendente de Salomão, 12 gerações depois (2 Rs 15-18)." },
     { "id": "josias", "nome": "Josias", "tipo": "rei", "retrato": "assets/retratos/josias.svg", "tier": "minor", "x": 2850, "y": 200, "era": "1-2 Reis · O reino dividido", "refs": "2 Rs 22–23",
       "resumo": "Torna-se rei de Judá aos oito anos, e já jovem adulto promove a maior reforma religiosa da história do reino depois de o Livro da Lei ser redescoberto durante obras de restauro no Templo.",
       "contexto": "É o último rei de Judá lembrado com aprovação total pelo texto bíblico — depois dele, o reino entra numa espiral que termina na conquista babilónica e no exílio.",
-      "relacoes": "Descendente de Salomão e de Ezequias, 15 gerações depois de Salomão (2 Rs 21-22)." }
+      "relacoes": "Descendente de Salomão e de Ezequias, 15 gerações depois de Salomão (2 Rs 21-22)." },
+    { "id": "uzias", "nome": "Uzias", "tipo": "rei", "retrato": "assets/retratos/uzias.svg", "tier": "minor", "x": 2760, "y": 120, "era": "Isaías", "refs": "Is 6:1; 2 Rs 15; 2 Cr 26",
+      "resumo": "Rei de Judá com um reinado longo e próspero, mas que termina em tragédia: ao entrar no templo para queimar incenso, um ato reservado aos sacerdotes, é ferido com lepra e vive isolado até à morte. É \"no ano em que morreu o rei Uzias\" que Isaías tem a visão da sua vocação profética (Is 6:1).",
+      "contexto": "O seu reinado marca um período de estabilidade e expansão para Judá antes da crescente pressão assíria que domina os reinados seguintes.",
+      "relacoes": "Avô de Acaz (pai de Jotão, que é pai de Acaz)." },
+    { "id": "acaz", "nome": "Acaz", "tipo": "rei", "retrato": "assets/retratos/acaz.svg", "tier": "standard", "x": 2810, "y": 120, "era": "Isaías", "refs": "Is 7; 2 Rs 16",
+      "resumo": "Rei de Judá que, perante a ameaça de uma coligação de Israel e Aram, recusa pedir um sinal a Deus através de Isaías — que lhe anuncia mesmo assim o sinal do Emanuel (\"Deus connosco\"). Prefere procurar a proteção do império assírio, pagando um pesado tributo.",
+      "contexto": "A sua decisão de se tornar vassalo da Assíria traz alívio imediato mas aprofunda a dependência de Judá de uma potência estrangeira — um padrão que os profetas, incluindo Isaías, criticam repetidamente como falta de confiança em Deus.",
+      "relacoes": "Filho de Jotão e neto de Uzias. Pai de Ezequias." },
+    { "id": "isaias", "nome": "Isaías", "tipo": "profeta", "retrato": "assets/retratos/isaias.svg", "tier": "major", "x": 2900, "y": 180, "era": "Isaías", "refs": "Is 1–66",
+      "resumo": "Profeta de Judá, com um ministério que atravessa os reinados de Uzias a Ezequias (cerca de 740–700 a.C.), chamado numa visão do templo — \"Aqui estou, envia-me\" (Is 6:8). Anuncia tanto o juízo sobre a infidelidade de Judá como a esperança de um Messias e de um \"resto\" fiel que sobrevive.",
+      "contexto": "Escreve num período de crescente ameaça assíria — o Reino de Israel (norte) cai em 722 a.C. durante o seu ministério, e Judá vive sob a sombra constante de ser o próximo alvo. Grande parte da tradição cristã lê as suas profecias messiânicas (como Is 7:14 e 53) à luz de Jesus Cristo.",
+      "relacoes": "Casado com \"a profetisa\" (Is 8:3), sem nome próprio no texto. Pai de dois filhos com nomes simbólicos, Sear-Jasube e Maer-Chalal-Hás-Baz. Contemporâneo dos reis Uzias, Acaz e Ezequias." },
+    { "id": "senaqueribe", "nome": "Senaqueribe", "tipo": "rei", "retrato": "assets/retratos/senaqueribe.svg", "tier": "standard", "x": 2950, "y": 340, "era": "Isaías", "refs": "Is 36–37; 2 Rs 18–19",
+      "resumo": "Rei do Império Assírio que invade Judá e cerca Jerusalém durante o reinado de Ezequias, exigindo a rendição da cidade através dos seus enviados. O cerco é levantado sem que a cidade caia — um episódio que a tradição bíblica atribui à intervenção divina, em resposta à oração de Ezequias e ao anúncio de Isaías.",
+      "contexto": "Registos assírios (o Prisma de Senaqueribe) confirmam de facto o cerco a Jerusalém e descrevem Ezequias como \"preso como um pássaro numa gaiola\" — mas, ao contrário de outras cidades conquistadas, confirmam também que Jerusalém não caiu, um detalhe notável fora do texto bíblico.",
+      "relacoes": "Sem relações familiares registadas — rei estrangeiro, sem ligação de sangue às restantes personagens deste grafo." }
   ],
   "edges": [
     ["adao", "caim", "parent"], ["eva", "caim", "parent"],
@@ -332,6 +348,9 @@
     ["salomao", "roboao", "parent"],
     ["acab", "jezabel", "spouse"],
     ["salomao", "ezequias", "descendant", "12 gerações · 2 Rs 15-18"],
-    ["salomao", "josias", "descendant", "15 gerações · 2 Rs 21-22"]
+    ["salomao", "josias", "descendant", "15 gerações · 2 Rs 21-22"],
+    ["uzias", "acaz", "descendant", "2 gerações, via Jotão · 2 Rs 15-16"],
+    ["acaz", "ezequias", "parent"],
+    ["ezequias", "josias", "descendant", "3 gerações, via Manassés e Amon · 2 Rs 20-21"]
   ]
 }
