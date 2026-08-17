@@ -256,7 +256,35 @@
     { "id": "jeroboao", "nome": "Jeroboão", "tipo": "rei", "retrato": "assets/retratos/jeroboao.svg", "tier": "minor", "x": 2670, "y": 460, "era": "1-2 Reis · O reino dividido", "refs": "1 Rs 11–12",
       "resumo": "Antigo funcionário de Salomão que, depois da revolta contra Roboão, se torna o primeiro rei do Reino de Israel (norte). Para evitar que o povo continue a peregrinar ao Templo em Jerusalém, cria santuários alternativos com bezerros de ouro, um ato que a tradição bíblica considera o pecado fundador do reino do norte.",
       "contexto": "A expressão \"os pecados de Jeroboão\" torna-se, nos livros seguintes, um refrão usado para julgar quase todos os reis do Reino de Israel que se seguem.",
-      "relacoes": "Sem relações de sangue com a casa de David — governante rival do Reino de Israel (norte)." }
+      "relacoes": "Sem relações de sangue com a casa de David — governante rival do Reino de Israel (norte)." },
+    { "id": "elias", "nome": "Elias", "tipo": "profeta", "retrato": "assets/retratos/elias.svg", "tier": "major", "x": 2740, "y": 560, "era": "1-2 Reis · O reino dividido", "refs": "1 Rs 17–19; 21; 2 Rs 1–2",
+      "resumo": "Profeta poderoso do Reino de Israel, confronta o rei Acab e a rainha Jezabel pela idolatria ao deus Baal, culminando no confronto público no Monte Carmelo. Sobe ao céu num carro de fogo, sem morrer, deixando o seu manto — e o seu papel profético — a Eliseu.",
+      "contexto": "A tradição judaica espera o regresso de Elias antes da vinda do Messias — uma expectativa que, no Novo Testamento, é associada a João Batista.",
+      "relacoes": "Sem relações familiares registadas. Mentor e antecessor de Eliseu." },
+    { "id": "acab", "nome": "Acab", "tipo": "rei", "retrato": "assets/retratos/acab.svg", "tier": "standard", "x": 2740, "y": 380, "era": "1-2 Reis · O reino dividido", "refs": "1 Rs 16; 18; 21–22",
+      "resumo": "Rei do reino de Israel (norte), casa com a princesa fenícia Jezabel e introduz o culto a Baal na corte, entrando em conflito direto e repetido com o profeta Elias.",
+      "contexto": "É descrito no texto (1 Rs 16:30) como tendo feito \"mais mal aos olhos do Senhor do que todos os que o precederam\" — o padrão de avaliação moral usado para todos os reis do Reino de Israel.",
+      "relacoes": "Esposo de Jezabel." },
+    { "id": "jezabel", "nome": "Jezabel", "tipo": "rei", "retrato": "assets/retratos/jezabel.svg", "tier": "standard", "x": 2740, "y": 440, "era": "1-2 Reis · O reino dividido", "refs": "1 Rs 16; 18–19; 21; 2 Rs 9",
+      "resumo": "Princesa fenícia, esposa de Acab, promove ativamente o culto a Baal em Israel e persegue os profetas de Deus. Torna-se, na tradição bíblica, o exemplo máximo de rainha corrupta e opositora da fé de Israel.",
+      "contexto": "O seu nome tornou-se, na cultura ocidental, sinónimo de mulher manipuladora e má — uma leitura que simplifica uma figura complexa de choque cultural e religioso entre Israel e a Fenícia.",
+      "relacoes": "Esposa de Acab, rei de Israel." },
+    { "id": "eliseu", "nome": "Eliseu", "tipo": "profeta", "retrato": "assets/retratos/eliseu.svg", "tier": "standard", "x": 2800, "y": 560, "era": "1-2 Reis · O reino dividido", "refs": "1 Rs 19; 2 Rs 2–13",
+      "resumo": "Discípulo e sucessor de Elias, recebe uma \"porção dobrada\" do seu espírito e realiza uma série de milagres — incluindo a cura da lepra de Naamã — ao longo de um ministério profético que atravessa vários reinados.",
+      "contexto": "Ao contrário de Elias, uma figura mais solitária e dramática, Eliseu é retratado como mais próximo do povo comum e das suas necessidades quotidianas.",
+      "relacoes": "Discípulo e sucessor de Elias. Sem relações familiares registadas." },
+    { "id": "naama", "nome": "Naamã", "tipo": "estrangeiro", "retrato": "assets/retratos/naama.svg", "tier": "minor", "x": 2800, "y": 650, "era": "1-2 Reis · O reino dividido", "refs": "2 Rs 5",
+      "resumo": "Comandante do exército arameu (sírio) que sofre de lepra. Segue o conselho de uma jovem serva israelita e vai ter com o profeta Eliseu, que o cura depois de ele mergulhar sete vezes no rio Jordão — apesar da sua relutância inicial.",
+      "contexto": "É um dos poucos episódios bíblicos em que a cura e a fé chegam a um estrangeiro através da humildade de uma pessoa sem poder algum, a jovem serva israelita não nomeada.",
+      "relacoes": "Sem relações familiares registadas — estrangeiro, sem ligação de sangue às restantes personagens deste grafo." },
+    { "id": "ezequias", "nome": "Ezequias", "tipo": "rei", "retrato": "assets/retratos/ezequias.svg", "tier": "minor", "x": 2850, "y": 280, "era": "1-2 Reis · O reino dividido", "refs": "2 Rs 18–20",
+      "resumo": "Rei de Judá lembrado como um dos grandes reformadores religiosos, remove os altares idólatras espalhados pelo reino e confia em Deus perante o cerco assírio a Jerusalém, que é levantado milagrosamente.",
+      "contexto": "O seu reinado coincide com a ameaça do poderoso Império Assírio, que já tinha destruído o Reino de Israel (norte) em 722 a.C. — Judá sobrevive onde o norte caiu.",
+      "relacoes": "Descendente de Salomão, 12 gerações depois (2 Rs 15-18)." },
+    { "id": "josias", "nome": "Josias", "tipo": "rei", "retrato": "assets/retratos/josias.svg", "tier": "minor", "x": 2850, "y": 200, "era": "1-2 Reis · O reino dividido", "refs": "2 Rs 22–23",
+      "resumo": "Torna-se rei de Judá aos oito anos, e já jovem adulto promove a maior reforma religiosa da história do reino depois de o Livro da Lei ser redescoberto durante obras de restauro no Templo.",
+      "contexto": "É o último rei de Judá lembrado com aprovação total pelo texto bíblico — depois dele, o reino entra numa espiral que termina na conquista babilónica e no exílio.",
+      "relacoes": "Descendente de Salomão e de Ezequias, 15 gerações depois de Salomão (2 Rs 21-22)." }
   ],
   "edges": [
     ["adao", "caim", "parent"], ["eva", "caim", "parent"],
@@ -301,6 +329,9 @@
     ["david", "absalao", "parent"],
     ["david", "salomao", "parent"],
     ["betsabe", "salomao", "parent"],
-    ["salomao", "roboao", "parent"]
+    ["salomao", "roboao", "parent"],
+    ["acab", "jezabel", "spouse"],
+    ["salomao", "ezequias", "descendant", "12 gerações · 2 Rs 15-18"],
+    ["salomao", "josias", "descendant", "15 gerações · 2 Rs 21-22"]
   ]
 }
