@@ -180,7 +180,27 @@
     { "id": "dalila", "nome": "Dalila", "tipo": "estrangeiro", "retrato": "assets/retratos/dalila.svg", "tier": "standard", "x": 1990, "y": 380, "era": "Os Juízes", "refs": "Jz 16:4-22",
       "resumo": "Mulher filisteia que, subornada pelos chefes filisteus, descobre repetidamente o segredo da força de Sansão até o convencer a revelar que está no seu cabelo, entregando-o assim aos seus inimigos.",
       "contexto": "Ao contrário de Jael, que trai um inimigo de Israel, Dalila trai um herói israelita a favor dos filisteus — a narrativa bíblica trata-a sempre como uma figura do lado adversário, nunca israelita.",
-      "relacoes": "Sem relações familiares registadas. Associada aos chefes filisteus que a subornam." }
+      "relacoes": "Sem relações familiares registadas. Associada aos chefes filisteus que a subornam." },
+    { "id": "noemi", "nome": "Noemi", "tipo": "matriarca", "retrato": "assets/retratos/noemi.svg", "tier": "minor", "x": 1850, "y": 720, "era": "Rute", "refs": "Rt 1",
+      "resumo": "Israelita que perde o marido e os dois filhos em Moabe, e regressa a Belém com a sua nora Rute, que se recusa a abandoná-la.",
+      "contexto": "O livro de Rute passa-se \"nos dias em que os juízes governavam\" (Rt 1:1) — uma história pequena e pessoal, contada em paralelo com a violência do livro dos Juízes.",
+      "relacoes": "Sogra de Rute. Avó de Obede, bisavó de Jessé, pai de David." },
+    { "id": "rute", "nome": "Rute", "tipo": "estrangeiro", "retrato": "assets/retratos/rute.svg", "tier": "standard", "x": 1920, "y": 760, "era": "Rute", "refs": "Rt 1–4",
+      "resumo": "Mulher moabita que, depois de enviuvar, escolhe ficar com a sua sogra Noemi em vez de regressar à sua terra — \"o teu povo será o meu povo, e o teu Deus, o meu Deus\" (Rt 1:16). Casa com Booz e torna-se bisavó de David.",
+      "contexto": "Sendo moabita, Rute é uma estrangeira integrada por escolha própria no povo de Israel — a sua inclusão na genealogia de David é um sinal recorrente na Bíblia de que a pertença ao povo de Deus não é só de sangue.",
+      "relacoes": "Nora de Noemi. Casa com Booz. Mãe de Obede, avó de Jessé, bisavó de David." },
+    { "id": "booz", "nome": "Booz", "tipo": "povo", "retrato": "assets/retratos/booz.svg", "tier": "minor", "x": 1990, "y": 720, "era": "Rute", "refs": "Rt 2–4",
+      "resumo": "Proprietário rico de Belém, parente de Noemi, que mostra bondade a Rute quando ela colhe espigas nos seus campos, e acaba por casar com ela, assumindo o papel de \"resgatador\" familiar.",
+      "contexto": "O direito de resgate (levirato) permitia a um parente próximo casar com a viúva de um familiar falecido para preservar a linhagem e as terras da família — a base legal de todo o desenlace do livro de Rute.",
+      "relacoes": "Parente de Noemi. Casa com Rute. Pai de Obede, avô de Jessé, bisavô de David." },
+    { "id": "ana", "nome": "Ana", "tipo": "matriarca", "retrato": "assets/retratos/ana.svg", "tier": "standard", "x": 2100, "y": 100, "era": "1 Samuel · Ana e Samuel", "refs": "1 Sm 1–2",
+      "resumo": "Mulher estéril que ora fervorosamente no santuário de Silo por um filho, prometendo consagrá-lo a Deus — e dá à luz Samuel, que entrega ao serviço do templo assim que é desmamado.",
+      "contexto": "A sua oração (1 Sm 2:1-10) é um dos grandes cânticos de louvor do Antigo Testamento, e serve de modelo literário para o cântico de Maria (o Magnificat) no Evangelho de Lucas.",
+      "relacoes": "Esposa de Elcana. Mãe de Samuel." },
+    { "id": "eli", "nome": "Eli", "tipo": "sacerdote", "retrato": "assets/retratos/eli.svg", "tier": "standard", "x": 2100, "y": 200, "era": "1 Samuel · Ana e Samuel", "refs": "1 Sm 1–4",
+      "resumo": "Sumo sacerdote e último juiz de Silo, cria Samuel no templo depois de Ana o entregar. Os seus próprios filhos, Hofni e Finéias, corrompem o sacerdócio, trazendo julgamento sobre a sua casa.",
+      "contexto": "A sua morte, ao cair de uma cadeira ao saber que a Arca da Aliança foi capturada pelos filisteus (1 Sm 4:18), marca simbolicamente o fim de uma era de liderança sacerdotal falhada, abrindo caminho para Samuel.",
+      "relacoes": "Cria Samuel, filho de Ana, no templo de Silo. Pai de Hofni e Finéias." }
   ],
   "edges": [
     ["adao", "caim", "parent"], ["eva", "caim", "parent"],
@@ -214,6 +234,7 @@
     ["jacob", "aser", "parent"],
     ["jacob", "benjamim", "parent"], ["raquel", "benjamim", "parent"],
     ["arao", "moises", "sibling"], ["arao", "miriam", "sibling"],
-    ["gideao", "abimeleque", "parent"]
+    ["gideao", "abimeleque", "parent"],
+    ["rute", "booz", "spouse"]
   ]
 }
