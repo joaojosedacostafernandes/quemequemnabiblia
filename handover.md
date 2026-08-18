@@ -1,6 +1,6 @@
 # Handover — Os Personagens da Bíblia
 
-Sessão de 2026-08-16, atualizado em 2026-08-18 (Ronda 4 — Isaías). Contexto para continuar este projeto noutra sessão.
+Projeto iniciado em 2026-08-16, já com 4 rondas de trabalho integradas em `master`. Última atualização: 2026-08-18, fim da Ronda 4 (Isaías). Contexto para continuar este projeto noutra sessão.
 
 ## O projeto
 
@@ -34,6 +34,28 @@ https://claude.ai/code/artifact/db49ef11-59ed-4cee-ba20-cf7c01c4b171
 ⚠️ **`index.html` não pode ser aberto diretamente com `file://`** — o `fetch("data/personagens.json")` falha por CORS na maioria dos browsers. É preciso servir a pasta por `http://` (ex: skill `run`, ou qualquer servidor estático simples).
 
 QA final (2026-08-16, sessão inicial): mobile viewport confirmado (instruções e rodapé escondem-se, painel abre como bottom sheet com botão "Fechar ×" funcional); as 34 personagens então existentes confirmadas com contexto/resumo/relações preenchidos (verificado via clique real em todas, usando Chrome DevTools Protocol já que não havia Node/Python disponíveis na máquina). Corrigida uma sobreposição visual: a ligação de irmãos Arão↔Miriam passava em cima do medalhão de Moisés (os três estavam alinhados); Arão foi deslocado ligeiramente (`x: 1420` → `1460`).
+
+### Processo de trabalho estabelecido (repetido em todas as rondas de conteúdo)
+
+Cada ronda de conteúdo (Rondas 2, 3, 4) seguiu o mesmo fluxo, que resultou bem e vale a pena repetir:
+
+1. **Brainstorming curto** com a Isabel para acordar o âmbito (que personagens, que livro).
+2. **Spec** em `docs/superpowers/specs/YYYY-MM-DD-<tema>-design.md`.
+3. **Plano de implementação** em `docs/superpowers/plans/YYYY-MM-DD-<tema>.md` — conteúdo e retrato sempre feitos juntos na mesma tarefa (decisão da Isabel a partir da Ronda 3).
+4. **Execução via subagent-driven-development** (skill `superpowers:subagent-driven-development`) num **git worktree isolado** (skill `superpowers:using-git-worktrees`, tool `EnterWorktree`/`ExitWorktree`) — nunca implementar diretamente em `master`.
+5. **Revisão de cada tarefa** por um subagent revisor (verifica cumprimento do plano + qualidade), depois **revisão final de branch inteira** por um subagent no modelo mais capaz disponível (`opus`).
+6. **Verificação num browser real** (não só `dispatchEvent` sintético — ver aviso técnico abaixo) e **auditoria automática de distinção geométrica** aos retratos (ver script abaixo).
+7. **Merge local para `master`** via skill `superpowers:finishing-a-development-branch`, depois `git worktree remove` + `git branch -d` da branch de trabalho.
+8. Atualizar `handover.md` e a memória persistente do projeto no fim.
+
+### Ambiente técnico (armadilhas já resolvidas, para não repetir a descoberta)
+
+- **Node.js** está instalado mas normalmente não fica no PATH da shell persistente — antepor sempre `C:\Users\isabel.c.a.faria\AppData\Local\Microsoft\WinGet\Packages\OpenJS.NodeJS.LTS_Microsoft.Winget.Source_8wekyb3d8bbwe\node-v24.19.0-win-x64` ao PATH em cada comando que precise de `node`.
+- **Chrome** está em `C:\Program Files\Google\Chrome\Application\chrome.exe` — usado em modo `--headless=new --remote-debugging-port=<porta>` para testes de clique reais via protocolo CDP puro (WebSocket nativo do Node 24, sem dependências). Isto é importante: um bug real de clique só apareceu ao testar com um pipeline de rato real (`mousePressed`/`mouseReleased` via `Input.dispatchMouseEvent`), nunca com `dispatchEvent` sintético em JS — ver a lição gravada na memória do projeto. Nota: em Chrome recente, `/json/new` do CDP exige verbo **PUT**, não GET.
+- **Servir o site**: `fetch("data/personagens.json")` falha por CORS se abrires `index.html` via `file://`. Um pequeno servidor Node estático (root + porta como argumentos) resolve — não existe um ficheiro deste tipo guardado no repositório, é reescrito de sessão para sessão a partir do scratchpad; pode valer a pena guardá-lo no repo (ex: `scripts/dev-server.js`) numa próxima ronda.
+- **Auditoria geométrica de retratos**: também não está guardada no repositório — é um script Node que lê todos os `assets/retratos/*.svg`, extrai atributos de forma (ignorando `fill`/`stroke`) de cada elemento, e sinaliza pares com ≥60% de sobreposição de "tokens" de forma. Provou o seu valor na Ronda 4 (encontrou o par Adão/Abraão, não detetado antes) mas produz também bastante ruído (elementos genéricos como o retângulo do pescoço contam para a sobreposição) — os pares sinalizados precisam sempre de confirmação manual, não são veredito automático. Vale a pena formalizar este script no repositório e refinar o algoritmo (ex: dar menos peso a elementos reconhecidamente partilhados por convenção) numa próxima ronda, em vez de o reescrever de raiz sempre que é preciso.
+- **`H:` (Google Drive) pode desmontar-se a meio da sessão** — já aconteceu uma vez (o worktree pareceu ter "desaparecido"). Se um comando disser que o diretório não existe, testar `Test-Path "H:\"` antes de assumir que algo foi apagado; o disco geralmente volta a montar-se sozinho.
+- **`git worktree remove` pode falhar com "Permission denied"** — normalmente por um processo `node.exe` ainda a correr (servidor estático) ou por bloqueio de sincronização do Google Drive. Parar processos `node` (`Get-Process -Name node | Stop-Process -Force`) costuma resolver.
 
 ### Configuração do projeto
 
@@ -70,6 +92,6 @@ Criado `.claude/settings.json` na raiz do projeto com dois plugins:
 
 ## Memória guardada
 
-Duas memórias persistentes foram atualizadas nesta sessão (`~/.claude/projects/.../memory/`):
-- `user_profile.md` — perfil da Isabel.
-- `project_personagens_biblia.md` — decisões e progresso deste projeto.
+Memórias persistentes em `~/.claude/projects/.../memory/`, atualizadas até ao fim da Ronda 4:
+- `user_profile.md` — perfil da Isabel (farmacêutica, diretora técnica, católica praticante, sem background técnico).
+- `project_personagens_biblia.md` — decisões, progresso ronda a ronda, e lições de processo (quase-clones de retratos, testar cliques a sério em vez de sintético). É o ficheiro mais importante a rever ao retomar este projeto — tem mais detalhe do que este handover sobre o "porquê" de cada decisão.
