@@ -1,5 +1,5 @@
 {
-  "layout": { "width": 3050, "height": 820 },
+  "layout": { "width": 3300, "height": 820 },
   "personagens": [
     { "id": "adao", "nome": "Adão", "tipo": "patriarca", "retrato": "assets/retratos/adao.svg", "tier": "major", "x": 80, "y": 300, "era": "As origens", "refs": "Gn 2–3",
       "resumo": "O primeiro ser humano, formado por Deus a partir do pó da terra e colocado no Jardim do Éden para o cultivar. A sua desobediência ao comer do fruto proibido marca o início da história da salvação — mas também abre caminho para a promessa de redenção que atravessa toda a Bíblia.",
@@ -300,6 +300,34 @@
     { "id": "senaqueribe", "nome": "Senaqueribe", "tipo": "rei", "retrato": "assets/retratos/senaqueribe.svg", "tier": "standard", "x": 2950, "y": 340, "era": "Isaías", "refs": "Is 36–37; 2 Rs 18–19",
       "resumo": "Rei do Império Assírio que invade Judá e cerca Jerusalém durante o reinado de Ezequias, exigindo a rendição da cidade através dos seus enviados. O cerco é levantado sem que a cidade caia — um episódio que a tradição bíblica atribui à intervenção divina, em resposta à oração de Ezequias e ao anúncio de Isaías.",
       "contexto": "Registos assírios (o Prisma de Senaqueribe) confirmam de facto o cerco a Jerusalém e descrevem Ezequias como \"preso como um pássaro numa gaiola\" — mas, ao contrário de outras cidades conquistadas, confirmam também que Jerusalém não caiu, um detalhe notável fora do texto bíblico.",
+      "relacoes": "Sem relações familiares registadas — rei estrangeiro, sem ligação de sangue às restantes personagens deste grafo." },
+    { "id": "joaquim", "nome": "Joaquim", "tipo": "rei", "retrato": "assets/retratos/joaquim.svg", "tier": "minor", "x": 3000, "y": 140, "era": "Jeremias", "refs": "Jr 22; 26; 36; 2 Rs 23–24",
+      "resumo": "Rei de Judá, filho de Josias, colocado no trono pelo Faraó egípcio. Reage com desprezo às profecias de Jeremias — corta e queima pedaço a pedaço o rolo que Baruque tinha escrito, sem qualquer temor (Jr 36:23).",
+      "contexto": "O seu reinado marca o início do domínio babilónico sobre Judá — torna-se vassalo de Nabucodonosor e depois revolta-se, um erro que o seu sucessor pagará caro.",
+      "relacoes": "Filho de Josias. Irmão de Sedequias." },
+    { "id": "sedequias", "nome": "Sedequias", "tipo": "rei", "retrato": "assets/retratos/sedequias.svg", "tier": "standard", "x": 3070, "y": 140, "era": "Jeremias", "refs": "Jr 21; 37–39; 2 Rs 24–25",
+      "resumo": "Último rei de Judá, filho de Josias, colocado no trono por Nabucodonosor depois do exílio do seu sobrinho. Consulta Jeremias repetidamente em segredo, mas nunca tem a coragem de agir segundo os seus conselhos — acaba por se revoltar contra a Babilónia, o que leva à destruição final de Jerusalém.",
+      "contexto": "É capturado a tentar fugir, obrigado a ver os próprios filhos serem mortos, e depois cegado antes de ser levado prisioneiro para a Babilónia (2 Rs 25:7) — um final trágico que fecha a linhagem real de David em Jerusalém.",
+      "relacoes": "Filho de Josias. Irmão de Joaquim." },
+    { "id": "jeremias", "nome": "Jeremias", "tipo": "profeta", "retrato": "assets/retratos/jeremias.svg", "tier": "major", "x": 3080, "y": 260, "era": "Jeremias", "refs": "Jr 1–52",
+      "resumo": "Profeta de Judá durante os últimos reis antes do exílio, chamado por Deus ainda muito jovem (\"antes de te formar no ventre, eu te conheci\", Jr 1:5). Anuncia com dor a destruição de Jerusalém como castigo pela infidelidade do povo, sendo perseguido, preso e quase morto por isso — mas também promete uma \"nova aliança\" escrita no coração (Jr 31:31-34).",
+      "contexto": "É testemunha direta da queda de Jerusalém e do início do exílio babilónico em 587 a.C., o momento mais traumático da história de Israel antes de Cristo. Deus manda-o não casar nem ter filhos (Jr 16:2), um sinal profético do desastre que se aproxima — ao contrário de Isaías, que teve mulher e filhos.",
+      "relacoes": "Sem relações familiares registadas no grafo. Baruque é o seu escriba fiel. Contemporâneo dos reis Josias, Joaquim, Sedequias e do governador Godolias." },
+    { "id": "baruque", "nome": "Baruque", "tipo": "povo", "retrato": "assets/retratos/baruque.svg", "tier": "standard", "x": 3150, "y": 180, "era": "Jeremias", "refs": "Jr 32; 36; 45",
+      "resumo": "Escriba fiel de Jeremias, escreve por ditado os seus oráculos num rolo — que o rei Joaquim manda queimar, obrigando-o a escrevê-lo de novo (Jr 36). É um dos raros companheiros que permanece ao lado do profeta durante toda a perseguição.",
+      "contexto": "É a única outra pessoa, além do próprio Jeremias, a quem é dedicado um capítulo inteiro do livro (Jr 45) — um sinal da importância do seu papel discreto mas essencial na transmissão da mensagem profética até aos dias de hoje.",
+      "relacoes": "Escriba e companheiro fiel de Jeremias. Sem relações familiares registadas." },
+    { "id": "godolias", "nome": "Godolias", "tipo": "povo", "retrato": "assets/retratos/godolias.svg", "tier": "minor", "x": 3180, "y": 320, "era": "Jeremias", "refs": "Jr 40–41; 2 Rs 25",
+      "resumo": "Nomeado governador de Judá pelos babilónios depois da queda de Jerusalém, tenta reconstruir alguma normalidade e protege ativamente Jeremias. É assassinado poucos meses depois por um membro da família real, um crime que provoca uma nova vaga de fuga para o Egito.",
+      "contexto": "O seu breve governo é o último fio de autogoverno judaíta antes do exílio total — a sua morte apaga essa última esperança e é lembrada até hoje por um jejum judaico (Tzom Gedaliah).",
+      "relacoes": "Sem relações familiares registadas no grafo — governador nomeado pela administração babilónica." },
+    { "id": "ebede_meleque", "nome": "Ebede-Meleque", "tipo": "estrangeiro", "retrato": "assets/retratos/ebede_meleque.svg", "tier": "minor", "x": 3130, "y": 420, "era": "Jeremias", "refs": "Jr 38",
+      "resumo": "Funcionário do palácio de origem etíope (cuxita), intervém corajosamente junto do rei Sedequias para resgatar Jeremias de uma cisterna de lama onde tinha sido deixado a morrer por opositores do profeta. Puxa-o para fora com cordas e panos velhos, para não lhe ferir os braços.",
+      "contexto": "É uma das poucas personagens do livro a agir com pura compaixão sem interesse próprio, e Deus promete-lhe explicitamente que a sua vida será poupada quando a cidade cair (Jr 39:15-18) — um pequeno gesto de coragem recompensado.",
+      "relacoes": "Sem relações familiares registadas — funcionário estrangeiro do palácio real de Judá." },
+    { "id": "nabucodonosor", "nome": "Nabucodonosor", "tipo": "rei", "retrato": "assets/retratos/nabucodonosor.svg", "tier": "standard", "x": 3220, "y": 180, "era": "Jeremias", "refs": "Jr 25; 39; 52; 2 Rs 24–25",
+      "resumo": "Rei do Império Babilónico, conquista Jerusalém depois de vários cercos, destrói o Templo de Salomão e leva grande parte da população para o exílio na Babilónia. Jeremias chega a chamar-lhe \"servo\" de Deus (Jr 25:9), um instrumento de castigo apesar de não o saber.",
+      "contexto": "A sua conquista de Jerusalém em 587 a.C. marca o fim do reino de Judá e o início do Exílio Babilónico, o acontecimento mais determinante da história bíblica depois do Êxodo — Israel só volta a ter um território próprio décadas depois, sob domínio persa.",
       "relacoes": "Sem relações familiares registadas — rei estrangeiro, sem ligação de sangue às restantes personagens deste grafo." }
   ],
   "edges": [
@@ -351,6 +379,9 @@
     ["salomao", "josias", "descendant", "15 gerações · 2 Rs 21-22"],
     ["uzias", "acaz", "descendant", "2 gerações, via Jotão · 2 Rs 15-16"],
     ["acaz", "ezequias", "parent"],
-    ["ezequias", "josias", "descendant", "3 gerações, via Manassés e Amon · 2 Rs 20-21"]
+    ["ezequias", "josias", "descendant", "3 gerações, via Manassés e Amon · 2 Rs 20-21"],
+    ["josias", "joaquim", "parent"],
+    ["josias", "sedequias", "parent"],
+    ["joaquim", "sedequias", "sibling"]
   ]
 }
