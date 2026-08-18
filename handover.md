@@ -1,6 +1,6 @@
 # Handover — Os Personagens da Bíblia
 
-Sessão de 2026-08-16. Contexto para continuar este projeto noutra sessão.
+Sessão de 2026-08-16, atualizado em 2026-08-18 (Ronda 4 — Isaías). Contexto para continuar este projeto noutra sessão.
 
 ## O projeto
 
@@ -22,14 +22,14 @@ Promotora: Isabel, diretora técnica de uma farmácia militar, católica, envolv
 O protótipo inicial (20 personagens) foi publicado como Artifact e é a origem do conceito. Esse Artifact continua acessível mas está desatualizado:
 https://claude.ai/code/artifact/db49ef11-59ed-4cee-ba20-cf7c01c4b171
 
-**O código a usar/manter é agora o deste repositório**, não o Artifact. Um plano de 7 tarefas ("redesign-visual-conteudo", 2026-08-16) reescreveu o motor e ampliou o conteúdo; desde então o conteúdo cresceu ao longo de várias sessões até cobrir de Génesis/Êxodo ao reino dividido de Judá/Israel (Juízes e Reis incluídos). Ficheiros:
+**O código a usar/manter é agora o deste repositório**, não o Artifact. Um plano de 7 tarefas ("redesign-visual-conteudo", 2026-08-16) reescreveu o motor e ampliou o conteúdo; desde então o conteúdo cresceu ao longo de várias rondas: Ronda 2 deu retrato único a cada personagem, Ronda 3 cobriu Juízes/Rute/Samuel/Reis até ao reino dividido, e a Ronda 4 (2026-08-18) acrescentou o livro de Isaías (Isaías, Acaz, Uzias, Senaqueribe — elenco pequeno porque Isaías é sobretudo profecia, não narrativa). Ficheiros:
 
 - `index.html` — estrutura da página.
 - `style.css` — visual (tema claro pergaminho/âmbar, tipografia serif Georgia para nomes + sans do sistema para o resto; layout responsivo com painel lateral em desktop e "bottom sheet" em mobile via `@media (max-width: 720px)`).
 - `app.js` — motor do grafo: lê `data/personagens.json` via `fetch`, desenha nós/ligações em SVG, pan/zoom por arrasto e botões, abre o painel de detalhe ao clicar num nó.
-- `data/personagens.json` — os dados: 71 personagens (`personagens[]`, cada um com id/nome/tipo/retrato/tier/x/y/era/refs/resumo/contexto/relacoes) e 69 ligações (`edges[]` — pai/mãe, casamento, irmãos, "várias gerações depois").
-- `assets/icons/` — ícones SVG por `tipo` de personagem.
-- `assets/retratos/` — retratos SVG individuais por personagem, referenciados pelo campo `retrato` de cada entrada em `personagens.json`.
+- `data/personagens.json` — os dados: 75 personagens (`personagens[]`, cada um com id/nome/tipo/retrato/tier/x/y/era/refs/resumo/contexto/relacoes) e 72 ligações (`edges[]` — pai/mãe, casamento, irmãos, "várias gerações depois"). `layout` é `{ width: 3050, height: 820 }` — tem de bater certo com o `viewBox` do `<svg id="graph">` em `index.html`.
+- `assets/icons/` — ícones SVG por `tipo` de personagem (reserva, caso falte um retrato).
+- `assets/retratos/` — retratos SVG individuais por personagem (um por cada uma das 75), referenciados pelo campo `retrato` de cada entrada em `personagens.json`.
 
 ⚠️ **`index.html` não pode ser aberto diretamente com `file://`** — o `fetch("data/personagens.json")` falha por CORS na maioria dos browsers. É preciso servir a pasta por `http://` (ex: skill `run`, ou qualquer servidor estático simples).
 
@@ -62,9 +62,11 @@ Criado `.claude/settings.json` na raiz do projeto com dois plugins:
 
 1. A Isabel precisa de ver e dar feedback ao novo visual "Livro de Ilustrações" (já implementado nesta branch, substituindo o conceito anterior "mapa de estrelas") — validar se resulta bem para crianças, nomeadamente a legibilidade dos ícones nas personagens de menor destaque ("tier": "minor").
 2. Validar o nível de detalhe dos cartões de personagem (resumo + família) — ajustar para catequese se necessário.
-3. Expansão de conteúdo: Génesis, Êxodo, Juízes e Reis (reino dividido de Judá/Israel) já estão cobertos — 71 personagens no total. Falta o resto da Bíblia (Profetas, Evangelhos, Atos, Cartas...), que continua a ser um trabalho grande de curadoria, não só técnico — decidir se a Isabel vai levantando os dados ou se isso é feito em conjunto, por "famílias"/blocos narrativos.
+3. Expansão de conteúdo: Génesis, Êxodo, Juízes, Rute, Samuel, Reis (reino dividido) e agora Isaías já estão cobertos — 75 personagens no total. Falta o resto da Bíblia (outros profetas literários, exílio/pós-exílio, Evangelhos, Atos, Cartas...), que continua a ser um trabalho grande de curadoria, não só técnico — decidir com a Isabel qual o próximo bloco.
 4. ~~Ainda não há repositório git nem ficheiros de código na pasta do projeto~~ — feito: o código (`index.html`/`style.css`/`app.js`/`data/personagens.json`) já está no repositório, ver secção "O que foi feito" acima. Falta ainda decidir onde/como publicar (hosting gratuito) para a Isabel poder ver a versão a correr fora desta sessão.
 5. Confirmar após reiniciar a sessão que os plugins **superpowers** e **frontend-design** ativaram corretamente.
+6. **Retoque de retratos (achado da Ronda 4, ainda não corrigido):** ao correr um script de auditoria geométrica automática (compara formas, não só cores) a todo o elenco de 75, apareceram 30 pares com ≥60% de sobreposição de forma. A maioria é provavelmente ruído do próprio script (elementos genéricos partilhados de propósito, como o retângulo do pescoço), mas pelo menos um par é um quase-clone genuíno e não detetado antes: **Adão e Abraão** partilham o traço da roupa, o pescoço, o nariz e as sobrancelhas byte a byte idênticos — só cor de pele/cabelo/roupa muda. Nenhum dos 4 retratos novos desta ronda (Isaías, Acaz, Uzias, Senaqueribe) está nesta lista. Continuam também por resolver os dois pares já identificados na Ronda 3: Jacob/José (olhos e nariz) e Mical/Sara (cara/orelhas). Vale a pena uma ronda dedicada só a retocar retratos antigos, correndo o script a sério contra falsos positivos.
+7. **Texto desatualizado em `index.html`** — o cabeçalho ainda diz "Génesis & Êxodo", desatualizado desde a Ronda 2 (o grafo já vai até Isaías). Correção pequena, por decidir quando fazer.
 
 ## Memória guardada
 
