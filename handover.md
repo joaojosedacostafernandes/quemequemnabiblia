@@ -1,6 +1,6 @@
 # Handover — Os Personagens da Bíblia
 
-Projeto iniciado em 2026-08-16, já com 4 rondas de trabalho integradas em `master`. Última atualização: 2026-08-18, fim da Ronda 4 (Isaías). Contexto para continuar este projeto noutra sessão.
+Projeto iniciado em 2026-08-16, já com 5 rondas de trabalho integradas em `master`. Última atualização: 2026-08-18, fim da Ronda 5 (Jeremias). Contexto para continuar este projeto noutra sessão.
 
 ## O projeto
 
@@ -22,14 +22,14 @@ Promotora: Isabel, diretora técnica de uma farmácia militar, católica, envolv
 O protótipo inicial (20 personagens) foi publicado como Artifact e é a origem do conceito. Esse Artifact continua acessível mas está desatualizado:
 https://claude.ai/code/artifact/db49ef11-59ed-4cee-ba20-cf7c01c4b171
 
-**O código a usar/manter é agora o deste repositório**, não o Artifact. Um plano de 7 tarefas ("redesign-visual-conteudo", 2026-08-16) reescreveu o motor e ampliou o conteúdo; desde então o conteúdo cresceu ao longo de várias rondas: Ronda 2 deu retrato único a cada personagem, Ronda 3 cobriu Juízes/Rute/Samuel/Reis até ao reino dividido, e a Ronda 4 (2026-08-18) acrescentou o livro de Isaías (Isaías, Acaz, Uzias, Senaqueribe — elenco pequeno porque Isaías é sobretudo profecia, não narrativa). Ficheiros:
+**O código a usar/manter é agora o deste repositório**, não o Artifact. Um plano de 7 tarefas ("redesign-visual-conteudo", 2026-08-16) reescreveu o motor e ampliou o conteúdo; desde então o conteúdo cresceu ao longo de várias rondas: Ronda 2 deu retrato único a cada personagem, Ronda 3 cobriu Juízes/Rute/Samuel/Reis até ao reino dividido, Ronda 4 acrescentou Isaías (elenco pequeno, sobretudo profecia) e a Ronda 5 (2026-08-18) acrescentou o livro de Jeremias (Jeremias, Baruque, Joaquim, Sedequias, Godolias, Ebede-Meleque, Nabucodonosor — elenco maior porque Jeremias narra episódios concretos, não só oráculo). Ficheiros:
 
 - `index.html` — estrutura da página.
 - `style.css` — visual (tema claro pergaminho/âmbar, tipografia serif Georgia para nomes + sans do sistema para o resto; layout responsivo com painel lateral em desktop e "bottom sheet" em mobile via `@media (max-width: 720px)`).
 - `app.js` — motor do grafo: lê `data/personagens.json` via `fetch`, desenha nós/ligações em SVG, pan/zoom por arrasto e botões, abre o painel de detalhe ao clicar num nó.
-- `data/personagens.json` — os dados: 75 personagens (`personagens[]`, cada um com id/nome/tipo/retrato/tier/x/y/era/refs/resumo/contexto/relacoes) e 72 ligações (`edges[]` — pai/mãe, casamento, irmãos, "várias gerações depois"). `layout` é `{ width: 3050, height: 820 }` — tem de bater certo com o `viewBox` do `<svg id="graph">` em `index.html`.
+- `data/personagens.json` — os dados: 82 personagens (`personagens[]`, cada um com id/nome/tipo/retrato/tier/x/y/era/refs/resumo/contexto/relacoes) e 75 ligações (`edges[]` — pai/mãe, casamento, irmãos, "várias gerações depois"). `layout` é `{ width: 3300, height: 820 }` — tem de bater certo com o `viewBox` do `<svg id="graph">` em `index.html`.
 - `assets/icons/` — ícones SVG por `tipo` de personagem (reserva, caso falte um retrato).
-- `assets/retratos/` — retratos SVG individuais por personagem (um por cada uma das 75), referenciados pelo campo `retrato` de cada entrada em `personagens.json`.
+- `assets/retratos/` — retratos SVG individuais por personagem (um por cada uma das 82), referenciados pelo campo `retrato` de cada entrada em `personagens.json`.
 
 ⚠️ **`index.html` não pode ser aberto diretamente com `file://`** — o `fetch("data/personagens.json")` falha por CORS na maioria dos browsers. É preciso servir a pasta por `http://` (ex: skill `run`, ou qualquer servidor estático simples).
 
@@ -37,13 +37,13 @@ QA final (2026-08-16, sessão inicial): mobile viewport confirmado (instruções
 
 ### Processo de trabalho estabelecido (repetido em todas as rondas de conteúdo)
 
-Cada ronda de conteúdo (Rondas 2, 3, 4) seguiu o mesmo fluxo, que resultou bem e vale a pena repetir:
+Cada ronda de conteúdo (Rondas 2 a 5) seguiu o mesmo fluxo, que resultou bem e vale a pena repetir:
 
 1. **Brainstorming curto** com a Isabel para acordar o âmbito (que personagens, que livro).
 2. **Spec** em `docs/superpowers/specs/YYYY-MM-DD-<tema>-design.md`.
 3. **Plano de implementação** em `docs/superpowers/plans/YYYY-MM-DD-<tema>.md` — conteúdo e retrato sempre feitos juntos na mesma tarefa (decisão da Isabel a partir da Ronda 3).
 4. **Execução via subagent-driven-development** (skill `superpowers:subagent-driven-development`) num **git worktree isolado** (skill `superpowers:using-git-worktrees`, tool `EnterWorktree`/`ExitWorktree`) — nunca implementar diretamente em `master`.
-5. **Revisão de cada tarefa** por um subagent revisor (verifica cumprimento do plano + qualidade), depois **revisão final de branch inteira** por um subagent no modelo mais capaz disponível (`opus`).
+5. **Revisão de cada tarefa** por um subagent revisor (verifica cumprimento do plano + qualidade), depois **revisão final de branch inteira** por um subagent no modelo mais capaz disponível (`opus`). Nota (Ronda 5): se `opus` devolver erro 529 (sobrecarga do servidor) repetidamente, é razoável cair para `sonnet` para não bloquear a ronda — já há duas camadas de verificação independentes antes deste passo (revisão de tarefa + testes de clique real + auditoria geométrica), por isso a perda de rigor é pequena.
 6. **Verificação num browser real** (não só `dispatchEvent` sintético — ver aviso técnico abaixo) e **auditoria automática de distinção geométrica** aos retratos (ver script abaixo).
 7. **Merge local para `master`** via skill `superpowers:finishing-a-development-branch`, depois `git worktree remove` + `git branch -d` da branch de trabalho.
 8. Atualizar `handover.md` e a memória persistente do projeto no fim.
@@ -84,14 +84,14 @@ Criado `.claude/settings.json` na raiz do projeto com dois plugins:
 
 1. A Isabel precisa de ver e dar feedback ao novo visual "Livro de Ilustrações" (já implementado nesta branch, substituindo o conceito anterior "mapa de estrelas") — validar se resulta bem para crianças, nomeadamente a legibilidade dos ícones nas personagens de menor destaque ("tier": "minor").
 2. Validar o nível de detalhe dos cartões de personagem (resumo + família) — ajustar para catequese se necessário.
-3. Expansão de conteúdo: Génesis, Êxodo, Juízes, Rute, Samuel, Reis (reino dividido) e agora Isaías já estão cobertos — 75 personagens no total. Falta o resto da Bíblia (outros profetas literários, exílio/pós-exílio, Evangelhos, Atos, Cartas...), que continua a ser um trabalho grande de curadoria, não só técnico — decidir com a Isabel qual o próximo bloco.
+3. Expansão de conteúdo: Génesis, Êxodo, Juízes, Rute, Samuel, Reis (reino dividido), Isaías e agora Jeremias já estão cobertos — 82 personagens no total. Falta o resto da Bíblia — Ezequiel e os 12 profetas menores foram deliberadamente deixados fora da Ronda 5 (elenco quase só de visão/oráculo, sem episódios narrados) e ficam para uma ronda futura a decidir com a Isabel; depois disso, exílio/pós-exílio (Esdras, Neemias, Ester, Daniel), Evangelhos, Atos, Cartas.
 4. ~~Ainda não há repositório git nem ficheiros de código na pasta do projeto~~ — feito: o código (`index.html`/`style.css`/`app.js`/`data/personagens.json`) já está no repositório, ver secção "O que foi feito" acima. Falta ainda decidir onde/como publicar (hosting gratuito) para a Isabel poder ver a versão a correr fora desta sessão.
 5. Confirmar após reiniciar a sessão que os plugins **superpowers** e **frontend-design** ativaram corretamente.
-6. **Retoque de retratos (achado da Ronda 4, ainda não corrigido):** ao correr um script de auditoria geométrica automática (compara formas, não só cores) a todo o elenco de 75, apareceram 30 pares com ≥60% de sobreposição de forma. A maioria é provavelmente ruído do próprio script (elementos genéricos partilhados de propósito, como o retângulo do pescoço), mas pelo menos um par é um quase-clone genuíno e não detetado antes: **Adão e Abraão** partilham o traço da roupa, o pescoço, o nariz e as sobrancelhas byte a byte idênticos — só cor de pele/cabelo/roupa muda. Nenhum dos 4 retratos novos desta ronda (Isaías, Acaz, Uzias, Senaqueribe) está nesta lista. Continuam também por resolver os dois pares já identificados na Ronda 3: Jacob/José (olhos e nariz) e Mical/Sara (cara/orelhas). Vale a pena uma ronda dedicada só a retocar retratos antigos, correndo o script a sério contra falsos positivos.
-7. **Texto desatualizado em `index.html`** — o cabeçalho ainda diz "Génesis & Êxodo", desatualizado desde a Ronda 2 (o grafo já vai até Isaías). Correção pequena, por decidir quando fazer.
+6. **Retoque de retratos (achado da Ronda 4, ainda não corrigido):** ao correr um script de auditoria geométrica automática (compara formas, não só cores) a todo o elenco, apareceram 30 pares com ≥60% de sobreposição de forma — o mesmo conjunto de 30 se manteve ao correr de novo na Ronda 5 com os 82 personagens (nenhum retrato novo da Ronda 5 entrou nesta lista). A maioria é provavelmente ruído do próprio script (elementos genéricos partilhados de propósito, como o retângulo do pescoço), mas pelo menos um par é um quase-clone genuíno e não detetado antes: **Adão e Abraão** partilham o traço da roupa, o pescoço, o nariz e as sobrancelhas byte a byte idênticos — só cor de pele/cabelo/roupa muda. Continuam também por resolver os dois pares já identificados na Ronda 3: Jacob/José (olhos e nariz) e Mical/Sara (cara/orelhas). A revisão final da Ronda 5 encontrou ainda **Baruque e Godolias** como o par mais parecido entre os retratos novos — não é um clone (distinguem-se por cor e pequenos detalhes), mas foi o par mais próximo encontrado, vale a pena vigiar se se juntar mais alguém parecido no futuro. Vale a pena uma ronda dedicada só a retocar retratos antigos, correndo o script a sério contra falsos positivos.
+7. **Texto desatualizado em `index.html`** — o cabeçalho ainda diz "Génesis & Êxodo", desatualizado desde a Ronda 2 (o grafo já vai até Jeremias). Correção pequena, por decidir quando fazer.
 
 ## Memória guardada
 
-Memórias persistentes em `~/.claude/projects/.../memory/`, atualizadas até ao fim da Ronda 4:
+Memórias persistentes em `~/.claude/projects/.../memory/`, atualizadas até ao fim da Ronda 5:
 - `user_profile.md` — perfil da Isabel (farmacêutica, diretora técnica, católica praticante, sem background técnico).
 - `project_personagens_biblia.md` — decisões, progresso ronda a ronda, e lições de processo (quase-clones de retratos, testar cliques a sério em vez de sintético). É o ficheiro mais importante a rever ao retomar este projeto — tem mais detalhe do que este handover sobre o "porquê" de cada decisão.
