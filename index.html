@@ -10,17 +10,25 @@
 <div class="app">
   <header class="topbar">
     <div>
-      <span class="eyebrow">Génesis &amp; Êxodo</span>
+      <span class="eyebrow">Génesis a Malaquias</span>
       <h1>Os Personagens da Bíblia</h1>
     </div>
-    <p class="instructions">Toca numa personagem para abrires a sua história. Arrasta para navegar, usa os botões para ampliar.</p>
+    <div class="search-wrap">
+      <input id="searchInput" class="search-input" type="text" placeholder="Procurar por nome, era ou livro…" autocomplete="off">
+      <div id="searchResults" class="search-results" hidden></div>
+    </div>
+    <p class="instructions">Escolhe uma era para explorares as suas personagens. Toca numa personagem para abrires a sua história.</p>
     <div class="legend" id="legend"></div>
   </header>
 
   <div class="stage">
     <div class="graph-wrap">
-      <!-- viewBox is a pre-load fallback only; app.js overwrites it at runtime from data/personagens.json's "layout" field -->
-      <svg id="graph" class="graph" viewBox="0 0 3800 820" role="group" aria-label="Mapa de personagens bíblicas e as suas relações">
+      <div class="breadcrumb-bar" id="breadcrumbBar" hidden>
+        <button id="backBtn" class="back-btn" type="button">&larr; Voltar ao percurso</button>
+        <span id="breadcrumbLabel" class="breadcrumb-label"></span>
+      </div>
+      <!-- viewBox is a pre-load fallback only; app.js recomputes it at runtime for whichever view is showing -->
+      <svg id="graph" class="graph" viewBox="0 0 1200 500" role="group" aria-label="Mapa de personagens bíblicas e as suas relações">
         <defs id="defs"></defs>
         <g id="edges"></g>
         <g id="nodes"></g>
@@ -42,6 +50,9 @@
 
   <footer class="note">Os Personagens da Bíblia — Paróquia da Póvoa de Santa Iria.</footer>
 </div>
+<script src="js/layout.js"></script>
+<script src="js/render-path.js"></script>
+<script src="js/render-cluster.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

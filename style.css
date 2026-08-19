@@ -328,3 +328,105 @@ footer.note {
   }
   footer.note { display: none; }
 }
+
+.search-wrap {
+  position: relative;
+  flex: 1 1 260px;
+}
+.search-input {
+  width: 100%;
+  padding: 0.5rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+}
+.search-input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.search-results {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 6px 18px rgba(74, 48, 22, 0.18);
+  z-index: 20;
+  max-height: 16rem;
+  overflow-y: auto;
+}
+.search-result {
+  padding: 0.5rem 0.8rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--border);
+}
+.search-result:last-child { border-bottom: none; }
+.search-result:hover, .search-result.active { background: var(--bg-2); }
+.search-result .era { color: var(--text-muted); font-size: 0.72rem; }
+
+.breadcrumb-bar {
+  position: absolute;
+  top: 0.8rem;
+  left: 1rem;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+.back-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.8rem;
+  color: var(--text);
+  cursor: pointer;
+}
+.back-btn:hover { border-color: var(--accent); color: var(--accent); }
+.breadcrumb-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.station { cursor: pointer; }
+.station-circle {
+  fill: var(--surface);
+  stroke: var(--accent);
+  stroke-width: 2.6px;
+  transition: stroke 0.2s ease, filter 0.2s ease;
+}
+.station:hover .station-circle, .station:focus-visible .station-circle {
+  stroke: var(--accent-2);
+  filter: drop-shadow(0 0 6px var(--accent-soft));
+}
+.station-count {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  fill: var(--accent-2);
+  text-anchor: middle;
+  pointer-events: none;
+}
+.station-label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  fill: var(--text-muted);
+  pointer-events: none;
+}
+.path-line {
+  stroke: var(--border);
+  stroke-width: 4px;
+  stroke-linecap: round;
+}
+
+.cross-era-ref {
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
