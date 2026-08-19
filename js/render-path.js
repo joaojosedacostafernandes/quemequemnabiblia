@@ -7,8 +7,6 @@
   }
 
   var STATION_R = { big: 26, small: 16 };
-  var STEP_X = 150;
-  var AMPLITUDE = 90;
 
   // Draws the era path/hub screen into the given <g> layers (the same
   // #edges/#nodes groups the cluster view uses). `eras` is
@@ -17,8 +15,16 @@
     edgeLayer.innerHTML = '';
     nodeLayer.innerHTML = '';
 
+    var COLS = 6;
+    var STEP_X = 160;
+    var STEP_Y = 160;
+    var MARGIN = 100;
+
     var points = eras.map(function (era, i) {
-      return { era: era, x: 80 + i * STEP_X, y: 200 + Math.sin(i * 0.9) * AMPLITUDE };
+      var row = Math.floor(i / COLS);
+      var col = i % COLS;
+      var displayCol = (row % 2 === 0) ? col : (COLS - 1 - col);
+      return { era: era, x: MARGIN + displayCol * STEP_X, y: MARGIN + row * STEP_Y };
     });
 
     if (points.length) {
@@ -43,8 +49,10 @@
       nodeLayer.appendChild(g);
     });
 
-    var lastX = points.length ? points[points.length - 1].x : 200;
-    return { width: lastX + 160, height: 200 + AMPLITUDE * 2 + 80 };
+    var maxRow = points.length ? Math.floor((points.length - 1) / COLS) : 0;
+    var width = MARGIN * 2 + (COLS - 1) * STEP_X;
+    var height = MARGIN * 2 + maxRow * STEP_Y;
+    return { width: width, height: height };
   }
 
   window.RenderPath = { renderPath: renderPath };

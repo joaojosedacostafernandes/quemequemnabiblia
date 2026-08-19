@@ -20,6 +20,10 @@
     return str.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   }
 
+  function escapeAttr(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
   fetch("data/personagens.json")
     .then(function (res) { return res.json(); })
     .then(init)
@@ -56,7 +60,6 @@
     var breadcrumbLabel = document.getElementById("breadcrumbLabel");
     var backBtn = document.getElementById("backBtn");
 
-    var state = { view: 'path', era: null };
     var edgeEls = [];
     var nodeEls = {};
     var full = { x: 0, y: 0, w: 1200, h: 500 };
@@ -73,7 +76,7 @@
     }
 
     function goToPath() {
-      state = { view: 'path', era: null };
+      defsLayer.innerHTML = '';
       breadcrumbBar.hidden = true;
       var dims = RenderPath.renderPath(erasWithCounts, edgeLayer, nodeLayer, goToEra);
       edgeEls = []; nodeEls = {};
@@ -82,7 +85,6 @@
     }
 
     function goToEra(eraNome) {
-      state = { view: 'cluster', era: eraNome };
       breadcrumbBar.hidden = false;
       breadcrumbLabel.textContent = eraNome;
       var result = RenderCluster.renderCluster(eraNome, NODES, EDGES, defsLayer, edgeLayer, nodeLayer, selectCharacter);
@@ -118,7 +120,7 @@
         var other = byId[otherId];
         if (!other || other.era === n.era) return;
         var typeLabel = { parent: 'Família', spouse: 'Casamento', sibling: 'Irmão/irmã', descendant: e[3] || 'Descendência' }[e[2]] || e[2];
-        refs.push('<span class="cross-era-ref" data-goto-era="' + other.era + '" data-goto-id="' + other.id + '">' + other.nome + ' (' + typeLabel + ' · ' + other.era + ')</span>');
+        refs.push('<span class="cross-era-ref" data-goto-era="' + escapeAttr(other.era) + '" data-goto-id="' + escapeAttr(other.id) + '" tabindex="0" role="button" aria-label="Ir para ' + escapeAttr(other.nome) + ', ' + escapeAttr(other.era) + '">' + other.nome + ' (' + typeLabel + ' · ' + other.era + ')</span>');
       });
       return refs.length ? '<p class="card-section-title">Ligações noutras eras</p><p>' + refs.join(', ') + '</p>' : '';
     }
@@ -139,12 +141,16 @@
         '<p class="card-relations">' + n.relacoes + '</p>' +
         crossEraRefsHtml(n);
 
+      function goToCrossEraRef(span) {
+        var eraNome = span.getAttribute('data-goto-era');
+        var id = span.getAttribute('data-goto-id');
+        goToEra(eraNome);
+        setTimeout(function () { selectCharacter(id); }, 0);
+      }
       panelBody.querySelectorAll('.cross-era-ref').forEach(function (span) {
-        span.addEventListener('click', function () {
-          var eraNome = span.getAttribute('data-goto-era');
-          var id = span.getAttribute('data-goto-id');
-          goToEra(eraNome);
-          setTimeout(function () { selectCharacter(id); }, 0);
+        span.addEventListener('click', function () { goToCrossEraRef(span); });
+        span.addEventListener('keydown', function (ev) {
+          if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); goToCrossEraRef(span); }
         });
       });
     }
@@ -171,7 +177,7 @@
       }).slice(0, 8);
       if (!matches.length) { searchResults.hidden = true; searchResults.innerHTML = ''; return; }
       searchResults.innerHTML = matches.map(function (n) {
-        return '<div class="search-result" data-id="' + n.id + '" data-era="' + n.era + '" tabindex="0" role="button" aria-label="' + n.nome + ', ' + n.era + '">' + n.nome + '<div class="era">' + n.era + '</div></div>';
+        return '<div class="search-result" data-id="' + escapeAttr(n.id) + '" data-era="' + escapeAttr(n.era) + '" tabindex="0" role="button" aria-label="' + escapeAttr(n.nome) + ', ' + escapeAttr(n.era) + '">' + n.nome + '<div class="era">' + n.era + '</div></div>';
       }).join('');
       searchResults.hidden = false;
       function chooseResult(row) {

@@ -364,8 +364,13 @@ footer.note {
   border-bottom: 1px solid var(--border);
 }
 .search-result:last-child { border-bottom: none; }
-.search-result:hover, .search-result.active { background: var(--bg-2); }
+.search-result:hover { background: var(--bg-2); }
 .search-result .era { color: var(--text-muted); font-size: 0.72rem; }
+.search-result:focus-visible,
+.cross-era-ref:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 
 .breadcrumb-bar {
   position: absolute;

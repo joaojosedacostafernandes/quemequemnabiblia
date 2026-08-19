@@ -39,12 +39,23 @@
     internalEdges.forEach(function (e) {
       var a = positions[e[0]], b = positions[e[1]], type = e[2];
       if (!a || !b) return;
-      var line = el('line', { class: 'edge edge-' + type, x1: a.x, y1: a.y, x2: b.x, y2: b.y, 'data-a': e[0], 'data-b': e[1] });
-      edgeLayer.appendChild(line);
-      edgeEls.push(line);
+      var edgeEl;
+      var sameRow = a.y === b.y;
+      var bow = 80;
+      if (sameRow) {
+        var midX = (a.x + b.x) / 2;
+        var ctrlY = a.y - bow;
+        var d = 'M ' + a.x + ' ' + a.y + ' Q ' + midX + ' ' + ctrlY + ' ' + b.x + ' ' + b.y;
+        edgeEl = el('path', { class: 'edge edge-' + type, d: d, 'data-a': e[0], 'data-b': e[1] });
+      } else {
+        edgeEl = el('line', { class: 'edge edge-' + type, x1: a.x, y1: a.y, x2: b.x, y2: b.y, 'data-a': e[0], 'data-b': e[1] });
+      }
+      edgeLayer.appendChild(edgeEl);
+      edgeEls.push(edgeEl);
       if (e[3]) {
         var mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
-        var label = el('text', { class: 'edge-label', x: mx, y: my - 5, 'text-anchor': 'middle', 'data-a': e[0], 'data-b': e[1] });
+        var labelY = sameRow ? (a.y - bow / 2 - 8) : (my - 5);
+        var label = el('text', { class: 'edge-label', x: mx, y: labelY, 'text-anchor': 'middle', 'data-a': e[0], 'data-b': e[1] });
         label.textContent = e[3];
         edgeLayer.appendChild(label);
         edgeEls.push(label);
@@ -68,6 +79,7 @@
         portrait.setAttributeNS('http://www.w3.org/1999/xlink', 'href', n.retrato);
         g.appendChild(portrait);
         portrait.addEventListener('error', function () {
+          console.warn('Retrato em falta ou inválido para "' + n.id + '" (' + n.retrato + ') — a usar o ícone por tipo como reserva.');
           portrait.remove();
           var iconSize = r * 1.3;
           var icon = el('image', { class: 'icon', x: pos.x - iconSize / 2, y: pos.y - iconSize / 2, width: iconSize, height: iconSize, href: iconHref(n.tipo) });
@@ -80,6 +92,7 @@
         icon2.setAttributeNS('http://www.w3.org/1999/xlink', 'href', iconHref(n.tipo));
         g.appendChild(icon2);
         icon2.addEventListener('error', function () {
+          console.warn('Ícone em falta para o tipo "' + n.tipo + '" (personagem "' + n.id + '") — a usar o ícone "povo" como reserva.');
           icon2.setAttribute('href', iconHref('povo'));
           icon2.setAttributeNS('http://www.w3.org/1999/xlink', 'href', iconHref('povo'));
         });
