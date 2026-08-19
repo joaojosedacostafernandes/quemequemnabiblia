@@ -171,16 +171,20 @@
       }).slice(0, 8);
       if (!matches.length) { searchResults.hidden = true; searchResults.innerHTML = ''; return; }
       searchResults.innerHTML = matches.map(function (n) {
-        return '<div class="search-result" data-id="' + n.id + '" data-era="' + n.era + '">' + n.nome + '<div class="era">' + n.era + '</div></div>';
+        return '<div class="search-result" data-id="' + n.id + '" data-era="' + n.era + '" tabindex="0" role="button" aria-label="' + n.nome + ', ' + n.era + '">' + n.nome + '<div class="era">' + n.era + '</div></div>';
       }).join('');
       searchResults.hidden = false;
+      function chooseResult(row) {
+        var id = row.getAttribute('data-id'), eraNome = row.getAttribute('data-era');
+        searchResults.hidden = true;
+        searchInput.value = '';
+        goToEra(eraNome);
+        setTimeout(function () { selectCharacter(id); }, 0);
+      }
       searchResults.querySelectorAll('.search-result').forEach(function (row) {
-        row.addEventListener('click', function () {
-          var id = row.getAttribute('data-id'), eraNome = row.getAttribute('data-era');
-          searchResults.hidden = true;
-          searchInput.value = '';
-          goToEra(eraNome);
-          setTimeout(function () { selectCharacter(id); }, 0);
+        row.addEventListener('click', function () { chooseResult(row); });
+        row.addEventListener('keydown', function (ev) {
+          if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); chooseResult(row); }
         });
       });
     });
