@@ -49,6 +49,23 @@ const edges3 = [['x', 'y', 'sibling']];
 const pos3 = Layout.computeTreeLayout(nodes3, edges3);
 assertEqual(pos3.x.y, pos3.y.y, 'siblings share the same row (y)');
 
+// --- computeTreeLayout: a spouse's own deeper ancestor chain must push
+// their partner's children down too (regression: parent rendered above
+// their own child when the group-leveling bump didn't propagate) ---
+const nodes4 = [
+  { id: 'isaac', tier: 'major' }, { id: 'jacob', tier: 'major' },
+  { id: 'rebeca', tier: 'major' }, { id: 'betuel', tier: 'minor' }, { id: 'nacor', tier: 'minor' }
+];
+const edges4 = [
+  ['isaac', 'jacob', 'parent'],
+  ['isaac', 'rebeca', 'spouse'],
+  ['betuel', 'rebeca', 'parent'],
+  ['nacor', 'betuel', 'parent']
+];
+const pos4 = Layout.computeTreeLayout(nodes4, edges4);
+assertEqual(pos4.isaac.y, pos4.rebeca.y, 'isaac and rebeca (spouses) share a row even though rebeca has her own deeper lineage');
+assertTrue(pos4.jacob.y > pos4.isaac.y, 'jacob renders strictly below his father isaac, even after isaac was bumped down to match rebeca');
+
 // --- computeGridLayout: major tier sorts first ---
 const gridNodes = [
   { id: 'm1', tier: 'minor' },

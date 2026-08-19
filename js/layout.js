@@ -49,8 +49,15 @@
 
     var level = {};
     connected.forEach(function (id) { level[id] = 0; });
-    for (var pass = 0; pass < connected.size + 1; pass++) {
+
+    // Interleave parent-child relaxation with spouse/sibling group-leveling
+    // until both agree in the same pass — a spouse's own ancestor chain can
+    // push their partner's row down, which must then push that partner's
+    // children down too, so relaxing once then grouping once is not enough.
+    var bound = connected.size * 2 + 2;
+    for (var pass = 0; pass < bound; pass++) {
       var changed = false;
+
       connected.forEach(function (id) {
         (parentsOf[id] || []).forEach(function (p) {
           if (connected.has(p) && level[p] + 1 > level[id]) {
@@ -59,15 +66,19 @@
           }
         });
       });
+
+      var groupMaxLevel = {};
+      connected.forEach(function (id) {
+        var root = siblingGroups.find(id);
+        groupMaxLevel[root] = Math.max(groupMaxLevel[root] === undefined ? -Infinity : groupMaxLevel[root], level[id]);
+      });
+      connected.forEach(function (id) {
+        var target = groupMaxLevel[siblingGroups.find(id)];
+        if (target > level[id]) { level[id] = target; changed = true; }
+      });
+
       if (!changed) break;
     }
-
-    var groupMaxLevel = {};
-    connected.forEach(function (id) {
-      var root = siblingGroups.find(id);
-      groupMaxLevel[root] = Math.max(groupMaxLevel[root] === undefined ? -Infinity : groupMaxLevel[root], level[id]);
-    });
-    connected.forEach(function (id) { level[id] = groupMaxLevel[siblingGroups.find(id)]; });
 
     var rows = {};
     nodes.forEach(function (n) {
