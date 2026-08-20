@@ -34,15 +34,18 @@
     edges.forEach(function (e) {
       var a = e[0], b = e[1], type = e[2];
       if (!byId[a] || !byId[b]) return;
-      connected.add(a); connected.add(b);
       if (type === 'parent' || type === 'descendant') {
+        connected.add(a); connected.add(b);
         parentsOf[b] = parentsOf[b] || [];
         parentsOf[b].push(a);
-      } else if (type === 'spouse') {
-        siblingGroups.union(a, b);
-      } else if (type === 'sibling') {
+      } else if (type === 'spouse' || type === 'sibling') {
+        connected.add(a); connected.add(b);
         siblingGroups.union(a, b);
       }
+      // any other type (e.g. "affinity") carries no generational
+      // information and must not affect tree placement — it's still
+      // drawn as a line by render-cluster.js (which doesn't filter by
+      // type), just not used to compute rows/levels here.
     });
 
     if (connected.size === 0) return {};
