@@ -13,6 +13,7 @@
   --line-spouse: #b4763f;
   --line-sibling: #5f7a52;
   --line-descendant: #c1652f;
+  --line-affinity: #96625a;
   --font-display: Georgia, "Iowan Old Style", "Times New Roman", serif;
   --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
@@ -128,6 +129,7 @@ body {
 .edge-spouse { stroke: var(--line-spouse); stroke-width: 1.6; stroke-dasharray: 2 5; }
 .edge-sibling { stroke: var(--line-sibling); stroke-width: 1.4; stroke-dasharray: 1 4; }
 .edge-descendant { stroke: var(--line-descendant); stroke-width: 1.3; stroke-dasharray: 9 6; opacity: 0.6; }
+.edge-affinity { stroke: var(--line-affinity); stroke-width: 1.4; stroke-dasharray: 3 3; }
 
 .edge-label {
   font-family: var(--font-mono);

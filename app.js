@@ -5,7 +5,8 @@
     ["parent", "Pai/mãe → filho/filha"],
     ["spouse", "Casamento"],
     ["sibling", "Irmãos"],
-    ["descendant", "Várias gerações depois"]
+    ["descendant", "Várias gerações depois"],
+    ["affinity", "Parentesco por casamento"]
   ];
 
   function el(tag, attrs) {
