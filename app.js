@@ -57,9 +57,8 @@
     var nodeLayer = document.getElementById("nodes");
     var panelBody = document.getElementById("panelBody");
     var panel = document.getElementById("panel");
-    var breadcrumbBar = document.getElementById("breadcrumbBar");
-    var breadcrumbLabel = document.getElementById("breadcrumbLabel");
-    var backBtn = document.getElementById("backBtn");
+    var eraStrip = document.getElementById("eraStrip");
+    var graphEmpty = document.getElementById("graphEmpty");
 
     var edgeEls = [];
     var nodeEls = {};
@@ -76,25 +75,23 @@
       applyView();
     }
 
-    function goToPath() {
-      defsLayer.innerHTML = '';
-      breadcrumbBar.hidden = true;
-      var dims = RenderPath.renderPath(erasWithCounts, edgeLayer, nodeLayer, goToEra);
-      edgeEls = []; nodeEls = {};
-      resetViewTo(dims);
-      closePanel();
+    var activeEra = null;
+
+    function renderStrip() {
+      RenderEraStrip.renderEraStrip(erasWithCounts, activeEra, eraStrip, goToEra);
+      var activeItem = eraStrip.querySelector('.era-item.active');
+      if (activeItem) activeItem.scrollIntoView({ block: 'nearest', inline: 'center' });
     }
 
     function goToEra(eraNome) {
-      breadcrumbBar.hidden = false;
-      breadcrumbLabel.textContent = eraNome;
+      activeEra = eraNome;
+      graphEmpty.hidden = true;
       var result = RenderCluster.renderCluster(eraNome, NODES, EDGES, defsLayer, edgeLayer, nodeLayer, selectCharacter);
       edgeEls = result.edgeEls; nodeEls = result.nodeEls;
       resetViewTo(result);
+      renderStrip();
       closePanel();
     }
-
-    backBtn.addEventListener("click", goToPath);
 
     function selectCharacter(id) {
       var neighbors = adjacency[id];
@@ -277,6 +274,6 @@
       legend.appendChild(span);
     });
 
-    goToPath();
+    renderStrip();
   }
 })();
