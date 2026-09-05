@@ -79,9 +79,11 @@
     var activeEra = null;
 
     function renderStrip() {
+      var hadFocus = eraStrip.contains(document.activeElement);
       RenderEraStrip.renderEraStrip(erasWithCounts, activeEra, eraStrip, goToEra);
       var activeItem = eraStrip.querySelector('.era-item.active');
       if (activeItem) activeItem.scrollIntoView({ block: 'nearest', inline: 'center' });
+      if (hadFocus && activeItem) activeItem.focus();
     }
 
     function goToEra(eraNome) {
@@ -92,6 +94,7 @@
       resetViewTo(result);
       renderStrip();
       closePanel();
+      panelBody.innerHTML = panelEmptyHtml;
     }
 
     function selectCharacter(id) {
@@ -157,7 +160,6 @@
     function closePanel() {
       panel.classList.remove("open");
       graphSvg.classList.remove("has-selection");
-      panelBody.innerHTML = panelEmptyHtml;
     }
     document.getElementById("panelClose").addEventListener("click", closePanel);
 
