@@ -110,6 +110,61 @@ body {
     var(--bg-1);
 }
 
+.era-strip {
+  width: 200px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  border-right: 1px solid var(--border);
+  background: var(--bg-2);
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.era-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  border: none;
+  background: none;
+  border-radius: 6px;
+  padding: 0.5rem 0.6rem;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  text-align: left;
+  cursor: pointer;
+}
+.era-item:hover { background: var(--surface); color: var(--text); }
+.era-item.active {
+  background: var(--accent);
+  color: var(--surface);
+  font-weight: 600;
+}
+.era-name { flex: 1; }
+.era-count {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  opacity: 0.8;
+}
+
+.graph-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  pointer-events: none;
+}
+
 #graph {
   width: 100%;
   height: 100%;
@@ -303,6 +358,17 @@ footer.note {
 
 @media (max-width: 720px) {
   .topbar .instructions { display: none; }
+  .stage { flex-direction: column; }
+  .era-strip {
+    width: auto;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .era-item { flex-shrink: 0; white-space: nowrap; }
   aside#panel {
     position: fixed;
     left: 0;
@@ -372,63 +438,6 @@ footer.note {
 .cross-era-ref:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
-}
-
-.breadcrumb-bar {
-  position: absolute;
-  top: 0.8rem;
-  left: 1rem;
-  z-index: 6;
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-}
-.back-btn {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 0.4rem 0.9rem;
-  font-size: 0.8rem;
-  color: var(--text);
-  cursor: pointer;
-}
-.back-btn:hover { border-color: var(--accent); color: var(--accent); }
-.breadcrumb-label {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-.station { cursor: pointer; }
-.station-circle {
-  fill: var(--surface);
-  stroke: var(--accent);
-  stroke-width: 2.6px;
-  transition: stroke 0.2s ease, filter 0.2s ease;
-}
-.station:hover .station-circle, .station:focus-visible .station-circle {
-  stroke: var(--accent-2);
-  filter: drop-shadow(0 0 6px var(--accent-soft));
-}
-.station-count {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  fill: var(--accent-2);
-  text-anchor: middle;
-  pointer-events: none;
-}
-.station-label {
-  font-family: var(--font-body);
-  font-size: 11px;
-  fill: var(--text-muted);
-  pointer-events: none;
-}
-.path-line {
-  stroke: var(--border);
-  stroke-width: 4px;
-  stroke-linecap: round;
 }
 
 .cross-era-ref {
