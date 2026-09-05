@@ -550,5 +550,14 @@
     ["dina", "issacar", "sibling"],
     ["dina", "zabulao", "sibling"],
     ["zabulao", "issacar", "sibling"]
+  ],
+  "capitulos": [
+    { "nome": "As Origens", "arranque": ["adao", "noe"] },
+    { "nome": "Os Patriarcas", "arranque": ["abraao"] },
+    { "nome": "O Êxodo", "arranque": ["moises", "miriam", "arao", "farao"] },
+    { "nome": "Josué e os Juízes", "arranque": ["josue", "calebe", "otoniel", "eude", "debora", "baraque", "jael", "gideao", "jefte", "sansao", "dalila", "noemi", "rute"] },
+    { "nome": "Os Reis", "arranque": ["elcana", "eli", "jesse", "golias", "natan", "rainha_seba", "jeroboao", "elias", "acab", "eliseu", "naama", "josias", "saul"] },
+    { "nome": "Os Grandes Profetas", "arranque": ["acaz", "uzias", "isaias", "senaqueribe", "jeremias", "baruque", "godolias", "ebede_meleque", "nabucodonosor", "ezequiel"] },
+    { "nome": "Os Profetas Menores", "arranque": ["oseias", "amos", "amasias", "jonas", "miqueias", "naum", "habacuc", "sofonias", "ageu", "zacarias", "malaquias", "joel", "abdias"] }
   ]
 }
