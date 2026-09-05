@@ -360,6 +360,14 @@
       return Array.from(sim.values());
     }
 
+    // Estado atual da câmara — necessário porque `render-graph.js` precisa
+    // de aplicar `scale`/`tx`/`ty` ao atributo `transform` do grupo `#world`
+    // a cada frame (mockup linha 392), e essas três variáveis são internas
+    // a este módulo (nunca chegam a sair via `onFrame`/`onChange`).
+    function getCamera() {
+      return { scale: scale, tx: tx, ty: ty };
+    }
+
     function init(newDefs, newWeakRefs, canvasWidth, canvasHeight, safeTop) {
       defs = newDefs || {};
       weakRefs = newWeakRefs || [];
@@ -381,6 +389,7 @@
       wake: wake,
       getNode: getNode,
       getAllNodes: getAllNodes,
+      getCamera: getCamera,
       getEdges: getEdges,
       getWeakEdgesVisible: getWeakEdgesVisible,
       everythingInView: everythingInView,
