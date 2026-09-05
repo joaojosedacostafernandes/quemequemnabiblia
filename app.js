@@ -59,6 +59,7 @@
     var panel = document.getElementById("panel");
     var eraStrip = document.getElementById("eraStrip");
     var graphEmpty = document.getElementById("graphEmpty");
+    var panelEmptyHtml = panelBody.innerHTML;
 
     var edgeEls = [];
     var nodeEls = {};
@@ -156,6 +157,7 @@
     function closePanel() {
       panel.classList.remove("open");
       graphSvg.classList.remove("has-selection");
+      panelBody.innerHTML = panelEmptyHtml;
     }
     document.getElementById("panelClose").addEventListener("click", closePanel);
 
