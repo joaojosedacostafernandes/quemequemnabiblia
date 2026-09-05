@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<title>Grafo com Física — mockup</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #0d1024; color: #e8e4d8; font-family: Georgia, serif; overflow: hidden; height: 100%; }
+  .topbar { position: absolute; top: 0; left: 0; right: 0; padding: 16px 20px; z-index: 10; pointer-events: none; }
+  .topbar * { pointer-events: auto; }
+  h1 { font-size: 19px; margin: 0 0 4px; color: #f0e6d2; }
+  .subtitle { font-size: 12.5px; color: #9a94b8; margin: 0; max-width: 560px; }
+  .hint { font-size: 11.5px; color: #6b6591; margin-top: 4px; }
+
+  .search-wrap { position: absolute; top: 90px; left: 50%; transform: translateX(-50%); z-index: 15; width: 420px; max-width: 90vw; }
+  .search-box {
+    width: 100%; padding: 14px 20px; border-radius: 999px; border: 2px solid #4a4580; background: #161933;
+    color: #f0e6d2; font-family: Georgia, serif; font-size: 16px; box-shadow: 0 8px 24px rgba(0,0,0,.4);
+    outline: none;
+  }
+  .search-box:focus { border-color: #d8c98a; }
+  .search-box::placeholder { color: #6b6591; }
+  .search-results {
+    margin-top: 6px; background: #161933; border: 1px solid #4a4580; border-radius: 12px;
+    overflow: hidden; display: none; box-shadow: 0 8px 24px rgba(0,0,0,.4);
+  }
+  .search-results.show { display: block; }
+  .search-result {
+    padding: 10px 18px; cursor: pointer; font-size: 14px; color: #e8e4d8;
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .search-result:hover { background: #2a2650; }
+  .search-result .sr-era { font-size: 10.5px; color: #9a94b8; }
+  .found-highlight .halo { opacity: 1 !important; stroke: #f0d060; stroke-width: 2.5; animation: pulseFound 1.2s ease-in-out infinite; }
+  @keyframes pulseFound { 0%,100% { r: var(--halo-r, 20); opacity: 1; } 50% { r: calc(var(--halo-r, 20) + 6); opacity: .4; } }
+
+  .controls { position: absolute; bottom: 24px; right: 24px; display: flex; flex-direction: column; gap: 8px; z-index: 10; }
+  .controls button {
+    width: 38px; height: 38px; border-radius: 50%; border: 1px solid #4a4580; background: #161933;
+    color: #d8c98a; font-size: 17px; cursor: pointer; font-family: Georgia, serif;
+  }
+  .controls button:hover { background: #2a2650; }
+
+  svg { display: block; width: 100vw; height: 100vh; cursor: grab; }
+  svg.panning { cursor: grabbing; }
+
+  .bgstar { fill: #cfd0f0; }
+
+  .cline { stroke: #4a4580; stroke-width: 1.4; fill: none; }
+  .cline.stem { stroke: #d8a0b8; stroke-width: 1.2; opacity: .8; }
+  .cline.descent { stroke: #6b64a8; stroke-width: 1.6; }
+  .cline.spouseDirect { stroke: #d8a0b8; stroke-width: 1.2; stroke-dasharray: 3 4; opacity: .8; }
+  .cline.weak { stroke: #4a4a6a; stroke-width: 0.8; stroke-dasharray: 1 5; opacity: .55; }
+  .clabel { fill: #9a94b8; font-size: 8.5px; font-family: Georgia, serif; text-anchor: middle; paint-order: stroke; stroke: #0d1024; stroke-width: 3; }
+
+  .node { cursor: pointer; }
+  .node circle.halo { fill: none; stroke: #d8c98a; stroke-width: 1; opacity: 0; }
+  .node.expandable circle.halo { opacity: .35; }
+  .node.uniao .halo { stroke: #e8608f; }
+  .node.capitulo .halo { stroke: #f0d060; stroke-width: 2; }
+  .node.capitulo .star { fill: url(#majorGrad); }
+  .node.capitulo text.name { font-size: 14px; font-weight: bold; transition: font-size .3s ease; }
+  .node.capitulo.side text.name { font-size: 10.5px; }
+  .node.capitulo.side text.clabel { display: none; }
+  .node.capitulo.side { opacity: .85; }
+  .node .star { transition: r .25s ease; }
+  .node.major .star { fill: url(#majorGrad); }
+  .node.standard .star { fill: url(#standardGrad); }
+  .node.minor .star { fill: url(#minorGrad); }
+  .node.uniao .star { fill: url(#uniaoGrad); }
+  .node text.name { fill: #f0e6d2; font-size: 11px; text-anchor: middle; paint-order: stroke; stroke: #0d1024; stroke-width: 3; }
+  .node.minor text.name { font-size: 9.5px; }
+  .node text.badge { fill: #1a1735; font-size: 9px; text-anchor: middle; font-weight: bold; }
+  .node circle.badge-bg { fill: #d8c98a; }
+
+  .node-group { transform-box: fill-box; transform-origin: center; }
+  .pop-in { animation: popIn .35s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+
+  .tooltip {
+    position: fixed; max-width: 270px; background: #161933; border: 1px solid #4a4580;
+    border-radius: 8px; padding: 10px 13px; font-size: 12.5px; color: #cfcae8;
+    pointer-events: none; z-index: 50; display: none; box-shadow: 0 8px 20px rgba(0,0,0,.45);
+    line-height: 1.45;
+  }
+  .tooltip.show { display: block; }
+  .tooltip .t-era { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #9a94b8; }
+  .tooltip .t-name { margin: 2px 0 6px; color: #f0d060; font-size: 15px; font-weight: bold; }
+  .tooltip .t-rel { color: #d8a0b8; font-size: 11.5px; margin-bottom: 6px; }
+  .tooltip .t-refs { margin-top: 6px; font-size: 10.5px; color: #7d76ad; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>Grafo com Física</h1>
+  <p class="subtitle">Começa em 7 capítulos, ou procura diretamente uma personagem pelo nome.</p>
+  <p class="hint">Clica num capítulo para o abrir. O losango rosa é o nó de <b>casamento</b> — os filhos saem dele. <b>Passa o rato por cima</b> de uma personagem para ver os detalhes.</p>
+</div>
+
+<div class="search-wrap">
+  <input id="searchBox" class="search-box" placeholder="Procura uma personagem (ex: David, Rute, Isaías)..." autocomplete="off">
+  <div id="searchResults" class="search-results"></div>
+</div>
+
+<div class="controls">
+  <button onclick="zoomBy(1.25)">+</button>
+  <button onclick="zoomBy(0.8)">−</button>
+  <button onclick="resetView()">⟲</button>
+  <button onclick="collapseAll()" title="Fechar tudo" style="font-size:13px;">⤾</button>
+</div>
+
+<svg id="stage" viewBox="0 0 1400 900">
+  <defs>
+    <radialGradient id="majorGrad" cx="35%" cy="30%">
+      <stop offset="0%" stop-color="#fff8e0"/><stop offset="55%" stop-color="#f0d060"/><stop offset="100%" stop-color="#c9a24a"/>
+    </radialGradient>
+    <radialGradient id="standardGrad" cx="35%" cy="30%">
+      <stop offset="0%" stop-color="#e4e0f8"/><stop offset="55%" stop-color="#9a94d0"/><stop offset="100%" stop-color="#6b64a8"/>
+    </radialGradient>
+    <radialGradient id="minorGrad" cx="35%" cy="30%">
+      <stop offset="0%" stop-color="#c9c6dc"/><stop offset="55%" stop-color="#7d76ad"/><stop offset="100%" stop-color="#524d78"/>
+    </radialGradient>
+    <radialGradient id="uniaoGrad" cx="35%" cy="30%">
+      <stop offset="0%" stop-color="#ffe0ec"/><stop offset="55%" stop-color="#e8608f"/><stop offset="100%" stop-color="#a83a63"/>
+    </radialGradient>
+    <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g id="bgLayer"></g>
+  <g id="world">
+    <g id="edgeLayer"></g>
+    <g id="nodeLayer"></g>
+  </g>
+</svg>
+
+<div class="tooltip" id="tooltip">
+  <div class="t-era" id="ttEra"></div>
+  <div class="t-name" id="ttName"></div>
+  <div class="t-rel" id="ttRel"></div>
+  <div class="t-resumo" id="ttResumo"></div>
+  <div class="t-refs" id="ttRefs"></div>
+</div>
+
+<script>
+/* ---------------- data ----------------
+   Every node — era, pessoa, ou casamento — é a mesma coisa: um id com uma
+   lista `reveals` de outros ids que aparecem quando lhe tocas. Os filhos
+   nunca aparecem na lista `reveals` de uma pessoa sozinha — aparecem na
+   lista `reveals` do nó de casamento (kind:'uniao') entre os pais. Quando só
+   há um progenitor conhecido (ex: Eli), os filhos saem diretamente dele. */
+const defs = {"adao":{"kind":"major","nome":"Adão","rel":null,"era":"As origens","refs":"Gn 2–3","resumo":"O primeiro ser humano, formado por Deus a partir do pó da terra e colocado no Jardim do Éden para o cultivar. A sua desobediência ao comer do fruto proibido marca o início da história da salvação — mas também abre caminho para a promessa de redenção que atravessa toda a Bíblia.","retrato":"assets/retratos/adao.svg","reveals":["u_adao_eva"]},"eva":{"kind":"major","nome":"Eva","rel":"casada com Adão","era":"As origens","refs":"Gn 2–4","resumo":"A primeira mulher, formada por Deus a partir de Adão e chamada por ele \"mãe de todos os viventes\" (Gn 3:20). É ela quem primeiro dialoga com a serpente, um momento central na narrativa da queda.","retrato":"assets/retratos/eva.svg","reveals":[]},"u_adao_eva":{"kind":"uniao","nome":"","spouses":["adao","eva"],"reveals":["caim","abel","sete"]},"caim":{"kind":"minor","nome":"Caim","rel":"filho de Adão e Eva","era":"Primeira geração","refs":"Gn 4","resumo":"Filho mais velho de Adão e Eva, agricultor. Quando a sua oferta a Deus não é aceite como a do irmão, mata Abel por ciúme — a primeira referência bíblica à violência entre irmãos. Ainda assim, Deus poupa-lhe a vida e coloca nele um sinal de proteção.","retrato":"assets/retratos/caim.svg","reveals":[]},"abel":{"kind":"minor","nome":"Abel","rel":"filho de Adão e Eva","era":"Primeira geração","refs":"Gn 4","resumo":"Segundo filho de Adão e Eva, pastor de ovelhas. A sua oferta agrada a Deus, o que desperta a inveja do irmão Caim, que o mata no campo — tornando-o a primeira vítima de violência da Bíblia.","retrato":"assets/retratos/abel.svg","reveals":[]},"sete":{"kind":"minor","nome":"Set","rel":"filho de Adão e Eva","era":"Primeira geração","refs":"Gn 4:25; 5","resumo":"Terceiro filho de Adão e Eva, nascido \"em vez de Abel\". É através dele, e não de Caim, que a genealogia bíblica continua até Noé — a linha que a tradição liga à esperança da salvação.","retrato":"assets/retratos/sete.svg","reveals":[]},"noe":{"kind":"major","nome":"Noé","rel":null,"era":"O Dilúvio","refs":"Gn 6–9","resumo":"Descendente de Set, descrito como \"justo e íntegro\" na sua geração. Construiu a arca por ordem de Deus e salvou a sua família e os animais do dilúvio. Com ele, Deus faz a primeira grande aliança da Bíblia, selada pelo sinal do arco-íris.","retrato":"assets/retratos/noe.svg","reveals":["sem"]},"sem":{"kind":"minor","nome":"Sem","rel":"filho de Noé","era":"Depois do Dilúvio","refs":"Gn 5:32; 9:26; 11:10","resumo":"Filho mais velho de Noé, abençoado por ele depois do dilúvio. A tradição bíblica liga-lhe a linhagem que, muitas gerações depois, chega até Abraão.","retrato":"assets/retratos/sem.svg","reveals":[]},"abraao":{"kind":"major","nome":"Abraão","rel":null,"era":"Os Patriarcas · Abraão","refs":"Gn 12–25","resumo":"Chamado por Deus a deixar a sua terra e a sua família, recebe a promessa de uma descendência \"como as estrelas do céu\" (Gn 15:5) e de uma terra para os seus descendentes. A sua confiança nessa promessa, mesmo sem a ver cumprida, torna-o o \"pai da fé\" para judeus, cristãos e muçulmanos.","retrato":"assets/retratos/abraao.svg","reveals":["u_abraao_sara","u_abraao_agar"]},"sara":{"kind":"standard","nome":"Sara","rel":"casada com Abraão","era":"Os Patriarcas · Abraão","refs":"Gn 17–23","resumo":"Esposa de Abraão. Já em idade muito avançada, ri-se ao ouvir que terá um filho — e dá à luz Isaac, cujo nome significa \"ele ri\", cumprindo a promessa de Deus contra toda a probabilidade.","retrato":"assets/retratos/sara.svg","reveals":[]},"u_abraao_sara":{"kind":"uniao","nome":"","spouses":["abraao","sara"],"reveals":["isaac"]},"isaac":{"kind":"standard","nome":"Isaac","rel":"filho de Abraão e Sara","era":"Os Patriarcas · Isaac","refs":"Gn 21–27","resumo":"Filho de Abraão e Sara, nascido da promessa depois de anos de espera. Quase sacrificado por Abraão no Monte Moriá (Gn 22), é poupado por Deus — um episódio que a tradição cristã lê como prefiguração do sacrifício de Cristo. Casa com Rebeca e é pai de Esaú e Jacob.","retrato":"assets/retratos/isaac.svg","reveals":["u_isaac_rebeca"]},"rebeca":{"kind":"standard","nome":"Rebeca","rel":"casada com Isaac","era":"Os Patriarcas · Isaac","refs":"Gn 24–27","resumo":"Escolhida junto ao poço por Eliezer, servo de Abraão, para ser esposa de Isaac — reconhecida pela sua hospitalidade ao oferecer água não só ao servo mas também aos seus camelos. Mãe de Esaú e Jacob, tem um papel decisivo em garantir que a bênção do pai passa para Jacob.","retrato":"assets/retratos/rebeca.svg","reveals":[]},"u_isaac_rebeca":{"kind":"uniao","nome":"","spouses":["isaac","rebeca"],"reveals":["esau","jacob"]},"esau":{"kind":"standard","nome":"Esaú","rel":"filho de Isaac e Rebeca","era":"Os Patriarcas · Jacob","refs":"Gn 25–33","resumo":"Filho mais velho de Isaac e Rebeca, caçador hábil. Vende o seu direito de primogenitura a Jacob por um prato de lentilhas, e mais tarde vê a bênção do pai ser-lhe também tirada — mas a história termina com um reencontro de perdão entre os dois irmãos (Gn 33).","retrato":"assets/retratos/esau.svg","reveals":[]},"jacob":{"kind":"major","nome":"Jacob","rel":"filho de Isaac e Rebeca","era":"Os Patriarcas · Jacob","refs":"Gn 25–49","resumo":"Filho de Isaac e Rebeca. Depois de lutar a noite toda com um anjo, recebe de Deus o novo nome \"Israel\" (Gn 32:28), que passa a designar todo o povo. Pai de doze filhos que dão origem às doze tribos de Israel.","retrato":"assets/retratos/jacob.svg","reveals":["u_jacob_raquel","u_jacob_lia","dan","neftali","gad","aser"]},"raquel":{"kind":"standard","nome":"Raquel","rel":"casada com Jacob","era":"As famílias de Jacob","refs":"Gn 29–35","resumo":"Esposa preferida de Jacob, encontrada junto a um poço quando este chega a casa do seu tio Labão. Mãe de José e, mais tarde, de Benjamim — morre ao dar à luz este último filho, perto de Belém.","retrato":"assets/retratos/raquel.svg","reveals":[]},"u_jacob_raquel":{"kind":"uniao","nome":"","spouses":["jacob","raquel"],"reveals":["jose","benjamim"]},"jose":{"kind":"major","nome":"José","rel":"filho de Jacob e Raquel","era":"José no Egito","refs":"Gn 37–50","resumo":"Filho preferido de Jacob e Raquel, reconhecível pela sua túnica de várias cores. Vendido como escravo pelos próprios irmãos, torna-se governador do Egito depois de interpretar os sonhos do Faraó — e acaba por salvar a sua família da fome, perdoando os irmãos que o traíram.","retrato":"assets/retratos/jose.svg","reveals":["efraim"]},"efraim":{"kind":"minor","nome":"Efraim","rel":"filho de José","era":"José no Egito","refs":"Gn 41:52; 48; 1 Cr 7:20-27","resumo":"Segundo filho de José, nascido no Egito. Ao abençoar os netos já cego e doente, Jacob cruza deliberadamente as mãos e dá a Efraim, o mais novo, a bênção maior que normalmente cabia ao primogénito — um gesto que ecoa toda uma vida de bênçãos inesperadas na família.","retrato":"assets/retratos/efraim.svg","reveals":[]},"benjamim":{"kind":"standard","nome":"Benjamim","rel":"filho de Jacob e Raquel","era":"As famílias de Jacob","refs":"Gn 35:16-20; 44","resumo":"Filho mais novo de Jacob, e o único, com José, nascido de Raquel — que morre ao dá-lo à luz, perto de Belém. Depois da suposta morte de José, torna-se o filho mais amado de Jacob, e é por ele que Judá se oferece como refém no Egito.","retrato":"assets/retratos/benjamim.svg","reveals":[]},"lia":{"kind":"minor","nome":"Lia","rel":"casada com Jacob","era":"As famílias de Jacob","refs":"Gn 29–49","resumo":"Primeira esposa de Jacob, casada com ele através de um engano do seu pai Labão. Mãe de seis dos doze filhos de Jacob, incluindo Levi e Judá — antepassada da tribo sacerdotal e da linhagem real de David.","retrato":"assets/retratos/lia.svg","reveals":[]},"u_jacob_lia":{"kind":"uniao","nome":"","spouses":["jacob","lia"],"reveals":["ruben","simeao","levi","juda","issacar","zabulao","dina"]},"ruben":{"kind":"minor","nome":"Rúben","rel":"filho de Jacob e Lia","era":"As famílias de Jacob","refs":"Gn 29:32; 35:22; 49:3-4","resumo":"Filho mais velho de Jacob e Lia. Perde o direito de primogenitura por uma falta contra o pai (Gn 35:22; 49:4), mas é ele quem, mais tarde, tenta salvar José da morte às mãos dos irmãos (Gn 37:21-22).","retrato":"assets/retratos/ruben.svg","reveals":[]},"simeao":{"kind":"minor","nome":"Simeão","rel":"filho de Jacob e Lia","era":"As famílias de Jacob","refs":"Gn 29:33; 34; 49:5-7","resumo":"Segundo filho de Jacob e Lia. Junto com Levi, vinga com violência a irmã Dina, um ato que o pai condena no seu leito de morte (Gn 49:5-7).","retrato":"assets/retratos/simeao.svg","reveals":[]},"levi":{"kind":"minor","nome":"Levi","rel":"filho de Jacob e Lia","era":"As famílias de Jacob","refs":"Gn 29:34; 49:5-7; Êx 6:16-20","resumo":"Terceiro filho de Jacob e Lia. É dele que descendem Moisés, Arão e Miriam — a tribo de Levi tornar-se-ia, mais tarde, a tribo sacerdotal de Israel, dedicada ao serviço do templo.","retrato":"assets/retratos/levi.svg","reveals":[]},"juda":{"kind":"standard","nome":"Judá","rel":"filho de Jacob e Lia","era":"As famílias de Jacob","refs":"Gn 29:35; 37:26-27; 44; 49:8-10","resumo":"Quarto filho de Jacob e Lia. Propõe vender José em vez de o matar, e mais tarde oferece-se como refém para poupar Benjamim — um gesto que mostra a sua transformação. A tradição bíblica liga-lhe a futura linhagem real de David.","retrato":"assets/retratos/juda.svg","reveals":[]},"issacar":{"kind":"minor","nome":"Issacar","rel":"filho de Jacob e Lia","era":"As famílias de Jacob","refs":"Gn 30:17-18; 49:14-15","resumo":"Nono filho de Jacob, quinto de Lia. A Bíblia dedica-lhe poucos episódios próprios — é sobretudo conhecido através da tribo que viria a levar o seu nome.","retrato":"assets/retratos/issacar.svg","reveals":[]},"zabulao":{"kind":"minor","nome":"Zabulão","rel":"filho de Jacob e Lia","era":"As famílias de Jacob","refs":"Gn 30:19-20; 49:13","resumo":"Décimo filho de Jacob, sexto e último de Lia. Como o irmão Issacar, é conhecido sobretudo através da tribo de Israel que herda o seu nome.","retrato":"assets/retratos/zabulao.svg","reveals":[]},"dina":{"kind":"minor","nome":"Dina","rel":"filho de Jacob e Lia","era":"As famílias de Jacob","refs":"Gn 30:21; 34","resumo":"Única filha de Jacob e Lia mencionada pelo nome. A sua história em Siquém (Gn 34) desencadeia a resposta violenta dos irmãos Simeão e Levi contra a cidade.","retrato":"assets/retratos/dina.svg","reveals":[]},"dan":{"kind":"minor","nome":"Dan","rel":"filho de Jacob","era":"As famílias de Jacob","refs":"Gn 30:1-6; 49:16-17","resumo":"Quinto filho de Jacob, nascido de Bila, serva de Raquel — dado à luz \"sobre os joelhos\" de Raquel, que assim o considera seu, segundo o costume da época.","retrato":"assets/retratos/dan.svg","reveals":[]},"neftali":{"kind":"minor","nome":"Neftali","rel":"filho de Jacob","era":"As famílias de Jacob","refs":"Gn 30:7-8; 49:21","resumo":"Sexto filho de Jacob, segundo de Bila, serva de Raquel.","retrato":"assets/retratos/neftali.svg","reveals":[]},"gad":{"kind":"minor","nome":"Gad","rel":"filho de Jacob","era":"As famílias de Jacob","refs":"Gn 30:9-11; 49:19","resumo":"Sétimo filho de Jacob, nascido de Zilpa, serva de Lia.","retrato":"assets/retratos/gad.svg","reveals":[]},"aser":{"kind":"minor","nome":"Aser","rel":"filho de Jacob","era":"As famílias de Jacob","refs":"Gn 30:12-13; 49:20","resumo":"Oitavo filho de Jacob, segundo de Zilpa, serva de Lia.","retrato":"assets/retratos/aser.svg","reveals":[]},"agar":{"kind":"minor","nome":"Agar","rel":"casada com Abraão","era":"Os Patriarcas · Abraão","refs":"Gn 16; 21","resumo":"Serva egípcia de Sara, torna-se mãe de Ismael com Abraão. Depois de ser expulsa para o deserto com o filho, é a primeira pessoa na Bíblia a dar um nome a Deus — \"o Deus que me vê\" (Gn 16:13).","retrato":"assets/retratos/agar.svg","reveals":[]},"u_abraao_agar":{"kind":"uniao","nome":"","spouses":["abraao","agar"],"reveals":["ismael"]},"ismael":{"kind":"minor","nome":"Ismael","rel":"filho de Abraão e Agar","era":"Os Patriarcas · Isaac","refs":"Gn 16; 21; 25","resumo":"Filho de Abraão e Agar. Deus promete que também dele nascerá uma grande nação — segundo a tradição bíblica, torna-se pai de doze príncipes e antepassado de povos árabes.","retrato":"assets/retratos/ismael.svg","reveals":[]},"moises":{"kind":"major","nome":"Moisés","rel":null,"era":"O Êxodo","refs":"Êx 2 – Dt 34","resumo":"Descendente de Levi, criado na corte egípcia depois de ser salvo das águas do Nilo em bebé. Liberta o povo de Israel da escravidão no Egito através de dez pragas e da travessia do Mar Vermelho, e recebe os Dez Mandamentos no Monte Sinai.","retrato":"assets/retratos/moises.svg","reveals":[]},"miriam":{"kind":"standard","nome":"Miriam","rel":null,"era":"O Êxodo","refs":"Êx 2; 15","resumo":"Irmã mais velha de Moisés e Arão. Vigia o cesto do irmão bebé no rio Nilo e sugere a sua própria mãe como ama — depois, já profetisa, guia o povo no cântico de louvor depois da travessia do Mar Vermelho (Êx 15:20-21).","retrato":"assets/retratos/miriam.svg","reveals":[]},"arao":{"kind":"standard","nome":"Arão","rel":null,"era":"O Êxodo","refs":"Êx 4; 7; 28","resumo":"Irmão mais velho de Moisés e Miriam. Torna-se o porta-voz de Moisés perante o Faraó (Êx 4:14-16) e, mais tarde, o primeiro sumo sacerdote de Israel (Êx 28) — dele descende toda a linhagem sacerdotal levítica.","retrato":"assets/retratos/arao.svg","reveals":[]},"farao":{"kind":"standard","nome":"Faraó","rel":null,"era":"O Êxodo","refs":"Êx 1–14","resumo":"Título do governante do Egito na narrativa do Êxodo — a Bíblia não dá o seu nome próprio. Escraviza o povo de Israel por temer o seu crescimento, e recusa repetidamente libertá-lo, mesmo depois das dez pragas, até à décima praga e à perseguição final junto ao Mar Vermelho.","retrato":"assets/retratos/farao.svg","reveals":[]},"josue":{"kind":"major","nome":"Josué","rel":null,"era":"Josué","refs":"Js 1–24","resumo":"Sucessor de Moisés, lidera o povo de Israel na travessia do rio Jordão e na conquista de Canaã, incluindo a célebre queda das muralhas de Jericó.","retrato":"assets/retratos/josue.svg","reveals":[]},"calebe":{"kind":"standard","nome":"Calebe","rel":null,"era":"Os Juízes","refs":"Nm 13–14; Js 14–15; Jz 1:12-15","resumo":"Um dos doze espias enviados por Moisés a explorar Canaã, é um dos únicos dois (com Josué) a trazer um relatório de fé em vez de medo — e por isso o único da sua geração, além de Josué, autorizado a entrar na Terra Prometida. Já idoso, recebe Hebron como herança e oferece a mão da sua filha Acsa a quem conquistar Debir.","retrato":"assets/retratos/calebe.svg","reveals":[]},"otoniel":{"kind":"minor","nome":"Otoniel","rel":null,"era":"Os Juízes","refs":"Jz 3:7-11","resumo":"Primeiro dos juízes de Israel, irmão mais novo de Calebe. Liberta o povo do domínio do rei de Arã-Naaraim depois de um período de opressão.","retrato":"assets/retratos/otoniel.svg","reveals":[]},"eude":{"kind":"minor","nome":"Eúde","rel":null,"era":"Os Juízes","refs":"Jz 3:12-30","resumo":"Segundo juiz de Israel, canhoto, liberta o povo do domínio do rei moabita Eglom através de um ato de coragem pessoal disfarçado de embaixada diplomática.","retrato":"assets/retratos/eude.svg","reveals":[]},"debora":{"kind":"major","nome":"Débora","rel":null,"era":"Os Juízes","refs":"Jz 4–5","resumo":"Única mulher juíza e profetisa de Israel, julga o povo debaixo de uma palmeira e lidera, junto com o general Baraque, a vitória sobre o exército cananeu de Sísera.","retrato":"assets/retratos/debora.svg","reveals":[]},"baraque":{"kind":"minor","nome":"Baraque","rel":null,"era":"Os Juízes","refs":"Jz 4–5","resumo":"General israelita que, a pedido de Débora, lidera o exército contra as forças de Sísera, comandante do rei cananeu Jabim.","retrato":"assets/retratos/baraque.svg","reveals":[]},"jael":{"kind":"minor","nome":"Jael","rel":null,"era":"Os Juízes","refs":"Jz 4:17-22; 5:24-27","resumo":"Mulher quenita que dá refúgio ao general cananeu Sísera em fuga, e o mata enquanto dorme, cumprindo a profecia de Débora de que a vitória seria atribuída a uma mulher.","retrato":"assets/retratos/jael.svg","reveals":[]},"gideao":{"kind":"major","nome":"Gideão","rel":null,"era":"Os Juízes","refs":"Jz 6–8","resumo":"Chamado por Deus enquanto se esconde para debulhar trigo, lidera apenas 300 homens escolhidos a derrotar um enorme exército midianita, provando que a vitória vem de Deus e não do número de soldados.","retrato":"assets/retratos/gideao.svg","reveals":["abimeleque"]},"abimeleque":{"kind":"minor","nome":"Abimeleque","rel":"filho de Gideão","era":"Os Juízes","refs":"Jz 9","resumo":"Filho de Gideão que mata os seus setenta meio-irmãos para se tornar governante de Siquém, tornando-se um contraexemplo do juiz ideal — movido por ambição, não por chamado divino.","retrato":"assets/retratos/abimeleque.svg","reveals":[]},"jefte":{"kind":"standard","nome":"Jefté","rel":null,"era":"Os Juízes","refs":"Jz 11–12","resumo":"Filho rejeitado pela sua família por ser filho de uma prostituta, torna-se um líder militar respeitado e derrota os amonitas — mas faz um voto precipitado que acaba por custar a vida da sua própria filha.","retrato":"assets/retratos/jefte.svg","reveals":[]},"sansao":{"kind":"major","nome":"Sansão","rel":null,"era":"Os Juízes","refs":"Jz 13–16","resumo":"Nazireu dotado de força sobrenatural desde o nascimento, luta sozinho contra os filisteus ao longo de várias histórias — até ser traído por Dalila, que descobre o segredo da sua força no cabelo nunca cortado.","retrato":"assets/retratos/sansao.svg","reveals":[]},"dalila":{"kind":"standard","nome":"Dalila","rel":null,"era":"Os Juízes","refs":"Jz 16:4-22","resumo":"Mulher filisteia que, subornada pelos chefes filisteus, descobre repetidamente o segredo da força de Sansão até o convencer a revelar que está no seu cabelo, entregando-o assim aos seus inimigos.","retrato":"assets/retratos/dalila.svg","reveals":[]},"noemi":{"kind":"minor","nome":"Noemi","rel":null,"era":"Rute","refs":"Rt 1","resumo":"Israelita que perde o marido e os dois filhos em Moabe, e regressa a Belém com a sua nora Rute, que se recusa a abandoná-la.","retrato":"assets/retratos/noemi.svg","reveals":[]},"rute":{"kind":"standard","nome":"Rute","rel":null,"era":"Rute","refs":"Rt 1–4","resumo":"Mulher moabita que, depois de enviuvar, escolhe ficar com a sua sogra Noemi em vez de regressar à sua terra — \"o teu povo será o meu povo, e o teu Deus, o meu Deus\" (Rt 1:16). Casa com Booz e torna-se bisavó de David.","retrato":"assets/retratos/rute.svg","reveals":["booz"],"spouseDirect":["booz"]},"booz":{"kind":"minor","nome":"Booz","rel":"casado com Rute","era":"Rute","refs":"Rt 2–4","resumo":"Proprietário rico de Belém, parente de Noemi, que mostra bondade a Rute quando ela colhe espigas nos seus campos, e acaba por casar com ela, assumindo o papel de \"resgatador\" familiar.","retrato":"assets/retratos/booz.svg","reveals":[]},"elcana":{"kind":"minor","nome":"Elcana","rel":null,"era":"1 Samuel · Ana e Samuel","refs":"1 Sm 1","resumo":"Marido de Ana (e de uma segunda mulher, Penina), leva a família todos os anos a Silo para oferecer sacrifícios. Consola Ana quando ela chora por não ter filhos, e mais tarde alegra-se com o nascimento de Samuel, fruto da oração dela.","retrato":"assets/retratos/elcana.svg","reveals":["u_ana_elcana"]},"ana":{"kind":"standard","nome":"Ana","rel":"casada com Elcana","era":"1 Samuel · Ana e Samuel","refs":"1 Sm 1–2","resumo":"Mulher estéril que ora fervorosamente no santuário de Silo por um filho, prometendo consagrá-lo a Deus — e dá à luz Samuel, que entrega ao serviço do templo assim que é desmamado.","retrato":"assets/retratos/ana.svg","reveals":[]},"u_ana_elcana":{"kind":"uniao","nome":"","spouses":["elcana","ana"],"reveals":["samuel"]},"samuel":{"kind":"major","nome":"Samuel","rel":"filho de Elcana e Ana","era":"1 Samuel · Ana e Samuel","refs":"1 Sm 1–25","resumo":"Último dos juízes e primeiro dos grandes profetas de Israel, ouve a voz de Deus ainda criança no templo. Unge Saul como primeiro rei de Israel, e mais tarde David, quando Saul se afasta de Deus.","retrato":"assets/retratos/samuel.svg","reveals":[]},"eli":{"kind":"standard","nome":"Eli","rel":null,"era":"1 Samuel · Ana e Samuel","refs":"1 Sm 1–4","resumo":"Sumo sacerdote e último juiz de Silo, cria Samuel no templo depois de Ana o entregar. Os seus próprios filhos, Hofni e Finéias, corrompem o sacerdócio, trazendo julgamento sobre a sua casa.","retrato":"assets/retratos/eli.svg","reveals":["hofni","fineias"]},"hofni":{"kind":"minor","nome":"Hofni","rel":"filho de Eli","era":"1 Samuel · Ana e Samuel","refs":"1 Sm 2; 4","resumo":"Filho mais velho do sacerdote Eli, abusa da sua posição no santuário de Silo para roubar as melhores partes das ofertas do povo e explorar as mulheres que ali serviam. Morre em combate contra os filisteus no mesmo dia em que a Arca da Aliança é capturada.","retrato":"assets/retratos/hofni.svg","reveals":[]},"fineias":{"kind":"minor","nome":"Finéias","rel":"filho de Eli","era":"1 Samuel · Ana e Samuel","refs":"1 Sm 2; 4","resumo":"Filho mais novo do sacerdote Eli, tal como o irmão Hofni, abusa do seu cargo sacerdotal em Silo. Morre no mesmo combate contra os filisteus em que a Arca é capturada — a notícia da sua morte, e a da Arca, provoca a morte súbita do próprio pai.","retrato":"assets/retratos/fineias.svg","reveals":[]},"jesse":{"kind":"standard","nome":"Jessé","rel":null,"era":"1 Samuel · Saul e David","refs":"Rt 4:17,22; 1 Sm 16","resumo":"Habitante de Belém, neto de Booz e Rute, pai de oito filhos — o mais novo dos quais, David, é escolhido por Deus através do profeta Samuel para ser rei, apesar de nem sequer ter sido chamado inicialmente para o desfile de apresentação.","retrato":"assets/retratos/jesse.svg","reveals":["david"]},"david":{"kind":"major","nome":"David","rel":"filho de Jessé","era":"1 Samuel · Saul e David","refs":"1 Sm 16 – 1 Rs 2","resumo":"Pastor mais novo de oito irmãos, ungido em segredo por Samuel, torna-se herói nacional ao derrotar o gigante filisteu Golias com uma funda. Sucede a Saul como segundo rei de Israel, unifica o reino e, apesar de graves falhas morais, é lembrado como o maior rei de Israel e antepassado do Messias esperado.","retrato":"assets/retratos/david.svg","reveals":["mical","abigail","u_betsabe_david","absalao"],"spouseDirect":["mical","abigail"]},"mical":{"kind":"minor","nome":"Mical","rel":"casada com David","era":"1 Samuel · Saul e David","refs":"1 Sm 18–19; 2 Sm 6","resumo":"Filha mais nova de Saul, apaixona-se por David e torna-se sua primeira esposa, ajudando-o a escapar quando o pai tenta matá-lo. Mais tarde, já rei, David recupera-a como esposa, mas o casamento deteriora-se.","retrato":"assets/retratos/mical.svg","reveals":[]},"abigail":{"kind":"minor","nome":"Abigail","rel":"casada com David","era":"1 Samuel · Saul e David","refs":"1 Sm 25","resumo":"Mulher \"sensata e formosa\", casada com o rico e insensato Nabal, intervém com sabedoria e diplomacia para impedir que David massacre a casa do marido depois de um insulto — e, após a morte súbita de Nabal, torna-se esposa de David.","retrato":"assets/retratos/abigail.svg","reveals":["nabal"],"spouseDirect":["nabal"]},"nabal":{"kind":"minor","nome":"Nabal","rel":"casado com Abigail","era":"1 Samuel · Saul e David","refs":"1 Sm 25","resumo":"Rico proprietário de rebanhos no Carmelo, primeiro marido de Abigail, recusa-se rudemente a recompensar David e os seus homens por terem protegido os seus pastores. Poucos dias depois, ao saber como a sua mulher evitou a vingança de David, tem uma espécie de colapso e morre.","retrato":"assets/retratos/nabal.svg","reveals":[]},"betsabe":{"kind":"standard","nome":"Betsabé","rel":"casada com David","era":"2 Samuel · O reinado de David","refs":"2 Sm 11–12; 1 Rs 1–2","resumo":"Esposa de Urias, o hitita, é vista a banhar-se por David, que a engravida e depois manda matar Urias em combate para encobrir o adultério. Depois de casar com David, torna-se mãe de Salomão e assegura, já viúva, que ele suceda ao trono.","retrato":"assets/retratos/betsabe.svg","reveals":["urias"],"spouseDirect":["urias"]},"u_betsabe_david":{"kind":"uniao","nome":"","spouses":["david","betsabe"],"reveals":["salomao"]},"salomao":{"kind":"major","nome":"Salomão","rel":"filho de David e Betsabé","era":"1 Reis · Salomão","refs":"1 Rs 1–11","resumo":"Filho de David e Betsabé, sucede ao pai e pede a Deus sabedoria em vez de riqueza ou longa vida. Constrói o primeiro Templo de Jerusalém e leva o reino de Israel ao auge da sua riqueza e prestígio internacional — mas os seus muitos casamentos políticos acabam por desviar o seu coração.","retrato":"assets/retratos/salomao.svg","reveals":["roboao"]},"roboao":{"kind":"minor","nome":"Roboão","rel":"filho de Salomão","era":"1-2 Reis · O reino dividido","refs":"1 Rs 12","resumo":"Filho e sucessor de Salomão, recusa aliviar os impostos pesados impostos pelo pai, seguindo o conselho dos amigos jovens em vez dos conselheiros experientes — uma decisão que provoca a revolta das dez tribos do norte e a divisão do reino.","retrato":"assets/retratos/roboao.svg","reveals":[]},"urias":{"kind":"minor","nome":"Urias, o hitita","rel":"casado com Betsabé","era":"2 Samuel · O reinado de David","refs":"2 Sm 11","resumo":"Soldado hitita do exército de David, um dos seus \"guerreiros valentes\", casado com Betsabé. Quando David a engravida durante a sua ausência em combate, Urias recusa-se a ir a casa dormir com a mulher enquanto os seus companheiros continuam acampados em guerra — uma lealdade que acaba por lhe custar a vida, quando David manda colocá-lo na linha da frente para morrer.","retrato":"assets/retratos/urias.svg","reveals":[]},"absalao":{"kind":"standard","nome":"Absalão","rel":"filho de David","era":"2 Samuel · O reinado de David","refs":"2 Sm 13–18","resumo":"Filho de David, conhecido pela sua beleza e pelo seu longo cabelo, revolta-se contra o pai e chega a tomar Jerusalém temporariamente. Morre tragicamente preso pelo cabelo num carvalho durante a batalha final contra as forças do pai.","retrato":"assets/retratos/absalao.svg","reveals":[]},"golias":{"kind":"standard","nome":"Golias","rel":null,"era":"1 Samuel · Saul e David","refs":"1 Sm 17","resumo":"Guerreiro gigante filisteu de Gate que desafia diariamente o exército israelita para um combate individual — até ser derrotado pelo jovem David com uma simples funda e uma pedra, num dos episódios mais conhecidos de toda a Bíblia.","retrato":"assets/retratos/golias.svg","reveals":[]},"natan":{"kind":"minor","nome":"Natã","rel":null,"era":"2 Samuel · O reinado de David","refs":"2 Sm 7; 12; 1 Rs 1","resumo":"Profeta da corte de David, transmite-lhe a promessa de uma dinastia eterna (2 Sm 7) e, mais tarde, confronta-o corajosamente com uma parábola depois do episódio com Betsabé, levando o rei ao arrependimento.","retrato":"assets/retratos/natan.svg","reveals":[]},"rainha_seba":{"kind":"minor","nome":"Rainha de Sabá","rel":null,"era":"1 Reis · Salomão","refs":"1 Rs 10","resumo":"Governante estrangeira de um reino distante (situado na atual Iémen ou Etiópia) que viaja até Jerusalém para testar a fama de sabedoria de Salomão com perguntas difíceis, e sai impressionada e maravilhada.","retrato":"assets/retratos/rainha_seba.svg","reveals":[]},"jeroboao":{"kind":"minor","nome":"Jeroboão","rel":null,"era":"1-2 Reis · O reino dividido","refs":"1 Rs 11–12","resumo":"Antigo funcionário de Salomão que, depois da revolta contra Roboão, se torna o primeiro rei do Reino de Israel (norte). Para evitar que o povo continue a peregrinar ao Templo em Jerusalém, cria santuários alternativos com bezerros de ouro, um ato que a tradição bíblica considera o pecado fundador do reino do norte.","retrato":"assets/retratos/jeroboao.svg","reveals":[]},"elias":{"kind":"major","nome":"Elias","rel":null,"era":"1-2 Reis · O reino dividido","refs":"1 Rs 17–19; 21; 2 Rs 1–2","resumo":"Profeta poderoso do Reino de Israel, confronta o rei Acab e a rainha Jezabel pela idolatria ao deus Baal, culminando no confronto público no Monte Carmelo. Sobe ao céu num carro de fogo, sem morrer, deixando o seu manto — e o seu papel profético — a Eliseu.","retrato":"assets/retratos/elias.svg","reveals":[]},"acab":{"kind":"standard","nome":"Acab","rel":null,"era":"1-2 Reis · O reino dividido","refs":"1 Rs 16; 18; 21–22","resumo":"Rei do reino de Israel (norte), casa com a princesa fenícia Jezabel e introduz o culto a Baal na corte, entrando em conflito direto e repetido com o profeta Elias.","retrato":"assets/retratos/acab.svg","reveals":["jezabel"],"spouseDirect":["jezabel"]},"jezabel":{"kind":"standard","nome":"Jezabel","rel":"casado com Acab","era":"1-2 Reis · O reino dividido","refs":"1 Rs 16; 18–19; 21; 2 Rs 9","resumo":"Princesa fenícia, esposa de Acab, promove ativamente o culto a Baal em Israel e persegue os profetas de Deus. Torna-se, na tradição bíblica, o exemplo máximo de rainha corrupta e opositora da fé de Israel.","retrato":"assets/retratos/jezabel.svg","reveals":[]},"eliseu":{"kind":"standard","nome":"Eliseu","rel":null,"era":"1-2 Reis · O reino dividido","refs":"1 Rs 19; 2 Rs 2–13","resumo":"Discípulo e sucessor de Elias, recebe uma \"porção dobrada\" do seu espírito e realiza uma série de milagres — incluindo a cura da lepra de Naamã — ao longo de um ministério profético que atravessa vários reinados.","retrato":"assets/retratos/eliseu.svg","reveals":[]},"naama":{"kind":"minor","nome":"Naamã","rel":null,"era":"1-2 Reis · O reino dividido","refs":"2 Rs 5","resumo":"Comandante do exército arameu (sírio) que sofre de lepra. Segue o conselho de uma jovem serva israelita e vai ter com o profeta Eliseu, que o cura depois de ele mergulhar sete vezes no rio Jordão — apesar da sua relutância inicial.","retrato":"assets/retratos/naama.svg","reveals":[]},"josias":{"kind":"minor","nome":"Josias","rel":null,"era":"1-2 Reis · O reino dividido","refs":"2 Rs 22–23","resumo":"Torna-se rei de Judá aos oito anos, e já jovem adulto promove a maior reforma religiosa da história do reino depois de o Livro da Lei ser redescoberto durante obras de restauro no Templo.","retrato":"assets/retratos/josias.svg","reveals":["joaquim","sedequias"]},"joaquim":{"kind":"minor","nome":"Joaquim","rel":"filho de Josias","era":"Jeremias","refs":"Jr 22; 26; 36; 2 Rs 23–24","resumo":"Rei de Judá, filho de Josias, colocado no trono pelo Faraó egípcio. Reage com desprezo às profecias de Jeremias — corta e queima pedaço a pedaço o rolo que Baruque tinha escrito, sem qualquer temor (Jr 36:23).","retrato":"assets/retratos/joaquim.svg","reveals":[]},"sedequias":{"kind":"standard","nome":"Sedequias","rel":"filho de Josias","era":"Jeremias","refs":"Jr 21; 37–39; 2 Rs 24–25","resumo":"Último rei de Judá, filho de Josias, colocado no trono por Nabucodonosor depois do exílio do seu sobrinho. Consulta Jeremias repetidamente em segredo, mas nunca tem a coragem de agir segundo os seus conselhos — acaba por se revoltar contra a Babilónia, o que leva à destruição final de Jerusalém.","retrato":"assets/retratos/sedequias.svg","reveals":[]},"acaz":{"kind":"standard","nome":"Acaz","rel":null,"era":"Isaías","refs":"Is 7; 2 Rs 16","resumo":"Rei de Judá que, perante a ameaça de uma coligação de Israel e Aram, recusa pedir um sinal a Deus através de Isaías — que lhe anuncia mesmo assim o sinal do Emanuel (\"Deus connosco\"). Prefere procurar a proteção do império assírio, pagando um pesado tributo.","retrato":"assets/retratos/acaz.svg","reveals":["ezequias"]},"ezequias":{"kind":"minor","nome":"Ezequias","rel":"filho de Acaz","era":"1-2 Reis · O reino dividido","refs":"2 Rs 18–20","resumo":"Rei de Judá lembrado como um dos grandes reformadores religiosos, remove os altares idólatras espalhados pelo reino e confia em Deus perante o cerco assírio a Jerusalém, que é levantado milagrosamente.","retrato":"assets/retratos/ezequias.svg","reveals":[]},"uzias":{"kind":"minor","nome":"Uzias","rel":null,"era":"Isaías","refs":"Is 6:1; 2 Rs 15; 2 Cr 26","resumo":"Rei de Judá com um reinado longo e próspero, mas que termina em tragédia: ao entrar no templo para queimar incenso, um ato reservado aos sacerdotes, é ferido com lepra e vive isolado até à morte. É \"no ano em que morreu o rei Uzias\" que Isaías tem a visão da sua vocação profética (Is 6:1).","retrato":"assets/retratos/uzias.svg","reveals":[]},"isaias":{"kind":"major","nome":"Isaías","rel":null,"era":"Isaías","refs":"Is 1–66","resumo":"Profeta de Judá, com um ministério que atravessa os reinados de Uzias a Ezequias (cerca de 740–700 a.C.), chamado numa visão do templo — \"Aqui estou, envia-me\" (Is 6:8). Anuncia tanto o juízo sobre a infidelidade de Judá como a esperança de um Messias e de um \"resto\" fiel que sobrevive.","retrato":"assets/retratos/isaias.svg","reveals":[]},"senaqueribe":{"kind":"standard","nome":"Senaqueribe","rel":null,"era":"Isaías","refs":"Is 36–37; 2 Rs 18–19","resumo":"Rei do Império Assírio que invade Judá e cerca Jerusalém durante o reinado de Ezequias, exigindo a rendição da cidade através dos seus enviados. O cerco é levantado sem que a cidade caia — um episódio que a tradição bíblica atribui à intervenção divina, em resposta à oração de Ezequias e ao anúncio de Isaías.","retrato":"assets/retratos/senaqueribe.svg","reveals":[]},"jeremias":{"kind":"major","nome":"Jeremias","rel":null,"era":"Jeremias","refs":"Jr 1–52","resumo":"Profeta de Judá durante os últimos reis antes do exílio, chamado por Deus ainda muito jovem (\"antes de te formar no ventre, eu te conheci\", Jr 1:5). Anuncia com dor a destruição de Jerusalém como castigo pela infidelidade do povo, sendo perseguido, preso e quase morto por isso — mas também promete uma \"nova aliança\" escrita no coração (Jr 31:31-34).","retrato":"assets/retratos/jeremias.svg","reveals":[]},"baruque":{"kind":"standard","nome":"Baruque","rel":null,"era":"Jeremias","refs":"Jr 32; 36; 45","resumo":"Escriba fiel de Jeremias, escreve por ditado os seus oráculos num rolo — que o rei Joaquim manda queimar, obrigando-o a escrevê-lo de novo (Jr 36). É um dos raros companheiros que permanece ao lado do profeta durante toda a perseguição.","retrato":"assets/retratos/baruque.svg","reveals":[]},"godolias":{"kind":"minor","nome":"Godolias","rel":null,"era":"Jeremias","refs":"Jr 40–41; 2 Rs 25","resumo":"Nomeado governador de Judá pelos babilónios depois da queda de Jerusalém, tenta reconstruir alguma normalidade e protege ativamente Jeremias. É assassinado poucos meses depois por um membro da família real, um crime que provoca uma nova vaga de fuga para o Egito.","retrato":"assets/retratos/godolias.svg","reveals":[]},"ebede_meleque":{"kind":"minor","nome":"Ebede-Meleque","rel":null,"era":"Jeremias","refs":"Jr 38","resumo":"Funcionário do palácio de origem etíope (cuxita), intervém corajosamente junto do rei Sedequias para resgatar Jeremias de uma cisterna de lama onde tinha sido deixado a morrer por opositores do profeta. Puxa-o para fora com cordas e panos velhos, para não lhe ferir os braços.","retrato":"assets/retratos/ebede_meleque.svg","reveals":[]},"nabucodonosor":{"kind":"standard","nome":"Nabucodonosor","rel":null,"era":"Jeremias","refs":"Jr 25; 39; 52; 2 Rs 24–25","resumo":"Rei do Império Babilónico, conquista Jerusalém depois de vários cercos, destrói o Templo de Salomão e leva grande parte da população para o exílio na Babilónia. Jeremias chega a chamar-lhe \"servo\" de Deus (Jr 25:9), um instrumento de castigo apesar de não o saber.","retrato":"assets/retratos/nabucodonosor.svg","reveals":[]},"oseias":{"kind":"standard","nome":"Oséias","rel":null,"era":"Oséias","refs":"Os 1–3","resumo":"Profeta do Reino de Israel (norte), pouco antes da sua queda. Deus manda-o casar com Gómer, cujo comportamento infiel se torna um sinal vivo do próprio comportamento de Israel para com Deus — mas Oséias vai buscá-la de volta, um gesto que espelha o amor fiel de Deus que nunca desiste do seu povo.","retrato":"assets/retratos/oseias.svg","reveals":["gomer"],"spouseDirect":["gomer"]},"gomer":{"kind":"minor","nome":"Gómer","rel":"casada com Oséias","era":"Oséias","refs":"Os 1–3","resumo":"Mulher de Oséias, cujo casamento difícil e cheio de infidelidades se torna, por ordem de Deus, um sinal profético da relação entre Deus e Israel. Apesar de tudo, Oséias vai buscá-la de volta e reconstrói o casamento — uma imagem do amor de Deus que continua fiel mesmo quando não é correspondido.","retrato":"assets/retratos/gomer.svg","reveals":[]},"amos":{"kind":"standard","nome":"Amós","rel":null,"era":"Amós","refs":"Am 1–9; 7:10-17","resumo":"Pastor e cultivador de sicómoros de Tecoa, chamado por Deus para profetizar contra as injustiças sociais do Reino de Israel (norte) — a exploração dos pobres, a corrupção dos ricos, um culto religioso vazio sem justiça verdadeira.","retrato":"assets/retratos/amos.svg","reveals":[]},"amasias":{"kind":"minor","nome":"Amasias","rel":null,"era":"Amós","refs":"Am 7:10-17","resumo":"Sacerdote do santuário real de Betel, no Reino de Israel, confronta Amós e manda-o voltar para Judá, acusando-o de perturbar a paz do reino com as suas profecias de castigo.","retrato":"assets/retratos/amasias.svg","reveals":[]},"ezequiel":{"kind":"major","nome":"Ezequiel","rel":null,"era":"Ezequiel","refs":"Ez 1–48","resumo":"Sacerdote e profeta levado para o exílio em Babilónia, tem visões impressionantes — a glória de Deus sobre um carro de fogo com quatro rostos, e o vale dos ossos secos que ganham vida (Ez 37), símbolo da esperança de renascimento para um povo que se sente morto pelo exílio.","retrato":"assets/retratos/ezequiel.svg","reveals":[]},"jonas":{"kind":"standard","nome":"Jonas","rel":null,"era":"Jonas","refs":"Jn 1–4","resumo":"Profeta que tenta fugir da missão de anunciar o castigo de Deus a Nínive, capital do império assírio, e é engolido por um grande peixe durante três dias antes de ser lançado em terra. Quando finalmente prega, toda a cidade se converte — mas Jonas fica aborrecido por Deus ter perdoado os seus inimigos.","retrato":"assets/retratos/jonas.svg","reveals":[]},"miqueias":{"kind":"minor","nome":"Miqueias","rel":null,"era":"Miqueias","refs":"Mi 1–7","resumo":"Profeta contemporâneo de Isaías, denuncia a injustiça social e a opressão dos poderosos sobre os pequenos agricultores de Judá. É dele a profecia que anuncia Belém como o lugar de nascimento do futuro rei prometido por Deus (Mi 5:2), mais tarde lida como referência a Jesus.","retrato":"assets/retratos/miqueias.svg","reveals":[]},"naum":{"kind":"minor","nome":"Naum","rel":null,"era":"Naum","refs":"Na 1–3","resumo":"Profeta que anuncia a queda da poderosa Nínive, capital do império assírio que décadas antes se tinha arrependido com a pregação de Jonas — agora volta às suas crueldades e é destruída, cumprindo o aviso de que nenhum império é demasiado forte para escapar ao julgamento de Deus.","retrato":"assets/retratos/naum.svg","reveals":[]},"habacuc":{"kind":"minor","nome":"Habacuc","rel":null,"era":"Habacuc","refs":"Hab 1–3","resumo":"Profeta que ousa perguntar diretamente a Deus porque permite que o mal e a injustiça pareçam vencer, e porque usa um povo violento (a Babilónia) para castigar Judá. Termina em confiança: \"o justo viverá pela sua fé\" (Hab 2:4), mesmo sem todas as respostas.","retrato":"assets/retratos/habacuc.svg","reveals":[]},"sofonias":{"kind":"minor","nome":"Sofonias","rel":null,"era":"Sofonias","refs":"Sf 1–3","resumo":"Profeta durante o reinado de Josias, anuncia o \"Dia do Senhor\" — um julgamento severo sobre Judá e as nações vizinhas pela idolatria — mas termina com uma das promessas mais alegres de todo o Antigo Testamento: Deus a cantar de alegria pelo seu povo (Sf 3:17).","retrato":"assets/retratos/sofonias.svg","reveals":[]},"ageu":{"kind":"minor","nome":"Ageu","rel":null,"era":"Ageu","refs":"Ag 1–2","resumo":"Profeta que anima o povo, recém-regressado do exílio babilónico, a retomar a reconstrução do Templo de Jerusalém, que tinha ficado parada por desânimo. Em poucos meses, o seu incentivo direto e prático leva as obras a recomeçar.","retrato":"assets/retratos/ageu.svg","reveals":[]},"zacarias":{"kind":"minor","nome":"Zacarias","rel":null,"era":"Zacarias","refs":"Zc 1–14","resumo":"Profeta contemporâneo de Ageu, anima também a reconstrução do Templo através de visões simbólicas — cavalos de cores, um sumo sacerdote purificado, um rei humilde que entra em Jerusalém montado num jumentinho (Zc 9:9), uma imagem que os Evangelhos aplicam a Jesus.","retrato":"assets/retratos/zacarias.svg","reveals":[]},"malaquias":{"kind":"minor","nome":"Malaquias","rel":null,"era":"Malaquias","refs":"Ml 1–3","resumo":"Último dos profetas do Antigo Testamento na ordem tradicional, critica sacerdotes desleixados e um povo que deixou de confiar em Deus, mas termina com a promessa de um \"mensageiro\" que prepara o caminho antes de um grande Dia do Senhor — lida pela tradição cristã como anúncio de João Batista.","retrato":"assets/retratos/malaquias.svg","reveals":[]},"joel":{"kind":"minor","nome":"Joel","rel":null,"era":"Joel","refs":"Jl 1–3","resumo":"Profeta que descreve uma devastadora praga de gafanhotos como aviso do \"Dia do Senhor\", e chama o povo ao jejum e à conversão sincera. Promete que Deus um dia \"derramará o seu Espírito sobre toda a carne\" (Jl 2:28) — uma profecia que São Pedro cita no dia de Pentecostes (Atos 2).","retrato":"assets/retratos/joel.svg","reveals":[]},"abdias":{"kind":"minor","nome":"Abdias","rel":null,"era":"Abdias","refs":"Abd 1","resumo":"Autor do mais curto de todos os livros do Antigo Testamento (só um capítulo), anuncia o castigo de Edom por se ter alegrado e aproveitado da queda de Jerusalém em vez de ajudar um povo vizinho e aparentado.","retrato":"assets/retratos/abdias.svg","reveals":[]},"saul":{"kind":"major","nome":"Saul","rel":null,"era":"1 Samuel · Saul e David","refs":"1 Sm 9–31","resumo":"Escolhido por sorte divina e ungido por Samuel, torna-se o primeiro rei de Israel. Vitorioso no início, vai-se progressivamente afastando de Deus por desobediência e ciúme de David, terminando a vida em derrota e suicídio numa batalha contra os filisteus.","retrato":"assets/retratos/saul.svg","reveals":["jonatas","mical"]},"jonatas":{"kind":"standard","nome":"Jónatas","rel":"filho de Saul","era":"1 Samuel · Saul e David","refs":"1 Sm 14; 18–20; 31","resumo":"Filho mais velho de Saul e herdeiro do trono, torna-se o melhor amigo de David e ajuda-o repetidamente a escapar da ira do próprio pai, apesar de isso significar abdicar do seu direito à coroa. Morre ao lado de Saul na batalha do monte Gilboa.","retrato":"assets/retratos/jonatas.svg","reveals":[]},"cap_0":{"kind":"capitulo","nome":"As Origens","home":[260,180],"reveals":["adao","noe"]},"cap_1":{"kind":"capitulo","nome":"Os Patriarcas","home":[580,180],"reveals":["abraao"]},"cap_2":{"kind":"capitulo","nome":"O Êxodo","home":[900,180],"reveals":["moises","miriam","arao","farao"]},"cap_3":{"kind":"capitulo","nome":"Josué e os Juízes","home":[1220,180],"reveals":["josue","calebe","otoniel","eude","debora","baraque","jael","gideao","jefte","sansao","dalila","noemi","rute"]},"cap_4":{"kind":"capitulo","nome":"Os Reis","home":[260,500],"reveals":["elcana","eli","jesse","golias","natan","rainha_seba","jeroboao","elias","acab","eliseu","naama","josias","saul"]},"cap_5":{"kind":"capitulo","nome":"Os Grandes Profetas","home":[580,500],"reveals":["acaz","uzias","isaias","senaqueribe","jeremias","baruque","godolias","ebede_meleque","nabucodonosor","ezequiel"]},"cap_6":{"kind":"capitulo","nome":"Os Profetas Menores","home":[900,500],"reveals":["oseias","amos","amasias","jonas","miqueias","naum","habacuc","sofonias","ageu","zacarias","malaquias","joel","abdias"]}};
+const weakRefs = [{"a":"sete","b":"noe","type":"descendant","label":"8 gerações · Gn 5"},{"a":"sem","b":"abraao","type":"descendant","label":"9 gerações · Gn 11"},{"a":"jacob","b":"moises","type":"descendant","label":"4 gerações, via Levi · Êx 6"},{"a":"jacob","b":"miriam","type":"descendant","label":"4 gerações, via Levi · Êx 6"},{"a":"jacob","b":"arao","type":"descendant","label":"4 gerações, via Levi · Êx 6"},{"a":"salomao","b":"ezequias","type":"descendant","label":"12 gerações · 2 Rs 15-18"},{"a":"salomao","b":"josias","type":"descendant","label":"15 gerações · 2 Rs 21-22"},{"a":"uzias","b":"acaz","type":"descendant","label":"2 gerações, via Jotão · 2 Rs 15-16"},{"a":"ezequias","b":"josias","type":"descendant","label":"3 gerações, via Manassés e Amon · 2 Rs 20-21"},{"a":"ezequias","b":"sofonias","type":"descendant","label":"4 gerações, tradicional · Sf 1:1"},{"a":"booz","b":"jesse","type":"descendant","label":"2 gerações, via Obede · Rt 4:17,22"},{"a":"rute","b":"jesse","type":"descendant","label":"2 gerações, via Obede · Rt 4:17,22"},{"a":"efraim","b":"josue","type":"descendant","label":"várias gerações, incerta · 1 Cr 7:20-27"},{"a":"juda","b":"jesse","type":"descendant","label":"9 gerações, via Peres · Rt 4:18-22"},{"a":"noemi","b":"rute","type":"affinity","label":"sogra e nora"}];
+
+
+/* ---------------- simulation state ---------------- */
+const W = 1400, H = 900, CX = W/2, CY = H/2;
+const sim = new Map(); // id -> {x,y,vx,vy,kind,nome,rel,expanded,born}
+let scale = 1, tx = 0, ty = 0;
+
+function addNode(id, atX, atY) {
+  const def = defs[id];
+  sim.set(id, {
+    id, nome: def.nome, kind: def.kind, rel: def.rel || null,
+    expanded: false, x: atX, y: atY, vx: 0, vy: 0, born: performance.now(),
+    visualR: radiusFor(def.kind)
+  });
+}
+
+// Quando um capítulo está aberto, os outros encolhem e vão para uma faixa
+// lateral — dão o ecrã todo às personagens do capítulo escolhido, mas
+// continuam visíveis e clicáveis para mudares de capítulo.
+const capitulIds = Object.keys(defs).filter(id => defs[id].kind === 'capitulo');
+function anyCapExpanded() {
+  return capitulIds.some(cid => { const n = sim.get(cid); return n && n.expanded; });
+}
+function effectiveHome(id) {
+  const d = defs[id];
+  if (!d.home) return null;
+  if (d.kind !== 'capitulo' || !anyCapExpanded()) return d.home;
+  const n = sim.get(id);
+  if (n && n.expanded) {
+    // Palco principal, bem afastado da faixa lateral — um lugar próprio
+    // por capítulo aberto, para não se empilharem uns sobre os outros.
+    const expandedIds = capitulIds.filter(cid => { const cn = sim.get(cid); return cn && cn.expanded; });
+    const idx = Math.max(0, expandedIds.indexOf(id));
+    return [560 + idx * 520, 460];
+  }
+  const idx = capitulIds.indexOf(id);
+  return [70, 170 + idx * 68];
+}
+const SIDE_RADIUS = 15;
+function targetRadiusFor(n) {
+  const d = defs[n.id];
+  if (d.kind !== 'capitulo' || !anyCapExpanded() || n.expanded) return radiusFor(n.kind);
+  return SIDE_RADIUS;
+}
+
+// Todas as personagens-raiz (sem pais registados na Bíblia) começam
+// visíveis, fechadas, ancoradas na sua posição de grelha.
+function bootstrap() {
+  sim.clear();
+  Object.keys(defs).filter(id => defs[id].home).forEach(id => {
+    const [hx, hy] = defs[id].home;
+    addNode(id, hx, hy);
+  });
+}
+bootstrap();
+function collapseAll() {
+  bootstrap();
+  render();
+  resetView();
+  wake();
+}
+
+function edgeKind(fromId, toId) {
+  if (defs[fromId].kind === 'uniao') return 'descent';
+  if (defs[toId].kind === 'uniao') return 'stem';
+  if (defs[fromId].spouseDirect && defs[fromId].spouseDirect.includes(toId)) return 'spouseDirect';
+  return 'direct';
+}
+function edgesFor(id) {
+  return (defs[id].reveals || []).filter(cid => sim.has(cid)).map(cid => ({ a: id, b: cid, kind: edgeKind(id, cid) }));
+}
+function allEdges() {
+  let out = [];
+  for (const id of sim.keys()) out = out.concat(edgesFor(id));
+  return out;
+}
+
+function toggleExpand(id) {
+  const n = sim.get(id);
+  if (!n) return;
+  const targets = defs[id].reveals || [];
+  if (targets.length === 0) return;
+  n.expanded = !n.expanded;
+  if (n.expanded) {
+    // Nasce já espalhado num pequeno leque à volta do pai — nascer todos
+    // colados ao mesmo ponto obrigava a física a desfazer sobreposições
+    // sozinha, e o "sono" rápido podia travar antes disso acontecer.
+    const newTargets = targets.filter(cid => !sim.has(cid));
+    const baseAngle = Math.random() * Math.PI * 2;
+    newTargets.forEach((cid, i) => {
+      const dist = restLengthFor(edgeKind(id, cid));
+      const angle = baseAngle + (i / Math.max(newTargets.length, 1)) * Math.PI * 2;
+      addNode(cid, n.x + Math.cos(angle) * dist, n.y + Math.sin(angle) * dist);
+    });
+  } else {
+    collapseSubtree(id);
+  }
+  render();
+  wake();
+}
+function collapseSubtree(id) {
+  const n = sim.get(id);
+  (defs[id].reveals || []).forEach(cid => {
+    if (sim.has(cid)) {
+      collapseSubtree(cid);
+      sim.delete(cid);
+    }
+  });
+  if (n) n.expanded = false;
+}
+
+/* ---------------- physics ---------------- */
+function restLengthFor(kind) { return kind === 'stem' ? 55 : kind === 'descent' ? 70 : kind === 'spouseDirect' ? 60 : 130; }
+
+// A simulação adormece assim que assenta — nada fica a tremer para sempre,
+// e volta a acordar sozinha sempre que abres/fechas um nó ou fazes pan/zoom.
+// `alpha` é um "arrefecimento" global (como no d3-force): começa em 1 e
+// desce sempre, por isso o sistema tem SEMPRE de parar num tempo previsível,
+// nunca fica preso a oscilar por causa de molas/repulsão mais teimosas.
+let asleep = false;
+let calmFrames = 0;
+let alpha = 1;
+const SLEEP_SPEED = 0.12, SLEEP_AFTER = 15, ALPHA_DECAY = 0.975;
+
+function wake() {
+  alpha = 1;
+  if (asleep) {
+    asleep = false;
+    calmFrames = 0;
+    requestAnimationFrame(tick);
+  }
+}
+
+function tick() {
+  const nodes = [...sim.values()];
+  const REPEL = 2200, SPRING_K = 0.012, DAMP = 0.6, ERA_ANCHOR_K = 0.05;
+
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i+1; j < nodes.length; j++) {
+      const a = nodes[i], b = nodes[j];
+      let dx = a.x - b.x, dy = a.y - b.y;
+      let d2 = dx*dx + dy*dy; if (d2 < 1) d2 = 1;
+      const d = Math.sqrt(d2);
+      const f = (REPEL / d2) * alpha;
+      const fx = (dx/d) * f, fy = (dy/d) * f;
+      a.vx += fx; a.vy += fy;
+      b.vx -= fx; b.vy -= fy;
+    }
+  }
+  allEdges().forEach(e => {
+    const a = sim.get(e.a), b = sim.get(e.b);
+    let dx = b.x - a.x, dy = b.y - a.y;
+    const d = Math.max(Math.sqrt(dx*dx+dy*dy), 1);
+    const rest = restLengthFor(e.kind);
+    const diff = d - rest;
+    const fx = (dx/d) * diff * SPRING_K * alpha, fy = (dy/d) * diff * SPRING_K * alpha;
+    a.vx += fx; a.vy += fy;
+    b.vx -= fx; b.vy -= fy;
+  });
+  let maxSpeed = 0;
+  nodes.forEach(n => {
+    const home = effectiveHome(n.id);
+    if (home) {
+      n.vx += (home[0] - n.x) * ERA_ANCHOR_K; n.vy += (home[1] - n.y) * ERA_ANCHOR_K;
+    }
+    n.visualR += (targetRadiusFor(n) - n.visualR) * 0.18;
+    n.vx *= DAMP; n.vy *= DAMP;
+    if (Math.abs(n.vx) < 0.05) n.vx = 0;
+    if (Math.abs(n.vy) < 0.05) n.vy = 0;
+    n.x += n.vx; n.y += n.vy;
+    maxSpeed = Math.max(maxSpeed, Math.abs(n.vx), Math.abs(n.vy));
+  });
+
+  // Nó de casamento: como numa árvore genealógica em papel, fica sempre
+  // exatamente sobre a linha que une os dois cônjuges — nunca à deriva.
+  sim.forEach(n => {
+    if (defs[n.id].kind !== 'uniao') return;
+    const [aId, bId] = defs[n.id].spouses;
+    const a = sim.get(aId), b = sim.get(bId);
+    if (!a || !b) return;
+    n.x = (a.x + b.x) / 2;
+    n.y = (a.y + b.y) / 2;
+    n.vx = 0; n.vy = 0;
+  });
+
+  draw();
+
+  // Enquanto a física está acordada (algo acabou de abrir/fechar), garante
+  // que tudo continua visível — nunca deixa nada sair do ecrã sozinho. Se
+  // arrastares/deres zoom à mão depois disto assentar, isso já não mexe.
+  if (!fitting && !everythingInView()) {
+    fitting = true;
+    fitView();
+  }
+
+  alpha *= ALPHA_DECAY;
+  if (maxSpeed < SLEEP_SPEED || alpha < 0.01) {
+    calmFrames++;
+    if (calmFrames > SLEEP_AFTER) { asleep = true; return; }
+  } else {
+    calmFrames = 0;
+  }
+  requestAnimationFrame(tick);
+}
+
+/* ---------------- rendering ---------------- */
+const world = document.getElementById('world');
+const edgeLayer = document.getElementById('edgeLayer');
+const nodeLayer = document.getElementById('nodeLayer');
+let needsFullRender = true;
+
+function radiusFor(kind) { return kind === 'capitulo' ? 36 : kind === 'major' ? 24 : kind === 'standard' ? 16 : kind === 'uniao' ? 8 : 11; }
+
+function render() {
+  needsFullRender = true;
+}
+
+function starShape(n, r) {
+  const d = defs[n.id];
+  if (n.kind === 'uniao') {
+    // losango (quadrado a 45°) para o nó de casamento
+    return `<rect class="star" x="${-r}" y="${-r}" width="${r*2}" height="${r*2}"
+              transform="rotate(45)" filter="url(#glow)"></rect>`;
+  }
+  if (d.retrato && n.kind !== 'capitulo') {
+    const clipId = 'clip_' + n.id;
+    return `
+      <clipPath id="${clipId}"><circle r="${r}"></circle></clipPath>
+      <circle class="star" r="${r}" filter="url(#glow)"></circle>
+      <image href="../../${d.retrato}" x="${-r}" y="${-r}" width="${r*2}" height="${r*2}" clip-path="url(#${clipId})" preserveAspectRatio="xMidYMid slice"></image>
+      <circle r="${r}" fill="none" stroke="rgba(20,15,10,.35)" stroke-width="1"></circle>
+    `;
+  }
+  return `<circle class="star" r="${r}" filter="url(#glow)"></circle>`;
+}
+
+function draw() {
+  world.setAttribute('transform', `translate(${tx},${ty}) scale(${scale})`);
+
+  if (needsFullRender) {
+    nodeLayer.innerHTML = '';
+    sim.forEach(n => {
+      const hasMore = (defs[n.id].reveals || []).length > 0;
+      const isNew = performance.now() - n.born < 350;
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.setAttribute('class', `node ${n.kind} ${hasMore && !n.expanded ? 'expandable' : ''} node-group` + (isNew ? ' pop-in' : ''));
+      g.setAttribute('data-id', n.id);
+      const r = radiusFor(n.kind);
+      g.innerHTML = `
+        <circle class="halo" r="${r+6}"></circle>
+        ${starShape(n, r)}
+        ${n.kind !== 'uniao' ? `<text class="name" y="${r+16}">${n.nome}</text>` : ''}
+        ${n.kind === 'capitulo' ? `<text class="clabel" y="${r+27}" style="fill:#d8c98a;">${(defs[n.id].reveals||[]).length} personagens</text>` : ''}
+        ${n.rel ? `<text class="clabel" y="${r+27}" style="fill:#d8c98a;">${n.rel}</text>` : ''}
+        ${hasMore && !n.expanded ? `<circle class="badge-bg" cx="${r-2}" cy="${-r+2}" r="7"></circle><text class="badge" x="${r-2}" y="${-r+5}">+</text>` : ''}
+      `;
+      g.addEventListener('click', () => toggleExpand(n.id));
+      if (n.kind !== 'uniao' && n.kind !== 'capitulo') {
+        g.addEventListener('mouseenter', (ev) => showTooltip(n.id, ev));
+        g.addEventListener('mousemove', moveTooltip);
+        g.addEventListener('mouseleave', hideTooltip);
+      }
+      nodeLayer.appendChild(g);
+    });
+    needsFullRender = false;
+  }
+
+  sim.forEach(n => {
+    const g = nodeLayer.querySelector(`[data-id="${n.id}"]`);
+    if (!g) return;
+    g.setAttribute('transform', `translate(${n.x},${n.y})`);
+    g.classList.toggle('side', defs[n.id].kind === 'capitulo' && n.visualR < radiusFor('capitulo') - 4);
+    const r = n.visualR;
+    const halo = g.querySelector('.halo'); if (halo) halo.setAttribute('r', r + 6);
+    const star = g.querySelector('.star');
+    if (star && star.tagName === 'circle') star.setAttribute('r', r);
+    const nameEl = g.querySelector('.name'); if (nameEl) nameEl.setAttribute('y', r + 16);
+    const clabel = g.querySelector('.clabel'); if (clabel) clabel.setAttribute('y', r + 27);
+    const badgeBg = g.querySelector('.badge-bg'); if (badgeBg) { badgeBg.setAttribute('cx', r - 2); badgeBg.setAttribute('cy', -r + 2); }
+    const badgeTxt = g.querySelector('.badge'); if (badgeTxt) { badgeTxt.setAttribute('x', r - 2); badgeTxt.setAttribute('y', -r + 5); }
+  });
+
+  let edgeSvg = '';
+  allEdges().forEach(e => {
+    const a = sim.get(e.a), b = sim.get(e.b);
+    edgeSvg += `<line class="cline ${e.kind}" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"></line>`;
+  });
+  // Referências fracas (várias gerações, parentesco por casamento) — só
+  // aparecem quando ambas as pontas já estão visíveis por conta própria.
+  weakRefs.forEach(ref => {
+    const a = sim.get(ref.a), b = sim.get(ref.b);
+    if (!a || !b) return;
+    edgeSvg += `<line class="cline weak" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"></line>`;
+  });
+  edgeLayer.innerHTML = edgeSvg;
+}
+
+/* ---------------- background decorative stars (static, outside world transform) ---------------- */
+const bgLayer = document.getElementById('bgLayer');
+let bgSvg = '';
+for (let i = 0; i < 140; i++) {
+  const x = Math.random()*W, y = Math.random()*H, r = Math.random()*1.3+0.3, o = Math.random()*0.5+0.1;
+  bgSvg += `<circle class="bgstar" cx="${x}" cy="${y}" r="${r}" opacity="${o}"></circle>`;
+}
+bgLayer.innerHTML = bgSvg;
+
+/* ---------------- caber tudo no ecrã ---------------- */
+// Margem à volta de cada nó, em unidades do mundo, que reserva espaço para
+// o nome e a etiqueta de parentesco por baixo — sem isto o texto ficava de
+// fora mesmo com o círculo dentro do ecrã.
+const LABEL_MARGIN = 44;
+// A barra de título fica fixa por cima do SVG — nunca deixamos um nó (ou o
+// seu texto) ser colocado por baixo dela.
+const SAFE_TOP = 110;
+
+function everythingInView() {
+  for (const n of sim.values()) {
+    const r = radiusFor(n.kind) + LABEL_MARGIN;
+    const sx = n.x * scale + tx, sy = n.y * scale + ty;
+    const rs = r * scale;
+    if (sx - rs < 0 || sx + rs > W || sy - rs < SAFE_TOP || sy + rs > H) return false;
+  }
+  return true;
+}
+
+let fitting = false;
+function fitView() {
+  const nodes = [...sim.values()];
+  if (nodes.length === 0) { fitting = false; return; }
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  nodes.forEach(n => {
+    const r = radiusFor(n.kind) + LABEL_MARGIN;
+    minX = Math.min(minX, n.x - r); maxX = Math.max(maxX, n.x + r);
+    minY = Math.min(minY, n.y - r); maxY = Math.max(maxY, n.y + r);
+  });
+  const bw = Math.max(maxX - minX, 1), bh = Math.max(maxY - minY, 1);
+  const availH = H - SAFE_TOP;
+  const targetScale = Math.min(3, Math.max(0.2, Math.min(W / bw, availH / bh)));
+  const targetTx = W / 2 - (minX + maxX) / 2 * targetScale;
+  const targetTy = SAFE_TOP + availH / 2 - (minY + maxY) / 2 * targetScale;
+  animateCameraTo(targetScale, targetTx, targetTy);
+}
+
+let camAnim = null;
+function animateCameraTo(targetScale, targetTx, targetTy, duration) {
+  camAnim = {
+    startScale: scale, startTx: tx, startTy: ty,
+    targetScale, targetTx, targetTy,
+    startTime: performance.now(), duration: duration || 450
+  };
+  requestAnimationFrame(stepCamAnim);
+}
+function stepCamAnim(now) {
+  if (!camAnim) return;
+  let t = (now - camAnim.startTime) / camAnim.duration;
+  if (t > 1) t = 1;
+  const ease = 1 - Math.pow(1 - t, 3);
+  scale = camAnim.startScale + (camAnim.targetScale - camAnim.startScale) * ease;
+  tx = camAnim.startTx + (camAnim.targetTx - camAnim.startTx) * ease;
+  ty = camAnim.startTy + (camAnim.targetTy - camAnim.startTy) * ease;
+  draw();
+  if (t < 1) {
+    requestAnimationFrame(stepCamAnim);
+  } else {
+    camAnim = null;
+    fitting = false;
+  }
+}
+
+/* ---------------- tooltip ao passar o rato ---------------- */
+const tooltip = document.getElementById('tooltip');
+function showTooltip(id, ev) {
+  const d = defs[id];
+  document.getElementById('ttEra').textContent = d.era || '';
+  document.getElementById('ttName').textContent = d.nome;
+  document.getElementById('ttRel').textContent = d.rel || '';
+  document.getElementById('ttRel').style.display = d.rel ? 'block' : 'none';
+  document.getElementById('ttResumo').textContent = d.resumo ? (d.resumo.length > 220 ? d.resumo.slice(0, 217) + '…' : d.resumo) : '';
+  document.getElementById('ttRefs').textContent = d.refs || '';
+  tooltip.classList.add('show');
+  positionTooltip(ev.clientX, ev.clientY);
+}
+function moveTooltip(ev) { positionTooltip(ev.clientX, ev.clientY); }
+function hideTooltip() { tooltip.classList.remove('show'); }
+function positionTooltip(x, y) {
+  const pad = 16;
+  let left = x + pad, top = y + pad;
+  if (left + 280 > window.innerWidth) left = x - 280 - pad;
+  if (top + 200 > window.innerHeight) top = y - 200 - pad;
+  tooltip.style.left = left + 'px';
+  tooltip.style.top = top + 'px';
+}
+
+/* ---------------- zoom & pan ---------------- */
+const stage = document.getElementById('stage');
+function zoomBy(factor, cx, cy) {
+  cx = cx ?? W/2; cy = cy ?? H/2;
+  const newScale = Math.min(3, Math.max(0.35, scale * factor));
+  const k = newScale / scale;
+  tx = cx - (cx - tx) * k;
+  ty = cy - (cy - ty) * k;
+  scale = newScale;
+}
+function resetView() { scale = 1; tx = 0; ty = 0; draw(); }
+
+// Zoom e pan são independentes da física — aplicam-se de imediato mesmo
+// com a simulação adormecida (draw() é só desenhar, não mexe em posições).
+stage.addEventListener('wheel', (ev) => {
+  ev.preventDefault();
+  const rect = stage.getBoundingClientRect();
+  const px = (ev.clientX - rect.left) * (W / rect.width);
+  const py = (ev.clientY - rect.top) * (H / rect.height);
+  zoomBy(ev.deltaY < 0 ? 1.12 : 0.89, px, py);
+  draw();
+}, { passive: false });
+
+let panning = false, lastX = 0, lastY = 0;
+stage.addEventListener('mousedown', (ev) => {
+  if (ev.target.closest('.node')) return;
+  panning = true; lastX = ev.clientX; lastY = ev.clientY;
+  stage.classList.add('panning');
+});
+window.addEventListener('mousemove', (ev) => {
+  if (!panning) return;
+  const rect = stage.getBoundingClientRect();
+  tx += (ev.clientX - lastX) * (W / rect.width);
+  ty += (ev.clientY - lastY) * (H / rect.height);
+  lastX = ev.clientX; lastY = ev.clientY;
+  draw();
+});
+window.addEventListener('mouseup', () => { panning = false; stage.classList.remove('panning'); });
+
+/* ---------------- toque (telemóvel/tablet) ---------------- */
+let touchPanning = false, touchLastX = 0, touchLastY = 0, pinchDist = 0;
+stage.addEventListener('touchstart', (ev) => {
+  if (ev.touches.length === 1) {
+    if (ev.target.closest('.node')) return; // deixa o toque simples abrir/fechar o nó
+    touchPanning = true;
+    touchLastX = ev.touches[0].clientX; touchLastY = ev.touches[0].clientY;
+  } else if (ev.touches.length === 2) {
+    touchPanning = false;
+    pinchDist = Math.hypot(ev.touches[0].clientX - ev.touches[1].clientX, ev.touches[0].clientY - ev.touches[1].clientY);
+  }
+}, { passive: true });
+stage.addEventListener('touchmove', (ev) => {
+  const rect = stage.getBoundingClientRect();
+  if (ev.touches.length === 1 && touchPanning) {
+    ev.preventDefault();
+    const t = ev.touches[0];
+    tx += (t.clientX - touchLastX) * (W / rect.width);
+    ty += (t.clientY - touchLastY) * (H / rect.height);
+    touchLastX = t.clientX; touchLastY = t.clientY;
+    draw();
+  } else if (ev.touches.length === 2) {
+    ev.preventDefault();
+    const dist = Math.hypot(ev.touches[0].clientX - ev.touches[1].clientX, ev.touches[0].clientY - ev.touches[1].clientY);
+    const cx = ((ev.touches[0].clientX + ev.touches[1].clientX) / 2 - rect.left) * (W / rect.width);
+    const cy = ((ev.touches[0].clientY + ev.touches[1].clientY) / 2 - rect.top) * (H / rect.height);
+    if (pinchDist > 0) zoomBy(dist / pinchDist, cx, cy);
+    pinchDist = dist;
+    draw();
+  }
+}, { passive: false });
+stage.addEventListener('touchend', (ev) => {
+  if (ev.touches.length === 0) { touchPanning = false; pinchDist = 0; }
+}, { passive: true });
+
+/* ---------------- pesquisa ---------------- */
+// Para cada id, guarda quem o revela (o pai, o cônjuge, o nó de casamento,
+// ou o capítulo) — permite andar para trás até à raiz e abrir o caminho todo.
+const revealedBy = {};
+Object.keys(defs).forEach(id => {
+  (defs[id].reveals || []).forEach(cid => { revealedBy[cid] = id; });
+});
+function pathToRoot(id) {
+  const path = [];
+  let cur = id;
+  while (revealedBy[cur]) { path.unshift(revealedBy[cur]); cur = revealedBy[cur]; }
+  return path;
+}
+function revealPerson(id) {
+  const path = pathToRoot(id);
+  path.forEach(pid => {
+    const n = sim.get(pid);
+    if (n && !n.expanded) toggleExpand(pid);
+  });
+  setTimeout(() => focusNode(id), 700);
+}
+function focusNode(id) {
+  const n = sim.get(id);
+  if (!n) return;
+  const targetScale = 1.5;
+  const availH = H - SAFE_TOP;
+  const targetTx = W / 2 - n.x * targetScale;
+  const targetTy = SAFE_TOP + availH / 2 - n.y * targetScale;
+  animateCameraTo(targetScale, targetTx, targetTy, 600);
+  const g = nodeLayer.querySelector(`[data-id="${id}"]`);
+  if (g) {
+    g.classList.add('found-highlight');
+    setTimeout(() => g.classList.remove('found-highlight'), 2400);
+  }
+}
+
+const searchablePeople = Object.keys(defs).filter(id => ['major', 'standard', 'minor'].includes(defs[id].kind));
+const searchBox = document.getElementById('searchBox');
+const searchResults = document.getElementById('searchResults');
+function normalizeSearch(s) { return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); }
+searchBox.addEventListener('input', () => {
+  const q = normalizeSearch(searchBox.value.trim());
+  if (!q) { searchResults.classList.remove('show'); searchResults.innerHTML = ''; return; }
+  const matches = searchablePeople.filter(id => normalizeSearch(defs[id].nome).includes(q)).slice(0, 8);
+  if (!matches.length) { searchResults.classList.remove('show'); searchResults.innerHTML = ''; return; }
+  searchResults.innerHTML = matches.map(id => `
+    <div class="search-result" data-id="${id}">
+      <span>${defs[id].nome}</span>
+      <span class="sr-era">${defs[id].era || ''}</span>
+    </div>
+  `).join('');
+  searchResults.classList.add('show');
+});
+searchResults.addEventListener('click', (ev) => {
+  const row = ev.target.closest('.search-result');
+  if (!row) return;
+  revealPerson(row.getAttribute('data-id'));
+  searchResults.classList.remove('show');
+  searchBox.value = defs[row.getAttribute('data-id')].nome;
+});
+
+render();
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>
