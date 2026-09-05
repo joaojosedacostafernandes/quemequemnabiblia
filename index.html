@@ -22,13 +22,12 @@
   </header>
 
   <div class="stage">
+    <aside id="eraStrip" class="era-strip" aria-label="Lista de épocas"></aside>
+
     <div class="graph-wrap">
-      <div class="breadcrumb-bar" id="breadcrumbBar" hidden>
-        <button id="backBtn" class="back-btn" type="button">&larr; Voltar ao percurso</button>
-        <span id="breadcrumbLabel" class="breadcrumb-label"></span>
-      </div>
+      <div id="graphEmpty" class="graph-empty">Escolhe uma época à esquerda para começares.</div>
       <!-- viewBox is a pre-load fallback only; app.js recomputes it at runtime for whichever view is showing -->
-      <svg id="graph" class="graph" viewBox="0 0 1200 500" role="group" aria-label="Mapa de personagens bíblicas e as suas relações">
+      <svg id="graph" class="graph" viewBox="0 0 1200 500" role="group" aria-label="Personagens bíblicas da época selecionada e as suas relações">
         <defs id="defs"></defs>
         <g id="edges"></g>
         <g id="nodes"></g>
@@ -43,7 +42,7 @@
     <aside id="panel">
       <button class="panel-close" id="panelClose" type="button">Fechar &times;</button>
       <div id="panelBody">
-        <p class="panel-empty">Escolhe uma personagem no mapa para conheceres a sua história, o contexto histórico, as referências bíblicas e a família.</p>
+        <p class="panel-empty">Escolhe uma personagem para conheceres a sua história, o contexto histórico, as referências bíblicas e a família.</p>
       </div>
     </aside>
   </div>
@@ -51,7 +50,7 @@
   <footer class="note">Os Personagens da Bíblia — Paróquia da Póvoa de Santa Iria.</footer>
 </div>
 <script src="js/layout.js"></script>
-<script src="js/render-path.js"></script>
+<script src="js/render-era-strip.js"></script>
 <script src="js/render-cluster.js"></script>
 <script src="app.js"></script>
 </body>
