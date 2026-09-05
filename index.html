@@ -8,50 +8,55 @@
 </head>
 <body>
 <div class="app">
-  <header class="topbar">
+  <div class="topbar">
     <div>
       <span class="eyebrow">Génesis a Malaquias</span>
       <h1>Os Personagens da Bíblia</h1>
     </div>
     <div class="search-wrap">
-      <input id="searchInput" class="search-input" type="text" placeholder="Procurar por nome, era ou livro…" autocomplete="off" aria-label="Procurar personagem, era ou livro">
+      <input id="searchBox" class="search-box" type="text" placeholder="Procura uma personagem (ex: David, Rute, Isaías)..." autocomplete="off" aria-label="Procurar personagem">
       <div id="searchResults" class="search-results" hidden></div>
     </div>
-    <p class="instructions">Escolhe uma era para explorares as suas personagens. Toca numa personagem para abrires a sua história.</p>
-    <div class="legend" id="legend"></div>
-  </header>
+    <p class="hint">Clica num capítulo para o abrir. Passa o rato por cima de uma personagem para uma prévia; clica para a história completa.</p>
+  </div>
 
-  <div class="stage">
-    <aside id="eraStrip" class="era-strip" aria-label="Lista de épocas"></aside>
-
-    <div class="graph-wrap">
-      <div id="graphEmpty" class="graph-empty">Escolhe uma época à esquerda para começares.</div>
-      <!-- viewBox is a pre-load fallback only; app.js recomputes it at runtime for whichever view is showing -->
-      <svg id="graph" class="graph" viewBox="0 0 1200 500" role="group" aria-label="Personagens bíblicas da época selecionada e as suas relações">
-        <defs id="defs"></defs>
-        <g id="edges"></g>
-        <g id="nodes"></g>
+  <div class="stage-row">
+    <div class="stage-wrap">
+      <svg id="stage" viewBox="0 0 1400 900">
+        <defs id="svgDefs">
+          <radialGradient id="majorGrad" cx="35%" cy="30%"><stop offset="0%" stop-color="#fff8e0"/><stop offset="55%" stop-color="#f0d060"/><stop offset="100%" stop-color="#c9a24a"/></radialGradient>
+          <radialGradient id="standardGrad" cx="35%" cy="30%"><stop offset="0%" stop-color="#e4e0f8"/><stop offset="55%" stop-color="#9a94d0"/><stop offset="100%" stop-color="#6b64a8"/></radialGradient>
+          <radialGradient id="minorGrad" cx="35%" cy="30%"><stop offset="0%" stop-color="#c9c6dc"/><stop offset="55%" stop-color="#7d76ad"/><stop offset="100%" stop-color="#524d78"/></radialGradient>
+          <radialGradient id="uniaoGrad" cx="35%" cy="30%"><stop offset="0%" stop-color="#ffe0ec"/><stop offset="55%" stop-color="#e8608f"/><stop offset="100%" stop-color="#a83a63"/></radialGradient>
+          <filter id="glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <g id="bgLayer"></g>
+        <g id="world">
+          <g id="edgeLayer"></g>
+          <g id="nodeLayer"></g>
+        </g>
       </svg>
       <div class="controls">
         <button id="zoomIn" type="button" aria-label="Ampliar">+</button>
         <button id="zoomOut" type="button" aria-label="Reduzir">&minus;</button>
         <button id="zoomReset" type="button" aria-label="Repor vista">&#8634;</button>
+        <button id="collapseAllBtn" type="button" aria-label="Fechar tudo">&#10558;</button>
       </div>
     </div>
 
     <aside id="panel">
       <button class="panel-close" id="panelClose" type="button">Fechar &times;</button>
       <div id="panelBody">
-        <p class="panel-empty">Escolhe uma personagem para conheceres a sua história, o contexto histórico, as referências bíblicas e a família.</p>
+        <p class="panel-empty">Passa o rato por uma personagem para uma prévia, ou clica para conheceres a sua história completa.</p>
       </div>
     </aside>
   </div>
 
   <footer class="note">Os Personagens da Bíblia — Paróquia da Póvoa de Santa Iria.</footer>
 </div>
-<script src="js/layout.js"></script>
-<script src="js/render-era-strip.js"></script>
-<script src="js/render-cluster.js"></script>
+<script src="js/reveal-graph.js"></script>
+<script src="js/physics.js"></script>
+<script src="js/render-graph.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
