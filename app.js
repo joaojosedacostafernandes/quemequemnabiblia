@@ -125,10 +125,34 @@
     });
 
     // --- revelar por id (partilhado pela pesquisa e pelas ligações noutras eras) ---
+    // BFS a partir dos capítulos (as únicas raízes verdadeiras) sobre o grafo
+    // de `reveals`: dá a cada nó exatamente um predecessor, sem ciclos.
+    // Um mapa "o último a escrever ganha" sobre `Object.keys(defs)` (versão
+    // anterior desta task) partia-se sempre que uma personagem casava: a
+    // união revela os dois cônjuges E cada cônjuge revela a união (para
+    // nenhum ficar sem caminho de revelação próprio — ver reveal-graph.js),
+    // o que cria sempre um ciclo de 2 nós entre uma personagem e a sua
+    // própria união conjugal. `pathToRoot` ficava presa num `while` infinito
+    // sempre que o alvo (ou um descendente seu) passava por esse ciclo —
+    // ex: pesquisar "Jacob" ou qualquer descendente dele congelava a página
+    // por completo (descoberto na verificação em browser real da Task 7).
+    // BFS nunca revisita um nó já visitado, por isso não há ciclo possível,
+    // e continua a alcançar personagens sem pais conhecidos (ex: Eva, Lia)
+    // através do cônjuge, exatamente como antes.
     var revealedBy = {};
-    Object.keys(defs).forEach(function (id) {
-      (defs[id].reveals || []).forEach(function (cid) { revealedBy[cid] = id; });
-    });
+    (function () {
+      var visited = {};
+      var queue = [];
+      Object.keys(defs).forEach(function (id) {
+        if (defs[id].kind === 'capitulo') { visited[id] = true; queue.push(id); }
+      });
+      while (queue.length) {
+        var cur = queue.shift();
+        (defs[cur].reveals || []).forEach(function (cid) {
+          if (!visited[cid]) { visited[cid] = true; revealedBy[cid] = cur; queue.push(cid); }
+        });
+      }
+    })();
     function pathToRoot(id) {
       var path = []; var cur = id;
       while (revealedBy[cur]) { path.unshift(revealedBy[cur]); cur = revealedBy[cur]; }

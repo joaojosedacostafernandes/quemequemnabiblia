@@ -61,8 +61,31 @@
     var allNodes = physics.getAllNodes();
 
     if (needsFullRender) {
-      nodeLayerEl.innerHTML = '';
+      // Diff em vez de "limpar tudo e recriar tudo": só cria `<g>` para ids
+      // genuinamente novos e só remove os que desapareceram (colapsados);
+      // nunca recria um elemento que já existe. `innerHTML = ''` + recriar
+      // tudo (versão anterior) destruía e recriava o `<g>` de TODAS as
+      // personagens em ecrã sempre que qualquer coisa mudava — incluindo a
+      // própria personagem que acabou de ser clicada. Com o rato parado
+      // sobre essa posição, o Chrome trata o elemento recriado como
+      // "novo" e volta a disparar `mouseenter` nele um frame depois, o
+      // que chamava `onNodeHover` outra vez e reescrevia a prévia por
+      // cima do cartão completo que o próprio clique acabara de mostrar
+      // (bug real, encontrado na verificação em browser real da Task 7:
+      // clicar numa personagem para ver a história completa mostrava a
+      // prévia em vez disso). Nunca recriar um `<g>` já existente resolve
+      // isto na origem.
+      var existing = {};
+      Array.prototype.forEach.call(nodeLayerEl.children, function (g) {
+        existing[g.getAttribute('data-id')] = g;
+      });
+      var wanted = {};
+      allNodes.forEach(function (n) { wanted[n.id] = true; });
+      Object.keys(existing).forEach(function (id) {
+        if (!wanted[id]) nodeLayerEl.removeChild(existing[id]);
+      });
       allNodes.forEach(function (n) {
+        if (existing[n.id]) return;
         var hasMore = (defs[n.id].reveals || []).length > 0;
         var isNew = performance.now() - n.born < 350;
         var g = document.createElementNS(SVG_NS, 'g');
@@ -75,7 +98,14 @@
           (n.kind !== 'uniao' ? '<text class="name" y="' + (r + 16) + '">' + n.nome + '</text>' : '') +
           (n.kind === 'capitulo' ? '<text class="clabel" y="' + (r + 27) + '" style="fill:#d8c98a;">' + (defs[n.id].reveals || []).length + ' personagens</text>' : '') +
           (n.rel ? '<text class="clabel" y="' + (r + 27) + '" style="fill:#d8c98a;">' + n.rel + '</text>' : '') +
-          (hasMore && !n.expanded ? '<circle class="badge-bg" cx="' + (r - 2) + '" cy="' + (-r + 2) + '" r="7"></circle><text class="badge" x="' + (r - 2) + '" y="' + (-r + 5) + '">+</text>' : '');
+          // Os elementos do badge existem sempre que a personagem alguma
+          // vez pode ser expandida (mesmo já expandida) — a sua
+          // visibilidade em cada frame é decidida no segundo `forEach`
+          // abaixo (`!n.expanded`), que corre para elementos novos e já
+          // existentes; só assim uma personagem que passa a expandida
+          // depois de já estar em ecrã perde o "+" sem precisar de ser
+          // recriada.
+          (hasMore ? '<circle class="badge-bg" cx="' + (r - 2) + '" cy="' + (-r + 2) + '" r="7"></circle><text class="badge" x="' + (r - 2) + '" y="' + (-r + 5) + '">+</text>' : '');
         // Eventos delegados via `callbacks` — este módulo nunca chama
         // `Physics.toggleExpand` (ou qualquer método que mude estado)
         // diretamente, só reporta intenção do utilizador para cima. Sem
@@ -102,14 +132,22 @@
       // (Task 5, style.css), fora da responsabilidade deste ficheiro.
       var isOpenChapter = defs[n.id].kind === 'capitulo' && n.expanded;
       g.classList.toggle('chapter-opened', isOpenChapter);
+      // Halo/badge de "dá para expandir" — recalculados todos os frames
+      // (não só na criação) para que uma personagem já em ecrã perca o
+      // "+"/halo assim que é expandida, sem precisar do `<g>` ser recriado
+      // (ver nota acima, sobre porque já não recriamos elementos existentes).
+      var hasMore = (defs[n.id].reveals || []).length > 0;
+      g.classList.toggle('expandable', hasMore && !n.expanded);
       var r = n.visualR;
       var halo = g.querySelector('.halo'); if (halo) halo.setAttribute('r', r + 6);
       var star = g.querySelector('.star');
       if (star && star.tagName === 'circle') star.setAttribute('r', r);
       var nameEl = g.querySelector('.name'); if (nameEl) nameEl.setAttribute('y', r + 16);
       var clabel = g.querySelector('.clabel'); if (clabel) clabel.setAttribute('y', r + 27);
-      var badgeBg = g.querySelector('.badge-bg'); if (badgeBg) { badgeBg.setAttribute('cx', r - 2); badgeBg.setAttribute('cy', -r + 2); }
-      var badgeTxt = g.querySelector('.badge'); if (badgeTxt) { badgeTxt.setAttribute('x', r - 2); badgeTxt.setAttribute('y', -r + 5); }
+      var badgeBg = g.querySelector('.badge-bg');
+      if (badgeBg) { badgeBg.setAttribute('cx', r - 2); badgeBg.setAttribute('cy', -r + 2); badgeBg.style.display = n.expanded ? 'none' : ''; }
+      var badgeTxt = g.querySelector('.badge');
+      if (badgeTxt) { badgeTxt.setAttribute('x', r - 2); badgeTxt.setAttribute('y', -r + 5); badgeTxt.style.display = n.expanded ? 'none' : ''; }
     });
 
     var edgeSvg = '';

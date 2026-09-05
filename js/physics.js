@@ -141,12 +141,32 @@
         // todos colados ao mesmo ponto obrigava a física a desfazer
         // sobreposições sozinha, e o "sono" rápido podia travar antes
         // disso acontecer.
+        //
+        // Origem do leque: o destino final do pai (`effectiveHome`), não a
+        // sua posição atual em ecrã. Para um capítulo, expandir muda logo o
+        // seu próprio alvo de âncora (palco principal em vez da faixa
+        // lateral), mas o capítulo em si só lá chega ao fim de uma migração
+        // gradual (âncora fraca, ERA_ANCHOR_K=0.05). Nascer os filhos à
+        // volta da posição ainda-não-migrada (ex: ainda na faixa lateral,
+        // x=70) deixava-os presos longe do capítulo quando este tinha vários
+        // capítulos abertos ao mesmo tempo (2º slot em x=1080) — a mola que
+        // os liga ao capítulo (SPRING_K=0.012) nunca ganhava ao decaimento
+        // de `alpha`/ao amortecimento a tempo de percorrer essa distância
+        // toda, e a simulação adormecia com eles a meio do ecrã, ligados
+        // por linhas compridas ao capítulo lá longe (bug real, encontrado na
+        // verificação em browser real da Task 7 ao abrir "Os Reis" com "Os
+        // Patriarcas" já aberto). Nascer já no destino final resolve isto:
+        // só falta espalhá-los localmente uns dos outros, que é o que a
+        // repulsão/mola já fazem bem.
+        var home = effectiveHome(id);
+        var originX = home ? home[0] : n.x;
+        var originY = home ? home[1] : n.y;
         var newTargets = targets.filter(function (cid) { return !sim.has(cid); });
         var baseAngle = Math.random() * Math.PI * 2;
         newTargets.forEach(function (cid, i) {
           var dist = restLengthFor(edgeKind(id, cid));
           var angle = baseAngle + (i / Math.max(newTargets.length, 1)) * Math.PI * 2;
-          addNode(cid, n.x + Math.cos(angle) * dist, n.y + Math.sin(angle) * dist);
+          addNode(cid, originX + Math.cos(angle) * dist, originY + Math.sin(angle) * dist);
         });
       } else {
         collapseSubtree(id);
@@ -262,12 +282,24 @@
     }
 
     function everythingInView() {
+      // Tolerância de meio pixel: `fitView()` calcula o enquadramento mais
+      // justo possível com esta mesma fórmula de `r`, por isso um nó
+      // exatamente no limite devia sempre passar — mas a multiplicação por
+      // `scale`/`tx`/`ty` acumula erro de vírgula flutuante (ex:
+      // 109.99999999999991 em vez de 110.0 exatos), o que sem tolerância
+      // fazia isto voltar `false` para sempre (encontrado na verificação em
+      // browser real da Task 7: procurar "Jacob" deixava um capítulo já
+      // encolhido na faixa lateral a "falhar" este teste por uma fração de
+      // pixel, sem nada realmente cortado em ecrã, e sem qualquer chamada a
+      // `fitView()` alguma vez conseguir fechar essa diferença, porque as
+      // posições já não mudam).
+      var EPS = 0.5;
       var ok = true;
       sim.forEach(function (n) {
         var r = radiusFor(n.kind) + LABEL_MARGIN;
         var sx = n.x * scale + tx, sy = n.y * scale + ty;
         var rs = r * scale;
-        if (sx - rs < 0 || sx + rs > W || sy - rs < SAFE_TOP || sy + rs > H) ok = false;
+        if (sx - rs < -EPS || sx + rs > W + EPS || sy - rs < SAFE_TOP - EPS || sy + rs > H + EPS) ok = false;
       });
       return ok;
     }
