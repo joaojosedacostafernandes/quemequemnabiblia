@@ -86,4 +86,24 @@ function personagem(id, extra) {
   console.log('ok: capítulos viram nós kind:capitulo com reveals e home');
 })();
 
+// --- Caso 7: dois progenitores conhecidos sem aresta "spouse" formal
+// (ex: Agar, concubina de Abraão) devem gerar uma união implícita, e ambos
+// os progenitores devem conseguir alcançá-la simetricamente ---
+(function () {
+  const personagens = [personagem('abraao'), personagem('agar'), personagem('ismael')];
+  const edges = [
+    ['abraao', 'ismael', 'parent'],
+    ['agar', 'ismael', 'parent'],
+  ];
+  const { defs } = build(personagens, edges, []);
+  const uniaoIds = Object.keys(defs).filter(id => defs[id].kind === 'uniao');
+  assert.strictEqual(uniaoIds.length, 1, 'devia sintetizar exatamente 1 união implícita, mesmo sem aresta spouse formal');
+  const uniaoId = uniaoIds[0];
+  assert.deepStrictEqual(defs[uniaoId].spouses.slice().sort(), ['abraao', 'agar'], 'a união implícita devia listar os dois progenitores');
+  assert.ok(defs['abraao'].reveals.includes(uniaoId), 'abraão devia revelar a união implícita');
+  assert.ok(defs['agar'].reveals.includes(uniaoId), 'agar também devia revelar a união implícita — sem isto, ficaria inalcançável (bug real encontrado nos dados reais)');
+  assert.ok(defs[uniaoId].reveals.includes('ismael'), 'a união implícita devia revelar o filho');
+  console.log('ok: dois progenitores sem spouse formal geram união implícita simétrica (caso Agar)');
+})();
+
 console.log('\nALL PASS');

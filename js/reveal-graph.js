@@ -47,7 +47,8 @@
     Object.keys(parentsOf).forEach(function (childId) {
       var parents = parentsOf[childId];
       if (parents.length >= 2) {
-        // Tenta encontrar um par de progenitores com um nó de união sintetizado.
+        // Tenta encontrar um par de progenitores com um nó de união já
+        // sintetizado (caso "spouse" formal, Passo 1).
         var found = null;
         for (var i = 0; i < parents.length && !found; i++) {
           for (var j = i + 1; j < parents.length && !found; j++) {
@@ -55,13 +56,28 @@
             if (unionOf[key]) found = unionOf[key];
           }
         }
+        if (!found && parents.length === 2) {
+          // Dois progenitores conhecidos sem aresta "spouse" formal (ex: Agar,
+          // concubina de Abraão) — sintetiza uma união implícita na mesma forma
+          // que uma união formal, com os dois progenitores a revelá-la
+          // simetricamente, para que nenhum dos dois fique órfão sem caminho de
+          // revelação.
+          var pa = parents[0], pb = parents[1];
+          var implicitId = 'u_' + pa + '_' + pb;
+          unionOf[unionKey(pa, pb)] = implicitId;
+          defs[implicitId] = { kind: 'uniao', nome: '', spouses: [pa, pb], reveals: [pa, pb] };
+          if (defs[pa]) defs[pa].reveals.push(implicitId);
+          if (defs[pb]) defs[pb].reveals.push(implicitId);
+          found = implicitId;
+        }
         if (found) {
           defs[found].reveals.push(childId);
           return;
         }
       }
-      // Só um progenitor conhecido (ou vários mas sem união sintetizada entre
-      // eles) — revela a partir do primeiro progenitor conhecido.
+      // Só um progenitor conhecido, ou 3+ progenitores sem união conhecida entre
+      // nenhum par (caso raro, sem exemplo real hoje) — revela a partir do
+      // primeiro progenitor conhecido.
       var p0 = parents[0];
       if (defs[p0]) defs[p0].reveals.push(childId);
     });
