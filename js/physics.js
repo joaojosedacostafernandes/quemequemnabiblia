@@ -1,0 +1,400 @@
+(function () {
+  // Porto do motor de simulação física do protótipo de brainstorming
+  // (docs/superpowers/specs/2026-09-05-grafo-fisica-mockup-A.html, linhas
+  // 157-358, 460-522, 550-558, 580-581, 643-650). Este módulo é só estado +
+  // matemática: nenhuma chamada a `document.*` ou a qualquer API do DOM —
+  // quem desenha é sempre o `render-graph.js` (via `onFrame`/`onChange`),
+  // nunca este ficheiro.
+  function createPhysics() {
+    var defs = {};
+    var weakRefs = [];
+    var W = 0, H = 0, SAFE_TOP = 0;
+    var sim = new Map(); // id -> {x,y,vx,vy,kind,nome,rel,expanded,born,visualR}
+    var scale = 1, tx = 0, ty = 0;
+    var capitulIds = [];
+
+    // Margem à volta de cada nó, em unidades do mundo, que reserva espaço
+    // para o nome e a etiqueta de parentesco por baixo.
+    var LABEL_MARGIN = 44;
+    var SIDE_RADIUS = 15;
+
+    // Sono: a simulação adormece assim que assenta (ver `frame()`), e
+    // volta a acordar sempre que `wake()` é chamado (abrir/fechar um nó,
+    // fazer pan/zoom que a mexa, etc).
+    var asleep = false;
+    var calmFrames = 0;
+    var alpha = 1;
+    var SLEEP_SPEED = 0.12, SLEEP_AFTER = 15, ALPHA_DECAY = 0.975;
+
+    var fitting = false;
+    var camAnim = null;
+
+    // Callback de redesenho guardado da última chamada a `tick(onFrame)` —
+    // `wake()` e a animação de câmara (`stepCamAnim`) reutilizam-no, para
+    // que o chamador nunca tenha de o passar mais do que uma vez.
+    var _onFrame = null;
+
+    function radiusFor(kind) {
+      return kind === 'capitulo' ? 36 : kind === 'major' ? 24 : kind === 'standard' ? 16 : kind === 'uniao' ? 8 : 11;
+    }
+
+    function addNode(id, atX, atY) {
+      var def = defs[id];
+      sim.set(id, {
+        id: id, nome: def.nome, kind: def.kind, rel: def.rel || null,
+        expanded: false, x: atX, y: atY, vx: 0, vy: 0, born: performance.now(),
+        visualR: radiusFor(def.kind)
+      });
+    }
+
+    // Quando um capítulo está aberto, os outros encolhem e vão para uma
+    // faixa lateral — dão o ecrã todo às personagens do capítulo escolhido,
+    // mas continuam visíveis e clicáveis para mudar de capítulo.
+    function anyCapExpanded() {
+      return capitulIds.some(function (cid) {
+        var n = sim.get(cid);
+        return n && n.expanded;
+      });
+    }
+
+    function effectiveHome(id) {
+      var d = defs[id];
+      if (!d.home) return null;
+      if (d.kind !== 'capitulo' || !anyCapExpanded()) return d.home;
+      var n = sim.get(id);
+      if (n && n.expanded) {
+        // Palco principal, bem afastado da faixa lateral — um lugar
+        // próprio por capítulo aberto, para não se empilharem uns sobre
+        // os outros.
+        var expandedIds = capitulIds.filter(function (cid) {
+          var cn = sim.get(cid);
+          return cn && cn.expanded;
+        });
+        var idx = Math.max(0, expandedIds.indexOf(id));
+        return [560 + idx * 520, 460];
+      }
+      var idxSide = capitulIds.indexOf(id);
+      return [70, 170 + idxSide * 68];
+    }
+
+    function targetRadiusFor(n) {
+      var d = defs[n.id];
+      if (d.kind !== 'capitulo' || !anyCapExpanded() || n.expanded) return radiusFor(n.kind);
+      return SIDE_RADIUS;
+    }
+
+    // Todas as personagens-raiz (sem pais registados na Bíblia, mais os
+    // capítulos) começam visíveis, fechadas, ancoradas na sua posição de
+    // grelha.
+    function bootstrap() {
+      sim.clear();
+      Object.keys(defs).filter(function (id) { return defs[id].home; }).forEach(function (id) {
+        var home = defs[id].home;
+        addNode(id, home[0], home[1]);
+      });
+    }
+
+    // Quem decide redesenhar/repor a câmara é sempre quem chama
+    // `collapseAll`, nunca este módulo — por isso não há aqui nenhuma
+    // chamada equivalente a `resetView()`/`render()` do mockup.
+    function collapseAll(onChange) {
+      bootstrap();
+      if (onChange) onChange();
+      wake();
+    }
+
+    function edgeKind(fromId, toId) {
+      if (defs[fromId].kind === 'uniao') return 'descent';
+      if (defs[toId].kind === 'uniao') return 'stem';
+      if (defs[fromId].spouseDirect && defs[fromId].spouseDirect.indexOf(toId) !== -1) return 'spouseDirect';
+      return 'direct';
+    }
+
+    function edgesFor(id) {
+      return (defs[id].reveals || []).filter(function (cid) { return sim.has(cid); }).map(function (cid) {
+        return { a: id, b: cid, kind: edgeKind(id, cid) };
+      });
+    }
+
+    function getEdges() {
+      var out = [];
+      Array.from(sim.keys()).forEach(function (id) { out = out.concat(edgesFor(id)); });
+      return out;
+    }
+
+    function getWeakEdgesVisible() {
+      return weakRefs.filter(function (w) { return sim.has(w.a) && sim.has(w.b); });
+    }
+
+    function restLengthFor(kind) {
+      return kind === 'stem' ? 55 : kind === 'descent' ? 70 : kind === 'spouseDirect' ? 60 : 130;
+    }
+
+    function toggleExpand(id, onChange) {
+      var n = sim.get(id);
+      if (!n) return;
+      var targets = defs[id].reveals || [];
+      if (targets.length === 0) return;
+      n.expanded = !n.expanded;
+      if (n.expanded) {
+        // Nasce já espalhado num pequeno leque à volta do pai — nascer
+        // todos colados ao mesmo ponto obrigava a física a desfazer
+        // sobreposições sozinha, e o "sono" rápido podia travar antes
+        // disso acontecer.
+        var newTargets = targets.filter(function (cid) { return !sim.has(cid); });
+        var baseAngle = Math.random() * Math.PI * 2;
+        newTargets.forEach(function (cid, i) {
+          var dist = restLengthFor(edgeKind(id, cid));
+          var angle = baseAngle + (i / Math.max(newTargets.length, 1)) * Math.PI * 2;
+          addNode(cid, n.x + Math.cos(angle) * dist, n.y + Math.sin(angle) * dist);
+        });
+      } else {
+        collapseSubtree(id);
+      }
+      if (onChange) onChange();
+      wake();
+    }
+
+    function collapseSubtree(id) {
+      var n = sim.get(id);
+      (defs[id].reveals || []).forEach(function (cid) {
+        if (sim.has(cid)) {
+          collapseSubtree(cid);
+          sim.delete(cid);
+        }
+      });
+      if (n) n.expanded = false;
+    }
+
+    function wake() {
+      alpha = 1;
+      if (asleep) {
+        asleep = false;
+        calmFrames = 0;
+        requestAnimationFrame(frame);
+      }
+    }
+
+    function frame() {
+      var nodes = Array.from(sim.values());
+      var REPEL = 3200; // era 2200 no mockup — mais forte, para reduzir sobreposição de linhas/retratos
+      var SPRING_K = 0.012;
+      var DAMP = 0.6;
+      var ERA_ANCHOR_K = 0.05; // "palco principal" do capítulo aberto (e caso geral)
+      var SIDE_ANCHOR_K = 0.22; // só para capítulos encolhidos na faixa lateral
+
+      for (var i = 0; i < nodes.length; i++) {
+        for (var j = i + 1; j < nodes.length; j++) {
+          var a = nodes[i], b = nodes[j];
+          var dx = a.x - b.x, dy = a.y - b.y;
+          var d2 = dx * dx + dy * dy; if (d2 < 1) d2 = 1;
+          var d = Math.sqrt(d2);
+          var f = (REPEL / d2) * alpha;
+          var fx = (dx / d) * f, fy = (dy / d) * f;
+          a.vx += fx; a.vy += fy;
+          b.vx -= fx; b.vy -= fy;
+        }
+      }
+      getEdges().forEach(function (e) {
+        var ea = sim.get(e.a), eb = sim.get(e.b);
+        var dx = eb.x - ea.x, dy = eb.y - ea.y;
+        var d = Math.max(Math.sqrt(dx * dx + dy * dy), 1);
+        var rest = restLengthFor(e.kind);
+        var diff = d - rest;
+        var fx = (dx / d) * diff * SPRING_K * alpha, fy = (dy / d) * diff * SPRING_K * alpha;
+        ea.vx += fx; ea.vy += fy;
+        eb.vx -= fx; eb.vy -= fy;
+      });
+      var maxSpeed = 0;
+      nodes.forEach(function (n) {
+        var home = effectiveHome(n.id);
+        if (home) {
+          var d = defs[n.id];
+          var inSideStrip = d.kind === 'capitulo' && anyCapExpanded() && !n.expanded;
+          var k = inSideStrip ? SIDE_ANCHOR_K : ERA_ANCHOR_K;
+          n.vx += (home[0] - n.x) * k; n.vy += (home[1] - n.y) * k;
+        }
+        n.visualR += (targetRadiusFor(n) - n.visualR) * 0.18;
+        n.vx *= DAMP; n.vy *= DAMP;
+        if (Math.abs(n.vx) < 0.05) n.vx = 0;
+        if (Math.abs(n.vy) < 0.05) n.vy = 0;
+        n.x += n.vx; n.y += n.vy;
+        maxSpeed = Math.max(maxSpeed, Math.abs(n.vx), Math.abs(n.vy));
+      });
+
+      // Nó de casamento: como numa árvore genealógica em papel, fica
+      // sempre exatamente sobre a linha que une os dois cônjuges — nunca
+      // à deriva.
+      sim.forEach(function (n) {
+        if (defs[n.id].kind !== 'uniao') return;
+        var spouses = defs[n.id].spouses;
+        var sa = sim.get(spouses[0]), sb = sim.get(spouses[1]);
+        if (!sa || !sb) return;
+        n.x = (sa.x + sb.x) / 2;
+        n.y = (sa.y + sb.y) / 2;
+        n.vx = 0; n.vy = 0;
+      });
+
+      if (_onFrame) _onFrame();
+
+      // Enquanto a física está acordada (algo acabou de abrir/fechar),
+      // garante que tudo continua visível — nunca deixa nada sair do
+      // ecrã sozinho.
+      if (!fitting && !everythingInView()) {
+        fitting = true;
+        fitView();
+      }
+
+      alpha *= ALPHA_DECAY;
+      if (maxSpeed < SLEEP_SPEED || alpha < 0.01) {
+        calmFrames++;
+        if (calmFrames > SLEEP_AFTER) { asleep = true; return; }
+      } else {
+        calmFrames = 0;
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function tick(onFrame) {
+      _onFrame = onFrame;
+      asleep = false;
+      requestAnimationFrame(frame);
+    }
+
+    function everythingInView() {
+      var ok = true;
+      sim.forEach(function (n) {
+        var r = radiusFor(n.kind) + LABEL_MARGIN;
+        var sx = n.x * scale + tx, sy = n.y * scale + ty;
+        var rs = r * scale;
+        if (sx - rs < 0 || sx + rs > W || sy - rs < SAFE_TOP || sy + rs > H) ok = false;
+      });
+      return ok;
+    }
+
+    function fitView() {
+      var nodes = Array.from(sim.values());
+      if (nodes.length === 0) { fitting = false; return; }
+      var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      nodes.forEach(function (n) {
+        var r = radiusFor(n.kind) + LABEL_MARGIN;
+        minX = Math.min(minX, n.x - r); maxX = Math.max(maxX, n.x + r);
+        minY = Math.min(minY, n.y - r); maxY = Math.max(maxY, n.y + r);
+      });
+      var bw = Math.max(maxX - minX, 1), bh = Math.max(maxY - minY, 1);
+      var availH = H - SAFE_TOP;
+      var targetScale = Math.min(3, Math.max(0.2, Math.min(W / bw, availH / bh)));
+      var targetTx = W / 2 - (minX + maxX) / 2 * targetScale;
+      var targetTy = SAFE_TOP + availH / 2 - (minY + maxY) / 2 * targetScale;
+      animateCameraTo(targetScale, targetTx, targetTy);
+    }
+
+    function animateCameraTo(targetScale, targetTx, targetTy, duration) {
+      camAnim = {
+        startScale: scale, startTx: tx, startTy: ty,
+        targetScale: targetScale, targetTx: targetTx, targetTy: targetTy,
+        startTime: performance.now(), duration: duration || 450
+      };
+      requestAnimationFrame(stepCamAnim);
+    }
+
+    function stepCamAnim(now) {
+      if (!camAnim) return;
+      var t = (now - camAnim.startTime) / camAnim.duration;
+      if (t > 1) t = 1;
+      var ease = 1 - Math.pow(1 - t, 3);
+      scale = camAnim.startScale + (camAnim.targetScale - camAnim.startScale) * ease;
+      tx = camAnim.startTx + (camAnim.targetTx - camAnim.startTx) * ease;
+      ty = camAnim.startTy + (camAnim.targetTy - camAnim.startTy) * ease;
+      // Animação de câmara autónoma (o seu próprio requestAnimationFrame,
+      // independente de `frame()`) — reutiliza o `onFrame` guardado da
+      // última chamada a `tick()` para pedir o redesenho de cada frame,
+      // já que aqui não há "quem chamou" por frame para o fazer.
+      if (_onFrame) _onFrame();
+      if (t < 1) {
+        requestAnimationFrame(stepCamAnim);
+      } else {
+        camAnim = null;
+        fitting = false;
+      }
+    }
+
+    function zoomBy(factor, cx, cy) {
+      cx = (cx === undefined || cx === null) ? W / 2 : cx;
+      cy = (cy === undefined || cy === null) ? H / 2 : cy;
+      var newScale = Math.min(3, Math.max(0.35, scale * factor));
+      var k = newScale / scale;
+      tx = cx - (cx - tx) * k;
+      ty = cy - (cy - ty) * k;
+      scale = newScale;
+    }
+
+    // Só repõe o estado de câmara (scale/tx/ty) — quem decide redesenhar
+    // a seguir é sempre quem chama, tal como no mockup `zoomBy`/`panBy`
+    // nunca desenhavam a si próprios (era o listener a chamar `draw()`
+    // depois).
+    function resetView() {
+      scale = 1; tx = 0; ty = 0;
+    }
+
+    function panBy(dx, dy) {
+      tx += dx;
+      ty += dy;
+    }
+
+    function focusNode(id) {
+      var n = sim.get(id);
+      if (!n) return;
+      var targetScale = 1.5;
+      var availH = H - SAFE_TOP;
+      var targetTx = W / 2 - n.x * targetScale;
+      var targetTy = SAFE_TOP + availH / 2 - n.y * targetScale;
+      animateCameraTo(targetScale, targetTx, targetTy, 600);
+    }
+
+    function getNode(id) {
+      return sim.get(id);
+    }
+
+    function getAllNodes() {
+      return Array.from(sim.values());
+    }
+
+    function init(newDefs, newWeakRefs, canvasWidth, canvasHeight, safeTop) {
+      defs = newDefs || {};
+      weakRefs = newWeakRefs || [];
+      W = canvasWidth;
+      H = canvasHeight;
+      SAFE_TOP = safeTop;
+      capitulIds = Object.keys(defs).filter(function (id) { return defs[id].kind === 'capitulo'; });
+      sim = new Map();
+      scale = 1; tx = 0; ty = 0;
+      asleep = false; calmFrames = 0; alpha = 1;
+      fitting = false; camAnim = null; _onFrame = null;
+    }
+
+    return {
+      init: init,
+      bootstrap: bootstrap,
+      toggleExpand: toggleExpand,
+      tick: tick,
+      wake: wake,
+      getNode: getNode,
+      getAllNodes: getAllNodes,
+      getEdges: getEdges,
+      getWeakEdgesVisible: getWeakEdgesVisible,
+      everythingInView: everythingInView,
+      fitView: fitView,
+      animateCameraTo: animateCameraTo,
+      collapseAll: collapseAll,
+      zoomBy: zoomBy,
+      resetView: resetView,
+      panBy: panBy,
+      focusNode: focusNode
+    };
+  }
+
+  var Physics = createPhysics();
+  if (typeof module !== 'undefined' && module.exports) module.exports = Physics;
+  if (typeof window !== 'undefined') window.Physics = Physics;
+})();
