@@ -156,7 +156,7 @@
       galaxyView.classList.add('shown');
       Physics.enterCapitulo(capId);
       RenderGraph.markDirty();
-      Physics.resetView();
+      Physics.fitView();
       requestDraw();
     }
 
@@ -266,7 +266,7 @@
     document.getElementById('zoomReset').addEventListener('click', function () { Physics.resetView(); requestDraw(); });
     document.getElementById('collapseAllBtn').addEventListener('click', function () {
       Physics.resetGalaxy(RenderGraph.markDirty);
-      Physics.resetView();
+      Physics.fitView();
       requestDraw();
       selectedId = null;
       panelBody.innerHTML = panelEmptyHtml;
