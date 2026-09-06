@@ -43,7 +43,11 @@
     // revelar" (partilhado/simétrico entre cônjuges, ver nota em
     // `collapseSubtree`). `rootCapitulo` (o capítulo de onde este nó
     // descende, calculado uma vez ao nascer a partir do do seu progenitor)
-    // isola a física por capítulo — ver `frame()`.
+    // isola a física por capítulo — ver `frame()`. Assunção não garantida
+    // por código: fica fixo a partir de quem revelar este nó primeiro — se
+    // os dados alguma vez ligarem um casamento entre dois capítulos
+    // diferentes (nenhum caso real hoje), essa união ficaria parentada ao
+    // capítulo errado sem aviso nenhum.
     function addNode(id, atX, atY, spawnParentId) {
       var def = defs[id];
       var parentNode = spawnParentId ? sim.get(spawnParentId) : null;
