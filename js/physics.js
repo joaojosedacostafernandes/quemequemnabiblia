@@ -38,12 +38,20 @@
       return kind === 'capitulo' ? 36 : kind === 'major' ? 24 : kind === 'standard' ? 16 : kind === 'uniao' ? 8 : 11;
     }
 
-    function addNode(id, atX, atY) {
+    // `spawnParentId` é quem estava a ser clicado quando este nó nasceu —
+    // diferente de `defs[id].reveals`, que é sobre "o que É POSSÍVEL
+    // revelar" (partilhado/simétrico entre cônjuges, ver nota em
+    // `collapseSubtree`). `rootCapitulo` (o capítulo de onde este nó
+    // descende, calculado uma vez ao nascer a partir do do seu progenitor)
+    // isola a física por capítulo — ver `frame()`.
+    function addNode(id, atX, atY, spawnParentId) {
       var def = defs[id];
+      var parentNode = spawnParentId ? sim.get(spawnParentId) : null;
+      var rootCapitulo = def.kind === 'capitulo' ? id : (parentNode ? parentNode.rootCapitulo : null);
       sim.set(id, {
         id: id, nome: def.nome, kind: def.kind, rel: def.rel || null,
         expanded: false, x: atX, y: atY, vx: 0, vy: 0, born: performance.now(),
-        visualR: radiusFor(def.kind)
+        visualR: radiusFor(def.kind), spawnParent: spawnParentId || null, rootCapitulo: rootCapitulo
       });
     }
 
@@ -185,7 +193,7 @@
         newTargets.forEach(function (cid, i) {
           var dist = restLengthFor(edgeKind(id, cid));
           var angle = baseAngle + (i / Math.max(newTargets.length, 1)) * Math.PI * 2;
-          addNode(cid, originX + Math.cos(angle) * dist, originY + Math.sin(angle) * dist);
+          addNode(cid, originX + Math.cos(angle) * dist, originY + Math.sin(angle) * dist, id);
         });
       } else {
         collapseSubtree(id);
@@ -194,31 +202,34 @@
       wake();
     }
 
-    // `reveals` é um grafo cíclico, não uma árvore: um cônjuge revela a sua
-    // união E a união revela os dois cônjuges de volta (ver reveal-graph.js
-    // e a nota em `pathToRoot`/`revealedBy` no app.js, onde o mesmo ciclo já
-    // tinha sido encontrado e corrigido com BFS). Uma versão recursiva desta
-    // função sem conjunto de visitados (a original, portada do mockup, cujos
-    // dados de exemplo eram uma árvore genuinamente acíclica) reentra
-    // `defs['u_x_y'].reveals` → `x` → `defs['x'].reveals` → `u_x_y` → ...
-    // para sempre, estourando a pilha (`RangeError: Maximum call stack size
-    // exceeded`) em 24 das 33 personagens hoje expansíveis. Percurso
-    // iterativo com conjunto de visitados: nunca reentra um id já visto, e
-    // nunca apaga o próprio `id` com que foi chamada (a raiz desta ação de
-    // colapso — colapsar Abraão remove Sara/Agar/descendentes, mas o clique
-    // foi NELE, por isso ele fica e só perde `expanded`).
+    // Colapsar percorre quem `id` REALMENTE fez aparecer no ecrã (o
+    // `spawnParent` gravado em `addNode`), nunca `defs[id].reveals` — esse
+    // é um grafo cíclico sobre "o que é possível revelar" (um cônjuge revela
+    // a sua união E a união revela os dois cônjuges de volta, para a Eva
+    // aparecer mesmo não sendo alvo direto de mais ninguém), não uma árvore
+    // de posse. Uma primeira correção (percurso iterativo com conjunto de
+    // visitados sobre `reveals`) resolveu o estouro de pilha
+    // (`RangeError: Maximum call stack size exceeded`, 24/33 personagens)
+    // mas não este problema mais subtil: colapsar a Eva reentrava a união
+    // partilhada e apagava o Adão e os filhos também — tudo o que a união
+    // revela — mesmo o clique tendo sido nela, não no Adão. Percorrer a
+    // árvore real de nascimento evita isto: colapsar a Eva não apaga nada
+    // (o clique dela não gerou nenhum nó novo, já que a união já estava
+    // visível); colapsar o Adão (ou a própria união) continua a remover
+    // corretamente tudo o que essa cadeia gerou.
     function collapseSubtree(id) {
-      var visited = {};
-      visited[id] = true;
-      var stack = (defs[id].reveals || []).slice();
+      var childrenOf = {};
+      sim.forEach(function (n) {
+        if (n.spawnParent) {
+          (childrenOf[n.spawnParent] = childrenOf[n.spawnParent] || []).push(n.id);
+        }
+      });
+      var stack = (childrenOf[id] || []).slice();
       while (stack.length) {
         var cid = stack.pop();
-        if (visited[cid]) continue;
-        visited[cid] = true;
-        if (sim.has(cid)) {
-          stack = stack.concat(defs[cid].reveals || []);
-          sim.delete(cid);
-        }
+        if (!sim.has(cid)) continue;
+        sim.delete(cid);
+        if (childrenOf[cid]) stack = stack.concat(childrenOf[cid]);
       }
       var n = sim.get(id);
       if (n) n.expanded = false;
@@ -244,6 +255,13 @@
       for (var i = 0; i < nodes.length; i++) {
         for (var j = i + 1; j < nodes.length; j++) {
           var a = nodes[i], b = nodes[j];
+          // Dois capítulos abertos ao mesmo tempo não se devem influenciar
+          // um ao outro (pedido da Isabel) — cada um é a sua própria "ilha"
+          // física. `rootCapitulo` (ver `addNode`) identifica de que
+          // capítulo cada nó descende; sem esta guarda, abrir um segundo
+          // capítulo empurrava/mexia nas personagens do primeiro já
+          // estabilizadas.
+          if (a.rootCapitulo && b.rootCapitulo && a.rootCapitulo !== b.rootCapitulo) continue;
           var dx = a.x - b.x, dy = a.y - b.y;
           var d2 = dx * dx + dy * dy; if (d2 < 1) d2 = 1;
           var d = Math.sqrt(d2);
