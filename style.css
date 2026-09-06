@@ -4,8 +4,6 @@ html, body { margin: 0; padding: 0; background: #0d1024; color: #e8e4d8; font-fa
 .app { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
 
 .topbar { padding: 16px 20px 8px; z-index: 10; }
-
-.stage-row { position: relative; flex: 1; display: flex; min-height: 0; }
 .topbar .eyebrow { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #d8c98a; display: block; margin-bottom: 2px; }
 .topbar h1 { font-size: 19px; margin: 0 0 4px; color: #f0e6d2; font-weight: 400; }
 .hint { font-size: 11.5px; color: #6b6591; margin: 4px 0 0; }
@@ -19,10 +17,55 @@ html, body { margin: 0; padding: 0; background: #0d1024; color: #e8e4d8; font-fa
 .search-result:hover { background: #2a2650; }
 .search-result .sr-era { font-size: 10.5px; color: #9a94b8; }
 
-.stage-wrap { position: relative; flex: 1; min-width: 0; }
+.stage-area { position: relative; flex: 1; display: flex; min-height: 0; }
+.stage-views { position: relative; flex: 1; min-width: 0; overflow: hidden; perspective: 1000px; }
+#bgStars { position: absolute; inset: 0; z-index: 0; }
+.view { position: absolute; inset: 0; z-index: 5; }
+
+/* --- mapa de galáxias --- */
+#mapView {
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity .55s ease, transform .55s cubic-bezier(.22,.61,.36,1);
+  transform-style: preserve-3d;
+}
+#mapView.hidden { opacity: 0; transform: scale(1.55) translateZ(260px) rotateX(5deg); pointer-events: none; }
+.galaxy-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 46px 64px; max-width: 900px; padding: 20px; }
+.galaxy { display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; background: none; border: none; color: inherit; font-family: inherit; }
+.galaxy-orb {
+  width: 76px; height: 76px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff8e0, #f0d060 55%, #a9812e 100%);
+  box-shadow: 0 0 22px 4px rgba(240,208,96,.35);
+  animation: drift 7s ease-in-out infinite;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.galaxy:hover .galaxy-orb, .galaxy:focus-visible .galaxy-orb { transform: scale(1.08); box-shadow: 0 0 32px 8px rgba(240,208,96,.55); }
+.galaxy-name { font-size: 13.5px; color: #e8e4d8; }
+.galaxy-count { font-size: 10.5px; color: #7d76ad; font-family: -apple-system, sans-serif; }
+@keyframes drift { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(3px,-5px); } }
+
+/* --- interior de uma galáxia --- */
+#galaxyView {
+  display: flex; flex-direction: column; opacity: 0; pointer-events: none;
+  transition: opacity .55s ease, transform .55s cubic-bezier(.22,.61,.36,1);
+  transform: scale(.4) translateZ(-420px) rotateX(-5deg);
+  transform-style: preserve-3d;
+}
+#galaxyView.shown { opacity: 1; pointer-events: auto; transform: scale(1) translateZ(0) rotateX(0deg); }
+
+@media (prefers-reduced-motion: reduce) {
+  #mapView, #galaxyView { transition: opacity .3s ease; }
+  #mapView.hidden { transform: none; }
+  #galaxyView, #galaxyView.shown { transform: none; }
+}
+
+.galaxy-header { display: flex; align-items: center; gap: 14px; padding: 14px 20px 0; z-index: 10; position: relative; }
+.back-btn { font-family: Georgia, serif; font-size: 12.5px; color: #d8c98a; background: #161933; border: 1px solid #4a4580; border-radius: 999px; padding: 7px 14px; cursor: pointer; }
+.back-btn:hover { border-color: #d8c98a; background: #2a2650; }
+.galaxy-title { font-size: 15px; color: #f0e6d2; }
+
+.stage-wrap { position: relative; flex: 1; min-height: 0; }
 #stage { display: block; width: 100%; height: 100%; cursor: grab; touch-action: none; }
 #stage.panning { cursor: grabbing; }
-.bgstar { fill: #cfd0f0; }
 
 .cline { stroke: #4a4580; stroke-width: 1.4; fill: none; }
 .cline.stem { stroke: #d8a0b8; stroke-width: 1.2; opacity: .8; }
@@ -34,16 +77,6 @@ html, body { margin: 0; padding: 0; background: #0d1024; color: #e8e4d8; font-fa
 .node circle.halo { fill: none; stroke: #d8c98a; stroke-width: 1; opacity: 0; }
 .node.expandable circle.halo { opacity: .35; }
 .node.uniao .halo { stroke: #e8608f; }
-.node.capitulo .halo { stroke: #f0d060; stroke-width: 2; }
-.node.capitulo .star { fill: url(#majorGrad); }
-.node.capitulo text.name { font-size: 14px; font-weight: bold; }
-.node.capitulo.side text.name { font-size: 10.5px; }
-.node.capitulo.side text.clabel { display: none; }
-.node.capitulo.side { opacity: .85; }
-.node.capitulo.chapter-opened .star,
-.node.capitulo.chapter-opened .halo,
-.node.capitulo.chapter-opened .badge-bg,
-.node.capitulo.chapter-opened .badge { display: none; }
 .node.major .star { fill: url(#majorGrad); }
 .node.standard .star { fill: url(#standardGrad); }
 .node.minor .star { fill: url(#minorGrad); }
@@ -64,9 +97,11 @@ html, body { margin: 0; padding: 0; background: #0d1024; color: #e8e4d8; font-fa
 .controls button:hover { background: #2a2650; }
 .controls button:focus-visible,
 aside button:focus-visible,
+.back-btn:focus-visible,
+.galaxy:focus-visible,
 .node:focus-visible circle.halo { outline: 2px solid #d8c98a; outline-offset: 2px; }
 .search-result:focus-visible,
-.cross-era-ref:focus-visible { outline: 2px solid #d8c98a; outline-offset: 2px; }
+.cross-galaxy-ref:focus-visible { outline: 2px solid #d8c98a; outline-offset: 2px; }
 
 aside#panel { width: 22rem; flex-shrink: 0; border-left: 1px solid #4a4580; background: #12142a; padding: 1.3rem 1.4rem; overflow-y: auto; color: #e8e4d8; }
 .panel-empty { color: #9a94b8; font-size: 0.88rem; margin-top: 2rem; text-align: center; line-height: 1.6; }
@@ -79,12 +114,12 @@ aside#panel { width: 22rem; flex-shrink: 0; border-left: 1px solid #4a4580; back
 .card-section-title:first-of-type { margin-top: 0; }
 .card-relations { border-left: 2px solid #4a4580; padding-left: 0.7rem; }
 .panel-close { display: none; }
-.cross-era-ref { color: #d8c98a; cursor: pointer; text-decoration: underline; text-decoration-style: dotted; }
+.cross-galaxy-ref { color: #d8c98a; cursor: pointer; text-decoration: underline; text-decoration-style: dotted; }
 
 footer.note { padding: 0.4rem 1.4rem; font-size: 0.68rem; color: #6b6591; }
 
 @media (max-width: 720px) {
-  .stage-row { flex-direction: column; }
+  .stage-area { flex-direction: column; }
   .hint { display: none; }
   aside#panel {
     position: fixed; left: 0; right: 0; bottom: 0; width: auto; max-height: 62dvh;

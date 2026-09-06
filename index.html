@@ -17,30 +17,43 @@
       <input id="searchBox" class="search-box" type="text" placeholder="Procura uma personagem (ex: David, Rute, Isaías)..." autocomplete="off" aria-label="Procurar personagem">
       <div id="searchResults" class="search-results" hidden></div>
     </div>
-    <p class="hint">Clica num capítulo para o abrir. Passa o rato por cima de uma personagem para uma prévia; clica para a história completa.</p>
+    <p class="hint">Clica numa galáxia para a abrir. Dentro dela, passa o rato por uma personagem para uma prévia; clica para a história completa.</p>
   </div>
 
-  <div class="stage-row">
-    <div class="stage-wrap">
-      <svg id="stage" viewBox="0 0 1400 900" role="group" aria-label="Personagens bíblicas e as suas relações">
-        <defs id="svgDefs">
-          <radialGradient id="majorGrad" cx="35%" cy="30%"><stop offset="0%" stop-color="#fff8e0"/><stop offset="55%" stop-color="#f0d060"/><stop offset="100%" stop-color="#c9a24a"/></radialGradient>
-          <radialGradient id="standardGrad" cx="35%" cy="30%"><stop offset="0%" stop-color="#e4e0f8"/><stop offset="55%" stop-color="#9a94d0"/><stop offset="100%" stop-color="#6b64a8"/></radialGradient>
-          <radialGradient id="minorGrad" cx="35%" cy="30%"><stop offset="0%" stop-color="#c9c6dc"/><stop offset="55%" stop-color="#7d76ad"/><stop offset="100%" stop-color="#524d78"/></radialGradient>
-          <radialGradient id="uniaoGrad" cx="35%" cy="30%"><stop offset="0%" stop-color="#ffe0ec"/><stop offset="55%" stop-color="#e8608f"/><stop offset="100%" stop-color="#a83a63"/></radialGradient>
-          <filter id="glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-        </defs>
-        <g id="bgLayer"></g>
-        <g id="world">
-          <g id="edgeLayer"></g>
-          <g id="nodeLayer"></g>
-        </g>
-      </svg>
-      <div class="controls">
-        <button id="zoomIn" type="button" aria-label="Ampliar">+</button>
-        <button id="zoomOut" type="button" aria-label="Reduzir">&minus;</button>
-        <button id="zoomReset" type="button" aria-label="Repor vista">&#8634;</button>
-        <button id="collapseAllBtn" type="button" aria-label="Fechar tudo">&#10558;</button>
+  <div class="stage-area">
+    <div class="stage-views">
+      <canvas id="bgStars"></canvas>
+
+      <div class="view" id="mapView">
+        <div class="galaxy-grid" id="galaxyGrid"></div>
+      </div>
+
+      <div class="view" id="galaxyView">
+        <div class="galaxy-header">
+          <button class="back-btn" id="backBtn">&larr; Voltar ao mapa de galáxias</button>
+          <span class="galaxy-title" id="galaxyTitle"></span>
+        </div>
+        <div class="stage-wrap">
+          <svg id="stage" viewBox="0 0 1400 900" role="group" aria-label="Personagens bíblicas e as suas relações">
+            <defs id="svgDefs">
+              <radialGradient id="majorGrad" cx="35%" cy="30%"><stop offset="0%" stop-color="#fff8e0"/><stop offset="55%" stop-color="#f0d060"/><stop offset="100%" stop-color="#c9a24a"/></radialGradient>
+              <radialGradient id="standardGrad" cx="35%" cy="30%"><stop offset="0%" stop-color="#e4e0f8"/><stop offset="55%" stop-color="#9a94d0"/><stop offset="100%" stop-color="#6b64a8"/></radialGradient>
+              <radialGradient id="minorGrad" cx="35%" cy="30%"><stop offset="0%" stop-color="#c9c6dc"/><stop offset="55%" stop-color="#7d76ad"/><stop offset="100%" stop-color="#524d78"/></radialGradient>
+              <radialGradient id="uniaoGrad" cx="35%" cy="30%"><stop offset="0%" stop-color="#ffe0ec"/><stop offset="55%" stop-color="#e8608f"/><stop offset="100%" stop-color="#a83a63"/></radialGradient>
+              <filter id="glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+            <g id="world">
+              <g id="edgeLayer"></g>
+              <g id="nodeLayer"></g>
+            </g>
+          </svg>
+          <div class="controls">
+            <button id="zoomIn" type="button" aria-label="Ampliar">+</button>
+            <button id="zoomOut" type="button" aria-label="Reduzir">&minus;</button>
+            <button id="zoomReset" type="button" aria-label="Repor vista">&#8634;</button>
+            <button id="collapseAllBtn" type="button" aria-label="Recomeçar esta galáxia">&#10558;</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -57,6 +70,8 @@
 <script src="js/reveal-graph.js"></script>
 <script src="js/physics.js"></script>
 <script src="js/render-graph.js"></script>
+<script src="js/warp-transition.js"></script>
+<script src="js/galaxy-map.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
