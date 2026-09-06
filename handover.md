@@ -1,6 +1,21 @@
 # Handover — Os Personagens da Bíblia
 
-Projeto iniciado em 2026-08-16, já com 6 rondas de conteúdo integradas em `master`, mais Ronda 7 (redesign de navegação, Sub-projeto A), Ronda 8 (personagens em falta), Ronda 9 (ligações em falta), Ronda 10 (faixa de épocas) e Ronda 11 (grafo com física — substitui por completo o motor de navegação e o tema visual das Rondas 7-10). Última atualização: 2026-09-06, fim da Ronda 11. Contexto para continuar este projeto noutra sessão.
+Projeto iniciado em 2026-08-16, já com 6 rondas de conteúdo integradas em `master`, mais Ronda 7 (redesign de navegação, Sub-projeto A), Ronda 8 (personagens em falta), Ronda 9 (ligações em falta), Ronda 10 (faixa de épocas) e Ronda 11 (grafo com física — substitui por completo o motor de navegação e o tema visual das Rondas 7-10). Última atualização: 2026-09-06. Contexto para continuar este projeto noutra sessão.
+
+🔴 **PRÓXIMA SESSÃO: retomar aqui.** Há uma decisão de design em aberto, ainda por escolher com a Isabel — ver "Questão em aberto — confusão com vários capítulos abertos" logo a seguir a este aviso, antes da secção "O que foi feito". Não avançar para nenhuma implementação sem primeiro confirmar com ela qual das opções (A/B/C/D, ou mockups) prefere.
+
+## Questão em aberto — confusão com vários capítulos abertos (2026-09-06)
+
+Depois da correção da Eva/isolamento de física (ver secção "Ronda 11" abaixo), a Isabel testou mais e reportou: **"quando abro muitos separadores de capítulos fica muito confuso"** — abrir vários capítulos ao mesmo tempo (cada um a sua própria "ilha" física desde a correção anterior) deixa o ecrã confuso, mesmo sem as personagens se influenciarem fisicamente entre si.
+
+Apresentei-lhe 4 opções, por ordem de preferência (mais simples primeiro), e ela pediu para guardar tudo em memória antes de decidir, sem escolher ainda nenhuma:
+
+- **A — Acordeão, só 1 capítulo aberto de cada vez (a minha recomendação).** Abrir um capítulo novo fecha automaticamente o(s) anterior(es) — mesmo modelo que resultou bem na faixa de épocas da Ronda 10. Mais simples, nunca há confusão, mas perde-se a possibilidade de comparar dois capítulos lado a lado ou seguir uma "ligação noutra era" sem perder de vista o capítulo de onde se veio. Também eliminaria por completo a limitação residual da física global (`alpha` a acordar globalmente, ver item 18 abaixo) já que nunca haveria dois capítulos abertos ao mesmo tempo.
+- **B — Limite de 2 capítulos abertos.** O 3º fecha o mais antigo. Meio-termo: permite seguir uma ligação para outra era sem perder o capítulo de origem, mas continua a impedir acumulação descontrolada.
+- **C — "Foco" sem fechar nada.** Todos os capítulos abertos mantêm-se guardados, mas só um fica em destaque (tamanho normal, cor normal) de cada vez — os outros ficam esbatidos/encolhidos até se clicar no título deles para os trazer de volta ao centro. Não perde nada, mas é mais complexo de construir e de explicar às crianças.
+- **D — Lista dos capítulos abertos + fechar um a um.** Mantém o comportamento atual (tudo aberto simultaneamente), mas acrescenta uma lista pequena a mostrar o que está aberto, com um botão para fechar cada um individualmente. Mais flexível, mas não resolve sozinho — continua a exigir que a Isabel/as crianças fechem manualmente para evitar confusão.
+
+**Não avançar com nenhuma delas sem confirmar primeiro com a Isabel.** Se ela pedir para ver mockups visuais antes de decidir, ver a nota na memória do projeto sobre a skill `superpowers:brainstorming` e o companheiro visual ter falhado a abrir para ela duas vezes nesta sessão (motivo de rede nunca diagnosticado) — descrever as opções em texto com exemplos concretos funcionou bem como alternativa.
 
 ⚠️ **A secção "O que foi feito" abaixo, até à Ronda 10, descreve uma arquitetura que já não existe** (tema claro "Livro de Ilustrações", faixa de épocas, `js/render-era-strip.js`/`js/render-cluster.js`/`js/layout.js`) — mantida por registo histórico. **Para o estado atual do motor, ver a secção "Ronda 11" e a lista de ficheiros logo a seguir a este aviso.**
 
