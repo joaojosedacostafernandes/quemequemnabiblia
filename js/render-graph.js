@@ -124,7 +124,6 @@
           '<circle class="halo" r="' + (r + 6) + '"></circle>' +
           starShape(defs, n, r) +
           (n.kind !== 'uniao' ? '<text class="name" y="' + (r + 16) + '">' + n.nome + '</text>' : '') +
-          (n.kind === 'capitulo' ? '<text class="clabel" y="' + (r + 27) + '" style="fill:#d8c98a;">' + (defs[n.id].reveals || []).length + ' personagens</text>' : '') +
           (n.rel ? '<text class="clabel" y="' + (r + 27) + '" style="fill:#d8c98a;">' + truncateRelLabel(n.rel) + '</text>' : '') +
           // Os elementos do badge existem sempre que a personagem alguma
           // vez pode ser expandida (mesmo já expandida) — a sua
@@ -158,13 +157,6 @@
       var g = nodeLayerEl.querySelector('[data-id="' + n.id + '"]');
       if (!g) return;
       g.setAttribute('transform', 'translate(' + n.x + ',' + n.y + ')');
-      g.classList.toggle('side', defs[n.id].kind === 'capitulo' && n.visualR < radiusFor('capitulo') - 4);
-      // Capítulo aberto perde o círculo/halo/badge (pedido da Isabel) — o
-      // mockup original mantinha sempre o círculo visível; aqui a classe
-      // `chapter-opened` é só marcada/desmarcada, a ocultação em si é CSS
-      // (Task 5, style.css), fora da responsabilidade deste ficheiro.
-      var isOpenChapter = defs[n.id].kind === 'capitulo' && n.expanded;
-      g.classList.toggle('chapter-opened', isOpenChapter);
       // Halo/badge de "dá para expandir" — recalculados todos os frames
       // (não só na criação) para que uma personagem já em ecrã perca o
       // "+"/halo assim que é expandida, sem precisar do `<g>` ser recriado
@@ -199,25 +191,9 @@
     edgeLayerEl.innerHTML = edgeSvg;
   }
 
-  // Estrelas de fundo decorativas, desenhadas uma única vez (fora da
-  // transformação de `#world`, tal como no mockup). Não faz parte do
-  // contrato `draw(svgWorldEl, edgeLayerEl, nodeLayerEl, defs, physics,
-  // callbacks)` porque `#bgLayer` e as dimensões do mundo não são
-  // parâmetros de `draw()` — quem chama isto uma vez (na inicialização,
-  // não a cada frame) é o app.js (Task 6).
-  function drawBackground(bgLayerEl, width, height) {
-    var bgSvg = '';
-    for (var i = 0; i < 140; i++) {
-      var x = Math.random() * width, y = Math.random() * height, r = Math.random() * 1.3 + 0.3, o = Math.random() * 0.5 + 0.1;
-      bgSvg += '<circle class="bgstar" cx="' + x + '" cy="' + y + '" r="' + r + '" opacity="' + o + '"></circle>';
-    }
-    bgLayerEl.innerHTML = bgSvg;
-  }
-
   var RenderGraph = {
     draw: draw,
-    markDirty: markDirty,
-    drawBackground: drawBackground
+    markDirty: markDirty
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = RenderGraph;
