@@ -455,7 +455,35 @@
     { "id": "abdias", "nome": "Abdias", "tipo": "profeta", "retrato": "assets/retratos/abdias.svg", "tier": "minor", "x": 3600, "y": 450, "era": "Abdias", "refs": "Abd 1",
       "resumo": "Autor do mais curto de todos os livros do Antigo Testamento (só um capítulo), anuncia o castigo de Edom por se ter alegrado e aproveitado da queda de Jerusalém em vez de ajudar um povo vizinho e aparentado.",
       "contexto": "Edom descendia de Esaú, irmão de Jacob — a sua traição na hora da desgraça de Judá é lida como a quebra definitiva de um laço de família muito antigo.",
-      "relacoes": "Sem relações familiares registadas no grafo." }
+      "relacoes": "Sem relações familiares registadas no grafo." },
+    { "id": "daniel", "nome": "Daniel", "tipo": "profeta", "retrato": "assets/retratos/daniel.svg", "tier": "major", "era": "Daniel", "refs": "Dn 1–12",
+      "resumo": "Jovem nobre judeu levado para a Babilónia no início do exílio, recusa-se a contaminar-se com a comida da mesa real e mantém-se fiel a Deus apesar da pressão constante para se assimilar à corte estrangeira. Interpreta sonhos e visões com sabedoria dada por Deus, sobrevivendo à cova dos leões sob o rei Dario.",
+      "contexto": "O livro de Daniel combina narrativa de corte com visões apocalípticas sobre impérios que se sucedem uns aos outros — um género que viria a influenciar fortemente a literatura judaica e cristã posterior, incluindo o Apocalipse.",
+      "relacoes": "Sem relações familiares registadas no grafo." },
+    { "id": "belsazar", "nome": "Belsazar", "tipo": "rei", "retrato": "assets/retratos/belsazar.svg", "tier": "standard", "era": "Daniel", "refs": "Dn 5",
+      "resumo": "Rei que, durante um banquete com os utensílios sagrados roubados do Templo, vê uma mão misteriosa escrever na parede \"Mene, Mene, Tequel, Parsim\". Daniel interpreta a mensagem como o fim do seu reinado — nessa mesma noite, a Babilónia cai perante os medos e persas.",
+      "contexto": "A Bíblia chama-lhe \"filho\" de Nabucodonosor (Dn 5:2), mas historicamente Belsazar era filho de Nabónido, um rei posterior não coberto neste grafo — \"filho\" no texto entende-se hoje como título dinástico/sucessório, não parentesco literal, por isso não há aqui nenhuma ligação familiar a Nabucodonosor.",
+      "relacoes": "Sem relações familiares registadas no grafo." },
+    { "id": "dario", "nome": "Dario o Medo", "tipo": "rei", "retrato": "assets/retratos/dario.svg", "tier": "standard", "era": "Daniel", "refs": "Dn 6",
+      "resumo": "Governante que, pressionado por nobres com ciúmes do favor real dado a Daniel, assina relutantemente um decreto que o obriga a lançá-lo à cova dos leões. Passa a noite em jejum e sem conseguir dormir, e corre ao amanhecer, aliviado, a encontrá-lo ileso.",
+      "contexto": "\"Dario o Medo\" é um dos maiores enigmas históricos do Antigo Testamento — não corresponde com clareza a nenhum monarca independente conhecido dos registos seculares da época; pode ser um título alternativo para Ciro ou para um sátrapa regional.",
+      "relacoes": "Sem relações familiares registadas no grafo." },
+    { "id": "esdras", "nome": "Esdras", "tipo": "sacerdote", "retrato": "assets/retratos/esdras.svg", "tier": "major", "era": "Esdras-Neemias", "refs": "Ed 7–10",
+      "resumo": "Sacerdote-escriba que lidera um segundo grupo de exilados de volta a Jerusalém, décadas depois do primeiro regresso, com autorização do rei persa para ensinar e restaurar a Lei de Moisés. Confronta com dureza a crise dos casamentos com mulheres estrangeiras, que ameaçava diluir a identidade do povo.",
+      "contexto": "A tradição judaica atribui-lhe (de forma disputada pelos estudiosos modernos) um papel central na compilação e fixação de vários livros do Antigo Testamento — é por vezes chamado \"pai do judaísmo\" pós-exílico.",
+      "relacoes": "Sem relações familiares registadas no grafo. Contemporâneo de Neemias." },
+    { "id": "neemias", "nome": "Neemias", "tipo": "povo", "retrato": "assets/retratos/neemias.svg", "tier": "major", "era": "Esdras-Neemias", "refs": "Ne 1–13",
+      "resumo": "Copeiro de confiança do rei persa Artaxerxes, chora ao saber que as muralhas de Jerusalém continuam em ruínas décadas depois do primeiro regresso. Obtém licença e recursos do rei para ir reconstruí-las, e organiza o povo para completar a obra em apenas 52 dias, apesar da oposição de Sambalat e Tobias.",
+      "contexto": "Como governador, implementa também reformas sociais concretas — perdão de dívidas entre o povo, renovação da aliança — mostrando que a reconstrução física andava de mãos dadas com a reconstrução da comunidade.",
+      "relacoes": "Sem relações familiares registadas no grafo. Contemporâneo de Esdras." },
+    { "id": "zorobabel", "nome": "Zorobábel", "tipo": "povo", "retrato": "assets/retratos/zorobabel.svg", "tier": "standard", "era": "Esdras-Neemias", "refs": "Ed 2–6; Ag 1–2; Zc 4",
+      "resumo": "Descendente da linhagem real de David, lidera a primeira vaga de exilados a regressar a Jerusalém e encabeça a reconstrução das fundações do Templo, incentivado pelos profetas Ageu e Zacarias depois de anos de obras paradas.",
+      "contexto": "É a última figura davídica conhecida a exercer liderança política real antes de a linhagem desaparecer dos registos históricos até reaparecer, séculos depois, nas genealogias de Jesus.",
+      "relacoes": "Bisneto do rei Joaquim (Jeconias) — ver ligação a Joaquim, na galáxia \"Os Grandes Profetas\"." },
+    { "id": "jesua", "nome": "Jesua", "tipo": "sacerdote", "retrato": "assets/retratos/jesua.svg", "tier": "minor", "era": "Esdras-Neemias", "refs": "Ed 2–5; Zc 3",
+      "resumo": "Sumo sacerdote do regresso, trabalha lado a lado com Zorobábel na reconstrução do Templo. Numa visão simbólica de Zacarias, as suas vestes sujas são trocadas por vestes limpas — sinal da purificação do sacerdócio depois do exílio.",
+      "contexto": "O nome \"Jesua\" é a mesma forma hebraica de \"Josué\", mas mantido aqui deliberadamente distinto do Josué conquistador de Canaã (outra personagem já existente neste grafo) para não confundir os dois na interface.",
+      "relacoes": "Sem relações familiares registadas no grafo. Contemporâneo de Zorobábel." }
   ],
   "edges": [
     ["adao", "caim", "parent"], ["eva", "caim", "parent"],
@@ -549,7 +577,8 @@
     ["dina", "levi", "sibling"],
     ["dina", "issacar", "sibling"],
     ["dina", "zabulao", "sibling"],
-    ["zabulao", "issacar", "sibling"]
+    ["zabulao", "issacar", "sibling"],
+    ["joaquim", "zorobabel", "descendant", "3 gerações, via Jeconias · 1 Cr 3:17-19"]
   ],
   "capitulos": [
     { "nome": "As Origens", "arranque": ["adao", "noe"] },
@@ -558,6 +587,7 @@
     { "nome": "Josué e os Juízes", "arranque": ["josue", "calebe", "otoniel", "eude", "debora", "baraque", "jael", "gideao", "jefte", "sansao", "dalila", "noemi", "rute"] },
     { "nome": "Os Reis", "arranque": ["elcana", "eli", "jesse", "golias", "natan", "rainha_seba", "jeroboao", "elias", "acab", "eliseu", "naama", "josias", "saul"] },
     { "nome": "Os Grandes Profetas", "arranque": ["acaz", "uzias", "isaias", "senaqueribe", "jeremias", "baruque", "godolias", "ebede_meleque", "nabucodonosor", "ezequiel"] },
-    { "nome": "Os Profetas Menores", "arranque": ["oseias", "amos", "amasias", "jonas", "miqueias", "naum", "habacuc", "sofonias", "ageu", "zacarias", "malaquias", "joel", "abdias"] }
+    { "nome": "Os Profetas Menores", "arranque": ["oseias", "amos", "amasias", "jonas", "miqueias", "naum", "habacuc", "sofonias", "ageu", "zacarias", "malaquias", "joel", "abdias"] },
+    { "nome": "O Exílio e o Regresso", "arranque": ["daniel", "belsazar", "dario", "esdras", "neemias", "zorobabel", "jesua"] }
   ]
 }
