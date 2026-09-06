@@ -82,8 +82,8 @@ function personagem(id, extra) {
   const cap = defs[capIds[0]];
   assert.strictEqual(cap.nome, 'Capítulo Um');
   assert.deepStrictEqual(cap.reveals.slice().sort(), ['x', 'y']);
-  assert.ok(Array.isArray(cap.home) && cap.home.length === 2, 'capítulo devia ter coordenadas home [x,y]');
-  console.log('ok: capítulos viram nós kind:capitulo com reveals e home');
+  assert.strictEqual(cap.home, undefined, 'capítulo já não deve ter coordenadas home — vive fora da física desde a Ronda 12');
+  console.log('ok: capítulos viram nós kind:capitulo com reveals, sem home');
 })();
 
 // --- Caso 7: dois progenitores conhecidos sem aresta "spouse" formal
@@ -104,6 +104,34 @@ function personagem(id, extra) {
   assert.ok(defs['agar'].reveals.includes(uniaoId), 'agar também devia revelar a união implícita — sem isto, ficaria inalcançável (bug real encontrado nos dados reais)');
   assert.ok(defs[uniaoId].reveals.includes('ismael'), 'a união implícita devia revelar o filho');
   console.log('ok: dois progenitores sem spouse formal geram união implícita simétrica (caso Agar)');
+})();
+
+// --- Caso 8: groupByCapitulo atribui cada personagem (direta ou via união)
+// ao capítulo certo, mesmo com dois capítulos distintos no mesmo grafo ---
+(function () {
+  const { build, groupByCapitulo } = require('../js/reveal-graph.js');
+  const personagens = [
+    personagem('pai'), personagem('mae'), personagem('filho'),
+    personagem('outroPai'), personagem('outroFilho'),
+  ];
+  const edges = [
+    ['pai', 'mae', 'spouse'],
+    ['pai', 'filho', 'parent'],
+    ['mae', 'filho', 'parent'],
+    ['outroPai', 'outroFilho', 'parent'],
+  ];
+  const capitulos = [
+    { nome: 'Capítulo A', arranque: ['pai', 'mae'] },
+    { nome: 'Capítulo B', arranque: ['outroPai'] },
+  ];
+  const { defs } = build(personagens, edges, capitulos);
+  const owner = groupByCapitulo(defs);
+  assert.strictEqual(owner['pai'], 'cap_0');
+  assert.strictEqual(owner['mae'], 'cap_0');
+  assert.strictEqual(owner['filho'], 'cap_0', 'filho devia herdar o capítulo dos pais através da união sintetizada');
+  assert.strictEqual(owner['outroPai'], 'cap_1');
+  assert.strictEqual(owner['outroFilho'], 'cap_1');
+  console.log('ok: groupByCapitulo atribui cada personagem ao capítulo certo, mesmo através de uniões');
 })();
 
 console.log('\nALL PASS');

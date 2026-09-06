@@ -92,13 +92,14 @@
         weakRefs.push({ a: e[0], b: e[1], type: e[2], label: e[3] || null });
       });
 
-    // Passo 4: capítulos — nós sintéticos kind:'capitulo', com posições fixas
-    // em grelha (2 filas: 4 na primeira, 3 na segunda — mesma disposição do
-    // mockup original) e reveals = a sua lista de arranque.
-    var CAP_HOMES = [[260, 180], [580, 180], [900, 180], [1220, 180], [260, 500], [580, 500], [900, 500]];
+    // Passo 4: capítulos — nós sintéticos kind:'capitulo', com reveals = a
+    // sua lista de arranque. Já não têm posição fixa (`home`): desde a
+    // Ronda 12 (navegação por galáxias) um capítulo nunca entra na
+    // simulação de física como nó — a sua identidade vive inteiramente no
+    // mapa de galáxias (`js/galaxy-map.js`), fora do SVG.
     (capitulos || []).forEach(function (cap, i) {
       var capId = 'cap_' + i;
-      defs[capId] = { kind: 'capitulo', nome: cap.nome, reveals: cap.arranque.slice(), home: CAP_HOMES[i] || [700, 340] };
+      defs[capId] = { kind: 'capitulo', nome: cap.nome, reveals: cap.arranque.slice() };
     });
 
     // Limpa duplicados nas listas de reveals (uma personagem pode, em teoria,
@@ -114,7 +115,34 @@
     return out;
   }
 
-  var api = { build: build };
+  // Para cada personagem/união, a que capítulo (galáxia) pertence — uma
+  // travessia a partir de CADA `defs[capId].reveals` separadamente (não uma
+  // BFS global sobre todos os capítulos ao mesmo tempo), para que cada nó
+  // fique atribuído ao capítulo cuja própria linhagem o alcança. Assunção
+  // não garantida pelos dados (mesmo aviso já existente em `physics.js`
+  // sobre `rootCapitulo`): se um casamento alguma vez ligar dois capítulos
+  // diferentes, essa união (e tudo o que ela revela) fica atribuída a
+  // quem for processado primeiro, sem aviso — sem caso real hoje.
+  function groupByCapitulo(defs) {
+    var capIds = Object.keys(defs).filter(function (id) { return defs[id].kind === 'capitulo'; });
+    var owner = {};
+    capIds.forEach(function (capId) {
+      var visited = {};
+      var queue = defs[capId].reveals.slice();
+      while (queue.length) {
+        var cur = queue.shift();
+        if (visited[cur]) continue;
+        visited[cur] = true;
+        if (!owner[cur]) owner[cur] = capId;
+        (defs[cur].reveals || []).forEach(function (cid) {
+          if (!visited[cid]) queue.push(cid);
+        });
+      }
+    });
+    return owner;
+  }
+
+  var api = { build: build, groupByCapitulo: groupByCapitulo };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (typeof window !== 'undefined') window.RevealGraph = api;
 })();
