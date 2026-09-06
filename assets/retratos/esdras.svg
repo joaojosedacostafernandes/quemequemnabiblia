@@ -17,6 +17,6 @@
   <circle cx="58" cy="45" r="1.8" fill="#2a1810"/>
   <path d="M49.3 47 Q47.6 53 50.1 55 Q51.7 55 50.4 53" stroke="#a8763f" stroke-width="1.2" fill="none" stroke-linecap="round"/>
   <path d="M43 61.5 Q50 60 57 61.5" stroke="#4a2e18" stroke-width="1.4" fill="none" stroke-linecap="round"/>
-  <path d="M35 55 Q32 64 39 69 Q50 72 61 69 Q68 64 65 55 Q66 60 50 59.5 Q34 60 35 55 Z" fill="#4a2e18"/>
-  <path d="M50 60 L50 70" stroke="#2e1c0e" stroke-width="0.8" fill="none" opacity="0.6"/>
+  <path d="M31 53 Q27 62 36 70 Q50 75 64 70 Q73 62 69 53 Q70 59 50 59 Q30 59 31 53 Z" fill="#4a2e18"/>
+  <path d="M50 61 L50 73" stroke="#2e1c0e" stroke-width="0.8" fill="none" opacity="0.6"/>
 </svg>
