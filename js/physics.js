@@ -5,18 +5,26 @@
   // matemática: nenhuma chamada a `document.*` ou a qualquer API do DOM —
   // quem desenha é sempre o `render-graph.js` (via `onFrame`/`onChange`),
   // nunca este ficheiro.
+  //
+  // Ronda 12 (navegação por galáxias): a simulação nunca mais contém nós
+  // `kind:'capitulo'` — a identidade de cada galáxia vive inteiramente no
+  // mapa (js/galaxy-map.js), fora desta física. Como consequência, só há
+  // sempre UM capítulo em `sim` a qualquer momento (`enterCapitulo` limpa
+  // e recomeça a simulação a cada troca de galáxia), o que eliminou por
+  // completo a lógica de isolamento entre capítulos da Ronda 11
+  // (`rootCapitulo`, faixa lateral, âncoras de capítulo) — já não há
+  // segundo capítulo para isolar.
   function createPhysics() {
     var defs = {};
     var weakRefs = [];
     var W = 0, H = 0, SAFE_TOP = 0;
-    var sim = new Map(); // id -> {x,y,vx,vy,kind,nome,rel,expanded,born,visualR}
+    var sim = new Map(); // id -> {x,y,vx,vy,kind,nome,rel,expanded,born,visualR,spawnParent}
     var scale = 1, tx = 0, ty = 0;
-    var capitulIds = [];
+    var currentCapId = null;
 
     // Margem à volta de cada nó, em unidades do mundo, que reserva espaço
     // para o nome e a etiqueta de parentesco por baixo.
     var LABEL_MARGIN = 44;
-    var SIDE_RADIUS = 15;
 
     // Sono: a simulação adormece assim que assenta (ver `frame()`), e
     // volta a acordar sempre que `wake()` é chamado (abrir/fechar um nó,
@@ -39,80 +47,44 @@
     }
 
     // `spawnParentId` é quem estava a ser clicado quando este nó nasceu —
-    // diferente de `defs[id].reveals`, que é sobre "o que É POSSÍVEL
-    // revelar" (partilhado/simétrico entre cônjuges, ver nota em
-    // `collapseSubtree`). `rootCapitulo` (o capítulo de onde este nó
-    // descende, calculado uma vez ao nascer a partir do do seu progenitor)
-    // isola a física por capítulo — ver `frame()`. Assunção não garantida
-    // por código: fica fixo a partir de quem revelar este nó primeiro — se
-    // os dados alguma vez ligarem um casamento entre dois capítulos
-    // diferentes (nenhum caso real hoje), essa união ficaria parentada ao
-    // capítulo errado sem aviso nenhum.
+    // usado por `collapseSubtree` para percorrer a árvore real de
+    // nascimento (ver nota lá, sobre porque isto tem de ser diferente de
+    // `defs[id].reveals`, que é cíclico entre cônjuges).
     function addNode(id, atX, atY, spawnParentId) {
       var def = defs[id];
-      var parentNode = spawnParentId ? sim.get(spawnParentId) : null;
-      var rootCapitulo = def.kind === 'capitulo' ? id : (parentNode ? parentNode.rootCapitulo : null);
       sim.set(id, {
         id: id, nome: def.nome, kind: def.kind, rel: def.rel || null,
         expanded: false, x: atX, y: atY, vx: 0, vy: 0, born: performance.now(),
-        visualR: radiusFor(def.kind), spawnParent: spawnParentId || null, rootCapitulo: rootCapitulo
+        visualR: radiusFor(def.kind), spawnParent: spawnParentId || null
       });
     }
 
-    // Quando um capítulo está aberto, os outros encolhem e vão para uma
-    // faixa lateral — dão o ecrã todo às personagens do capítulo escolhido,
-    // mas continuam visíveis e clicáveis para mudar de capítulo.
-    function anyCapExpanded() {
-      return capitulIds.some(function (cid) {
-        var n = sim.get(cid);
-        return n && n.expanded;
-      });
-    }
-
-    function effectiveHome(id) {
-      var d = defs[id];
-      if (!d.home) return null;
-      if (d.kind !== 'capitulo' || !anyCapExpanded()) return d.home;
-      var n = sim.get(id);
-      if (n && n.expanded) {
-        // Palco principal, bem afastado da faixa lateral — um lugar
-        // próprio por capítulo aberto, para não se empilharem uns sobre
-        // os outros.
-        var expandedIds = capitulIds.filter(function (cid) {
-          var cn = sim.get(cid);
-          return cn && cn.expanded;
-        });
-        var idx = Math.max(0, expandedIds.indexOf(id));
-        return [560 + idx * 520, 460];
-      }
-      var idxSide = capitulIds.indexOf(id);
-      return [70, 170 + idxSide * 68];
-    }
-
-    function targetRadiusFor(n) {
-      var d = defs[n.id];
-      if (d.kind !== 'capitulo' || !anyCapExpanded() || n.expanded) return radiusFor(n.kind);
-      return SIDE_RADIUS;
-    }
-
-    // Todas as personagens-raiz (sem pais registados na Bíblia, mais os
-    // capítulos) começam visíveis, fechadas, ancoradas na sua posição de
-    // grelha.
-    function bootstrap() {
+    // Substitui o antigo `bootstrap()` da Ronda 11 (que colocava os 7
+    // capítulos em grelha, todos fechados, na mesma simulação). Agora só há
+    // sempre UMA galáxia em `sim`: entrar numa galáxia limpa a simulação e
+    // coloca os seus personagens de arranque (`defs[capId].reveals`) num
+    // leque à volta do centro do mundo — mesmo padrão de leque que
+    // `toggleExpand` já usa para filhos recém-revelados, só que a partir do
+    // centro em vez de um nó pai.
+    function enterCapitulo(capId) {
       sim.clear();
-      Object.keys(defs).filter(function (id) { return defs[id].home; }).forEach(function (id) {
-        var home = defs[id].home;
-        addNode(id, home[0], home[1]);
+      currentCapId = capId;
+      var arranque = defs[capId].reveals;
+      var baseAngle = Math.random() * Math.PI * 2;
+      var dist = 110;
+      arranque.forEach(function (id, i) {
+        var angle = baseAngle + (i / Math.max(arranque.length, 1)) * Math.PI * 2;
+        addNode(id, W / 2 + Math.cos(angle) * dist, H / 2 + Math.sin(angle) * dist, null);
       });
+      wake();
     }
 
-    // Quem decide redesenhar/repor a câmara é sempre quem chama
-    // `collapseAll`, nunca este módulo — por isso não há aqui nenhuma
-    // chamada equivalente a `resetView()`/`render()` do mockup.
-    function collapseAll(onChange) {
-      bootstrap();
+    // "Fechar tudo" dentro de uma galáxia — recomeça esta galáxia do zero
+    // (substitui o antigo `collapseAll()`, que fechava os 7 capítulos; esse
+    // conceito já não existe).
+    function resetGalaxy(onChange) {
+      enterCapitulo(currentCapId);
       if (onChange) onChange();
-      wake();
     }
 
     function edgeKind(fromId, toId) {
@@ -171,27 +143,12 @@
         // Nasce já espalhado num pequeno leque à volta do pai — nascer
         // todos colados ao mesmo ponto obrigava a física a desfazer
         // sobreposições sozinha, e o "sono" rápido podia travar antes
-        // disso acontecer.
-        //
-        // Origem do leque: o destino final do pai (`effectiveHome`), não a
-        // sua posição atual em ecrã. Para um capítulo, expandir muda logo o
-        // seu próprio alvo de âncora (palco principal em vez da faixa
-        // lateral), mas o capítulo em si só lá chega ao fim de uma migração
-        // gradual (âncora fraca, ERA_ANCHOR_K=0.05). Nascer os filhos à
-        // volta da posição ainda-não-migrada (ex: ainda na faixa lateral,
-        // x=70) deixava-os presos longe do capítulo quando este tinha vários
-        // capítulos abertos ao mesmo tempo (2º slot em x=1080) — a mola que
-        // os liga ao capítulo (SPRING_K=0.012) nunca ganhava ao decaimento
-        // de `alpha`/ao amortecimento a tempo de percorrer essa distância
-        // toda, e a simulação adormecia com eles a meio do ecrã, ligados
-        // por linhas compridas ao capítulo lá longe (bug real, encontrado na
-        // verificação em browser real da Task 7 ao abrir "Os Reis" com "Os
-        // Patriarcas" já aberto). Nascer já no destino final resolve isto:
-        // só falta espalhá-los localmente uns dos outros, que é o que a
-        // repulsão/mola já fazem bem.
-        var home = effectiveHome(id);
-        var originX = home ? home[0] : n.x;
-        var originY = home ? home[1] : n.y;
+        // disso acontecer. Origem do leque: a posição atual do pai — já
+        // não há "capítulo a migrar para o palco principal" (esse conceito
+        // desapareceu com o modelo de galáxias, Ronda 12, em que só existe
+        // sempre uma galáxia em ecrã), por isso a origem é sempre
+        // simplesmente onde o nó pai já está.
+        var originX = n.x, originY = n.y;
         var newTargets = targets.filter(function (cid) { return !sim.has(cid); });
         var baseAngle = Math.random() * Math.PI * 2;
         newTargets.forEach(function (cid, i) {
@@ -253,36 +210,10 @@
       var REPEL = 3200; // era 2200 no mockup — mais forte, para reduzir sobreposição de linhas/retratos
       var SPRING_K = 0.012;
       var DAMP = 0.6;
-      var ERA_ANCHOR_K = 0.05; // "palco principal" do capítulo aberto (e caso geral)
-      var SIDE_ANCHOR_K = 0.22; // só para capítulos encolhidos na faixa lateral
 
       for (var i = 0; i < nodes.length; i++) {
         for (var j = i + 1; j < nodes.length; j++) {
           var a = nodes[i], b = nodes[j];
-          // Dois capítulos abertos ao mesmo tempo não se devem influenciar
-          // um ao outro (pedido da Isabel) — cada um é a sua própria "ilha"
-          // física. `rootCapitulo` (ver `addNode`) identifica de que
-          // capítulo cada nó descende; sem esta guarda, abrir um segundo
-          // capítulo empurrava/mexia nas personagens do primeiro já
-          // estabilizadas.
-          //
-          // Limitação residual conhecida (não introduzida por esta guarda,
-          // já existia antes): `alpha`/`asleep`/`calmFrames` continuam
-          // globais, não por capítulo. Abrir um novo capítulo chama
-          // `wake()`, que repõe `alpha=1` para a simulação inteira — por
-          // isso QUALQUER nó sem âncora de capítulo (não só os de união;
-          // qualquer personagem, já que só os nós `kind:'capitulo'` têm
-          // `effectiveHome`) sofre um pequeno reajuste do seu próprio grupo
-          // ao acordar de novo, mesmo sem nenhuma força vinda do outro
-          // capítulo. Medido: ~20 unidades (~1.5% da largura do mundo) numa
-          // única personagem já ligada por mola (não só em nós de união
-          // ainda sem cônjuge fixo), acumulando ao longo de vários capítulos
-          // abertos em sequência. Imperceptível na prática hoje (mascarado
-          // pelo próprio zoom da câmara ao ajustar-se para caber os dois
-          // grupos), mas corrigir a sério exigiria `alpha`/sono por grupo,
-          // não só a guarda de repulsão abaixo — candidato para uma ronda
-          // futura se algum dia se tornar visível.
-          if (a.rootCapitulo && b.rootCapitulo && a.rootCapitulo !== b.rootCapitulo) continue;
           var dx = a.x - b.x, dy = a.y - b.y;
           var d2 = dx * dx + dy * dy; if (d2 < 1) d2 = 1;
           var d = Math.sqrt(d2);
@@ -304,14 +235,7 @@
       });
       var maxSpeed = 0;
       nodes.forEach(function (n) {
-        var home = effectiveHome(n.id);
-        if (home) {
-          var d = defs[n.id];
-          var inSideStrip = d.kind === 'capitulo' && anyCapExpanded() && !n.expanded;
-          var k = inSideStrip ? SIDE_ANCHOR_K : ERA_ANCHOR_K;
-          n.vx += (home[0] - n.x) * k; n.vy += (home[1] - n.y) * k;
-        }
-        n.visualR += (targetRadiusFor(n) - n.visualR) * 0.18;
+        n.visualR += (radiusFor(n.kind) - n.visualR) * 0.18;
         n.vx *= DAMP; n.vy *= DAMP;
         if (Math.abs(n.vx) < 0.05) n.vx = 0;
         if (Math.abs(n.vy) < 0.05) n.vy = 0;
@@ -364,12 +288,7 @@
       // exatamente no limite devia sempre passar — mas a multiplicação por
       // `scale`/`tx`/`ty` acumula erro de vírgula flutuante (ex:
       // 109.99999999999991 em vez de 110.0 exatos), o que sem tolerância
-      // fazia isto voltar `false` para sempre (encontrado na verificação em
-      // browser real da Task 7: procurar "Jacob" deixava um capítulo já
-      // encolhido na faixa lateral a "falhar" este teste por uma fração de
-      // pixel, sem nada realmente cortado em ecrã, e sem qualquer chamada a
-      // `fitView()` alguma vez conseguir fechar essa diferença, porque as
-      // posições já não mudam).
+      // fazia isto voltar `false` para sempre.
       var EPS = 0.5;
       var ok = true;
       sim.forEach(function (n) {
@@ -415,10 +334,6 @@
       scale = camAnim.startScale + (camAnim.targetScale - camAnim.startScale) * ease;
       tx = camAnim.startTx + (camAnim.targetTx - camAnim.startTx) * ease;
       ty = camAnim.startTy + (camAnim.targetTy - camAnim.startTy) * ease;
-      // Animação de câmara autónoma (o seu próprio requestAnimationFrame,
-      // independente de `frame()`) — reutiliza o `onFrame` guardado da
-      // última chamada a `tick()` para pedir o redesenho de cada frame,
-      // já que aqui não há "quem chamou" por frame para o fazer.
       if (_onFrame) _onFrame();
       if (t < 1) {
         requestAnimationFrame(stepCamAnim);
@@ -438,10 +353,6 @@
       scale = newScale;
     }
 
-    // Só repõe o estado de câmara (scale/tx/ty) — quem decide redesenhar
-    // a seguir é sempre quem chama, tal como no mockup `zoomBy`/`panBy`
-    // nunca desenhavam a si próprios (era o listener a chamar `draw()`
-    // depois).
     function resetView() {
       scale = 1; tx = 0; ty = 0;
     }
@@ -469,10 +380,6 @@
       return Array.from(sim.values());
     }
 
-    // Estado atual da câmara — necessário porque `render-graph.js` precisa
-    // de aplicar `scale`/`tx`/`ty` ao atributo `transform` do grupo `#world`
-    // a cada frame (mockup linha 392), e essas três variáveis são internas
-    // a este módulo (nunca chegam a sair via `onFrame`/`onChange`).
     function getCamera() {
       return { scale: scale, tx: tx, ty: ty };
     }
@@ -483,16 +390,17 @@
       W = canvasWidth;
       H = canvasHeight;
       SAFE_TOP = safeTop;
-      capitulIds = Object.keys(defs).filter(function (id) { return defs[id].kind === 'capitulo'; });
       sim = new Map();
       scale = 1; tx = 0; ty = 0;
       asleep = false; calmFrames = 0; alpha = 1;
       fitting = false; camAnim = null; _onFrame = null;
+      currentCapId = null;
     }
 
     return {
       init: init,
-      bootstrap: bootstrap,
+      enterCapitulo: enterCapitulo,
+      resetGalaxy: resetGalaxy,
       toggleExpand: toggleExpand,
       tick: tick,
       wake: wake,
@@ -504,7 +412,6 @@
       everythingInView: everythingInView,
       fitView: fitView,
       animateCameraTo: animateCameraTo,
-      collapseAll: collapseAll,
       zoomBy: zoomBy,
       resetView: resetView,
       panBy: panBy,
