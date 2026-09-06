@@ -17,28 +17,40 @@
   function init(data) {
     var built = RevealGraph.build(data.personagens, data.edges, data.capitulos);
     var defs = built.defs, weakRefs = built.weakRefs;
+    var ownerMap = RevealGraph.groupByCapitulo(defs);
+
+    var memberCounts = {};
+    Object.keys(ownerMap).forEach(function (id) {
+      if (['major', 'standard', 'minor'].indexOf(defs[id].kind) === -1) return;
+      var capId = ownerMap[id];
+      memberCounts[capId] = (memberCounts[capId] || 0) + 1;
+    });
 
     var byId = {};
     data.personagens.forEach(function (p) { byId[p.id] = p; });
 
     var W = 1400, H = 900, SAFE_TOP = 110;
     Physics.init(defs, weakRefs, W, H, SAFE_TOP);
-    Physics.bootstrap();
+
+    var bgStars = document.getElementById('bgStars');
+    WarpTransition.init(bgStars);
+
+    var mapView = document.getElementById('mapView');
+    var galaxyView = document.getElementById('galaxyView');
+    var galaxyGrid = document.getElementById('galaxyGrid');
+    var galaxyTitle = document.getElementById('galaxyTitle');
+    var backBtn = document.getElementById('backBtn');
 
     var stage = document.getElementById('stage');
     var world = document.getElementById('world');
     var edgeLayer = document.getElementById('edgeLayer');
     var nodeLayer = document.getElementById('nodeLayer');
-    var bgLayer = document.getElementById('bgLayer');
     var panel = document.getElementById('panel');
     var panelBody = document.getElementById('panelBody');
     var panelEmptyHtml = panelBody.innerHTML;
 
-    // Fundo decorativo de estrelas (estático, fora do transform de pan/zoom) —
-    // desenhado uma única vez pelo próprio render-graph.js (Task 4), não aqui.
-    RenderGraph.drawBackground(bgLayer, W, H);
-
     var selectedId = null; // última personagem CLICADA — o painel volta a isto quando o rato sai de um hover
+    var currentCapId = null; // galáxia aberta neste momento (null = no mapa)
 
     function requestDraw() {
       RenderGraph.draw(world, edgeLayer, nodeLayer, defs, Physics, {
@@ -52,7 +64,7 @@
       Physics.toggleExpand(id, RenderGraph.markDirty);
       Physics.wake();
       var d = defs[id];
-      if (d.kind !== 'uniao' && d.kind !== 'capitulo') {
+      if (d.kind !== 'uniao') {
         selectedId = id;
         renderCardFull(id);
         panel.classList.add('open');
@@ -60,7 +72,7 @@
     }
     function onNodeHover(id) {
       var d = defs[id];
-      if (d.kind === 'uniao' || d.kind === 'capitulo') return;
+      if (d.kind === 'uniao') return;
       renderCardPreview(id);
       panel.classList.add('open');
     }
@@ -77,17 +89,24 @@
         (d.rel ? '<p class="card-refs">' + d.rel + '</p>' : '');
     }
 
-    function crossEraRefsHtml(n, id) {
+    // "Também aparece em" — só ligações que atravessam uma fronteira de
+    // galáxia (capítulo diferente), não qualquer diferença de era interna.
+    // A etiqueta mostra o nome da galáxia, porque é para lá que o clique
+    // salta (Ronda 12 — antes mostrava a era, e o critério era "era
+    // diferente"; ver spec 2026-09-06-galaxias-navegacao-design.md).
+    function crossGalaxyRefsHtml(n, id) {
       var refs = [];
       data.edges.forEach(function (e) {
         if (e[0] !== id && e[1] !== id) return;
         var otherId = e[0] === id ? e[1] : e[0];
         var other = byId[otherId];
-        if (!other || other.era === n.era) return;
+        if (!other) return;
+        var otherCap = ownerMap[otherId];
+        if (!otherCap || otherCap === ownerMap[id]) return;
         var typeLabel = { parent: 'Família', spouse: 'Casamento', sibling: 'Irmão/irmã', descendant: e[3] || 'Descendência', affinity: e[3] || 'Parentesco' }[e[2]] || e[2];
-        refs.push('<span class="cross-era-ref" data-goto-id="' + escapeAttr(otherId) + '" tabindex="0" role="button" aria-label="Ir para ' + escapeAttr(other.nome) + '">' + other.nome + ' (' + typeLabel + ' · ' + other.era + ')</span>');
+        refs.push('<span class="cross-galaxy-ref" data-goto-id="' + escapeAttr(otherId) + '" tabindex="0" role="button" aria-label="Ir para ' + escapeAttr(other.nome) + '">' + other.nome + ' (' + typeLabel + ' · ' + defs[otherCap].nome + ')</span>');
       });
-      return refs.length ? '<p class="card-section-title">Ligações noutras eras</p><p>' + refs.join(', ') + '</p>' : '';
+      return refs.length ? '<p class="card-section-title">Também aparece em</p><p>' + refs.join(', ') + '</p>' : '';
     }
 
     function renderCardFull(id) {
@@ -105,9 +124,9 @@
         '<p class="card-contexto">' + n.contexto + '</p>' +
         '<p class="card-section-title">Família</p>' +
         '<p class="card-relations">' + (n.rel || '') + '</p>' +
-        crossEraRefsHtml(n, id);
+        crossGalaxyRefsHtml(n, id);
 
-      panelBody.querySelectorAll('.cross-era-ref').forEach(function (span) {
+      panelBody.querySelectorAll('.cross-galaxy-ref').forEach(function (span) {
         span.addEventListener('click', function () { revealAndSelect(span.getAttribute('data-goto-id')); });
         span.addEventListener('keydown', function (ev) {
           if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); revealAndSelect(span.getAttribute('data-goto-id')); }
@@ -124,7 +143,36 @@
       selectedId = null;
     });
 
-    // --- revelar por id (partilhado pela pesquisa e pelas ligações noutras eras) ---
+    // --- mapa de galáxias <-> interior de uma galáxia ---
+    function renderGalaxyMap() {
+      GalaxyMap.render(galaxyGrid, defs, memberCounts, enterGalaxy);
+    }
+
+    function enterGalaxy(capId) {
+      WarpTransition.trigger();
+      currentCapId = capId;
+      galaxyTitle.textContent = defs[capId].nome;
+      mapView.classList.add('hidden');
+      galaxyView.classList.add('shown');
+      Physics.enterCapitulo(capId);
+      RenderGraph.markDirty();
+      Physics.resetView();
+      requestDraw();
+    }
+
+    function exitToMap() {
+      WarpTransition.trigger();
+      currentCapId = null;
+      mapView.classList.remove('hidden');
+      galaxyView.classList.remove('shown');
+      selectedId = null;
+      panelBody.innerHTML = panelEmptyHtml;
+      closePanel();
+    }
+    backBtn.addEventListener('click', exitToMap);
+
+    // --- revelar por id (partilhado pela pesquisa e pelas ligações
+    // cruzadas entre galáxias) ---
     // BFS a partir dos capítulos (as únicas raízes verdadeiras) sobre o grafo
     // de `reveals`: dá a cada nó exatamente um predecessor, sem ciclos.
     // Um mapa "o último a escrever ganha" sobre `Object.keys(defs)` (versão
@@ -132,13 +180,8 @@
     // união revela os dois cônjuges E cada cônjuge revela a união (para
     // nenhum ficar sem caminho de revelação próprio — ver reveal-graph.js),
     // o que cria sempre um ciclo de 2 nós entre uma personagem e a sua
-    // própria união conjugal. `pathToRoot` ficava presa num `while` infinito
-    // sempre que o alvo (ou um descendente seu) passava por esse ciclo —
-    // ex: pesquisar "Jacob" ou qualquer descendente dele congelava a página
-    // por completo (descoberto na verificação em browser real da Task 7).
-    // BFS nunca revisita um nó já visitado, por isso não há ciclo possível,
-    // e continua a alcançar personagens sem pais conhecidos (ex: Eva, Lia)
-    // através do cônjuge, exatamente como antes.
+    // própria união conjugal. BFS nunca revisita um nó já visitado, por
+    // isso não há ciclo possível.
     var revealedBy = {};
     (function () {
       var visited = {};
@@ -159,6 +202,10 @@
       return path;
     }
     function revealAndSelect(id) {
+      var targetCap = ownerMap[id];
+      if (targetCap && targetCap !== currentCapId) {
+        enterGalaxy(targetCap);
+      }
       var path = pathToRoot(id);
       path.forEach(function (pid) {
         var n = Physics.getNode(pid);
@@ -170,13 +217,6 @@
         renderCardFull(id);
         panel.classList.add('open');
         Physics.focusNode(id);
-        // Destaque temporário no nó recém-revelado (glow em `.found-highlight
-        // .halo`, já definido em style.css mas nunca antes aplicado por
-        // ninguém — regressão encontrada na revisão final do branch). Mesmo
-        // padrão `classList.add` + `setTimeout` a remover do mockup original
-        // (docs/superpowers/specs/2026-09-05-grafo-fisica-mockup-A.html,
-        // dentro de `focusNode`); aqui vive em app.js, não em physics.js,
-        // porque `js/physics.js` nunca toca no DOM (ver cabeçalho do ficheiro).
         var foundEl = nodeLayer.querySelector('[data-id="' + id + '"]');
         if (foundEl) {
           foundEl.classList.add('found-highlight');
@@ -211,11 +251,6 @@
       if (!row) return;
       activateSearchResult(row);
     });
-    // As linhas de resultado têm tabindex="0"/role="button" (por cima, no
-    // template), mas até esta correção não tinham handler de teclado — eram
-    // focáveis mas Enter/Espaço não faziam nada (regressão encontrada na
-    // revisão final do branch). Mesmo padrão Enter/Espaço já usado em
-    // `.cross-era-ref` (`renderCardFull`, mais abaixo neste ficheiro).
     searchResults.addEventListener('keydown', function (ev) {
       var row = ev.target.closest('.search-result');
       if (!row) return;
@@ -225,13 +260,12 @@
       if (!ev.target.closest('.search-wrap')) { searchResults.hidden = true; }
     });
 
-    // --- controlos de zoom/reset/fechar tudo ---
+    // --- controlos de zoom/reset/recomeçar galáxia ---
     document.getElementById('zoomIn').addEventListener('click', function () { Physics.zoomBy(1.25); requestDraw(); });
     document.getElementById('zoomOut').addEventListener('click', function () { Physics.zoomBy(0.8); requestDraw(); });
     document.getElementById('zoomReset').addEventListener('click', function () { Physics.resetView(); requestDraw(); });
     document.getElementById('collapseAllBtn').addEventListener('click', function () {
-      Physics.collapseAll(RenderGraph.markDirty);
-      Physics.wake();
+      Physics.resetGalaxy(RenderGraph.markDirty);
       Physics.resetView();
       requestDraw();
       selectedId = null;
@@ -265,7 +299,9 @@
     });
     window.addEventListener('mouseup', function () { panning = false; stage.classList.remove('panning'); });
 
-    // --- ciclo de física + desenho ---
+    // --- arranque: mapa de galáxias visível, física a postos mas parada
+    // até a primeira galáxia ser aberta ---
+    renderGalaxyMap();
     Physics.tick(requestDraw);
     requestDraw();
   }
