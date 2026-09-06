@@ -65,6 +65,8 @@ html, body { margin: 0; padding: 0; background: #0d1024; color: #e8e4d8; font-fa
 .controls button:focus-visible,
 aside button:focus-visible,
 .node:focus-visible circle.halo { outline: 2px solid #d8c98a; outline-offset: 2px; }
+.search-result:focus-visible,
+.cross-era-ref:focus-visible { outline: 2px solid #d8c98a; outline-offset: 2px; }
 
 aside#panel { width: 22rem; flex-shrink: 0; border-left: 1px solid #4a4580; background: #12142a; padding: 1.3rem 1.4rem; overflow-y: auto; color: #e8e4d8; }
 .panel-empty { color: #9a94b8; font-size: 0.88rem; margin-top: 2rem; text-align: center; line-height: 1.6; }

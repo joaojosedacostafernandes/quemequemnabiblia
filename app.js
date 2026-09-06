@@ -170,6 +170,18 @@
         renderCardFull(id);
         panel.classList.add('open');
         Physics.focusNode(id);
+        // Destaque temporário no nó recém-revelado (glow em `.found-highlight
+        // .halo`, já definido em style.css mas nunca antes aplicado por
+        // ninguém — regressão encontrada na revisão final do branch). Mesmo
+        // padrão `classList.add` + `setTimeout` a remover do mockup original
+        // (docs/superpowers/specs/2026-09-05-grafo-fisica-mockup-A.html,
+        // dentro de `focusNode`); aqui vive em app.js, não em physics.js,
+        // porque `js/physics.js` nunca toca no DOM (ver cabeçalho do ficheiro).
+        var foundEl = nodeLayer.querySelector('[data-id="' + id + '"]');
+        if (foundEl) {
+          foundEl.classList.add('found-highlight');
+          setTimeout(function () { foundEl.classList.remove('found-highlight'); }, 2400);
+        }
       }, 700);
     }
 
@@ -189,12 +201,25 @@
       }).join('');
       searchResults.hidden = false;
     });
-    searchResults.addEventListener('click', function (ev) {
-      var row = ev.target.closest('.search-result');
-      if (!row) return;
+    function activateSearchResult(row) {
       searchResults.hidden = true;
       searchBox.value = defs[row.getAttribute('data-id')].nome;
       revealAndSelect(row.getAttribute('data-id'));
+    }
+    searchResults.addEventListener('click', function (ev) {
+      var row = ev.target.closest('.search-result');
+      if (!row) return;
+      activateSearchResult(row);
+    });
+    // As linhas de resultado têm tabindex="0"/role="button" (por cima, no
+    // template), mas até esta correção não tinham handler de teclado — eram
+    // focáveis mas Enter/Espaço não faziam nada (regressão encontrada na
+    // revisão final do branch). Mesmo padrão Enter/Espaço já usado em
+    // `.cross-era-ref` (`renderCardFull`, mais abaixo neste ficheiro).
+    searchResults.addEventListener('keydown', function (ev) {
+      var row = ev.target.closest('.search-result');
+      if (!row) return;
+      if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); activateSearchResult(row); }
     });
     document.addEventListener('click', function (ev) {
       if (!ev.target.closest('.search-wrap')) { searchResults.hidden = true; }

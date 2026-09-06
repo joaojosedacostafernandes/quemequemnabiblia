@@ -119,7 +119,26 @@
     function getEdges() {
       var out = [];
       Array.from(sim.keys()).forEach(function (id) { out = out.concat(edgesFor(id)); });
-      return out;
+      // Cônjuge <-> união aparece duas vezes em `out`: a pessoa revela a
+      // união (kind 'stem') E a união revela a pessoa de volta (kind
+      // 'descent' — mesmo ciclo simétrico descrito em `collapseSubtree`).
+      // Sem desduplicar, a mola aplicava-se duas vezes por par com dois
+      // comprimentos de repouso diferentes a competir (o casamento assentava
+      // numa distância de compromisso não intencional), e desenhavam-se duas
+      // linhas sobrepostas — a "descent" (mais grossa, cor de descendência)
+      // por cima da "stem" (mais fina, cor de casamento), escondendo a
+      // distinção visual que o mockup original pretendia entre as duas.
+      // Mantém sempre a direção 'stem' (pessoa -> união) quando existem as
+      // duas; pares com uma só direção (ex: união -> filho, kind 'descent',
+      // que é uma relação real, não duplicada) passam tal e qual.
+      var byPair = {};
+      out.forEach(function (e) {
+        var key = [e.a, e.b].sort().join('|');
+        if (!byPair[key] || (byPair[key].kind !== 'stem' && e.kind === 'stem')) {
+          byPair[key] = e;
+        }
+      });
+      return Object.keys(byPair).map(function (key) { return byPair[key]; });
     }
 
     function getWeakEdgesVisible() {
@@ -175,14 +194,33 @@
       wake();
     }
 
+    // `reveals` é um grafo cíclico, não uma árvore: um cônjuge revela a sua
+    // união E a união revela os dois cônjuges de volta (ver reveal-graph.js
+    // e a nota em `pathToRoot`/`revealedBy` no app.js, onde o mesmo ciclo já
+    // tinha sido encontrado e corrigido com BFS). Uma versão recursiva desta
+    // função sem conjunto de visitados (a original, portada do mockup, cujos
+    // dados de exemplo eram uma árvore genuinamente acíclica) reentra
+    // `defs['u_x_y'].reveals` → `x` → `defs['x'].reveals` → `u_x_y` → ...
+    // para sempre, estourando a pilha (`RangeError: Maximum call stack size
+    // exceeded`) em 24 das 33 personagens hoje expansíveis. Percurso
+    // iterativo com conjunto de visitados: nunca reentra um id já visto, e
+    // nunca apaga o próprio `id` com que foi chamada (a raiz desta ação de
+    // colapso — colapsar Abraão remove Sara/Agar/descendentes, mas o clique
+    // foi NELE, por isso ele fica e só perde `expanded`).
     function collapseSubtree(id) {
-      var n = sim.get(id);
-      (defs[id].reveals || []).forEach(function (cid) {
+      var visited = {};
+      visited[id] = true;
+      var stack = (defs[id].reveals || []).slice();
+      while (stack.length) {
+        var cid = stack.pop();
+        if (visited[cid]) continue;
+        visited[cid] = true;
         if (sim.has(cid)) {
-          collapseSubtree(cid);
+          stack = stack.concat(defs[cid].reveals || []);
           sim.delete(cid);
         }
-      });
+      }
+      var n = sim.get(id);
       if (n) n.expanded = false;
     }
 

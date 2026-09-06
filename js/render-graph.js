@@ -23,6 +23,19 @@
     return kind === 'capitulo' ? 36 : kind === 'major' ? 24 : kind === 'standard' ? 16 : kind === 'uniao' ? 8 : 11;
   }
 
+  // `n.rel` vem de `relacoes` (dados reais) — no mockup de onde este ficheiro
+  // foi portado, o campo equivalente era uma etiqueta curta ("casada com
+  // Adão"), mas aqui é prosa completa (mediana 69 carateres, até 213 em
+  // Jacob). Sem recorte, uma etiqueta SVG centrada e não quebrada a ~8.5px
+  // vira uma fita de texto de ~900px a atravessar o ecrã todo. Só a etiqueta
+  // pequena do grafo é recortada — o texto completo continua, sem cortes, no
+  // painel de detalhe (`app.js`, `renderCardFull`, secção "Família").
+  var REL_LABEL_MAX = 30;
+  function truncateRelLabel(str) {
+    if (!str) return str;
+    return str.length > REL_LABEL_MAX ? str.slice(0, REL_LABEL_MAX) + '…' : str;
+  }
+
   function starShape(defs, n, r) {
     var d = defs[n.id];
     if (n.kind === 'uniao') {
@@ -91,13 +104,28 @@
         var g = document.createElementNS(SVG_NS, 'g');
         g.setAttribute('class', 'node ' + n.kind + ' ' + (hasMore && !n.expanded ? 'expandable' : '') + ' node-group' + (isNew ? ' pop-in' : ''));
         g.setAttribute('data-id', n.id);
+        // Paridade de teclado com o clique de rato (js/render-cluster.js, o
+        // ficheiro que este substituiu, já dava isto a todos os nós — regressão
+        // encontrada na revisão final do branch). O losango de união (kind
+        // 'uniao') fica de fora: não tem nome (`nome === ''`, ver reveal-graph.js),
+        // por isso não há aria-label significativo para lhe dar, tal como já
+        // não tem prévia ao passar o rato nem cartão completo ao clicar (ver
+        // condições abaixo e em app.js `onNodeHover`/`onNodeClick`).
+        var isFocusable = n.kind !== 'uniao';
+        if (isFocusable) {
+          var d0 = defs[n.id];
+          var label = d0 && d0.era ? (n.nome + ', ' + d0.era) : n.nome;
+          g.setAttribute('tabindex', '0');
+          g.setAttribute('role', 'button');
+          g.setAttribute('aria-label', label);
+        }
         var r = radiusFor(n.kind);
         g.innerHTML =
           '<circle class="halo" r="' + (r + 6) + '"></circle>' +
           starShape(defs, n, r) +
           (n.kind !== 'uniao' ? '<text class="name" y="' + (r + 16) + '">' + n.nome + '</text>' : '') +
           (n.kind === 'capitulo' ? '<text class="clabel" y="' + (r + 27) + '" style="fill:#d8c98a;">' + (defs[n.id].reveals || []).length + ' personagens</text>' : '') +
-          (n.rel ? '<text class="clabel" y="' + (r + 27) + '" style="fill:#d8c98a;">' + n.rel + '</text>' : '') +
+          (n.rel ? '<text class="clabel" y="' + (r + 27) + '" style="fill:#d8c98a;">' + truncateRelLabel(n.rel) + '</text>' : '') +
           // Os elementos do badge existem sempre que a personagem alguma
           // vez pode ser expandida (mesmo já expandida) — a sua
           // visibilidade em cada frame é decidida no segundo `forEach`
@@ -112,6 +140,11 @@
         // `mousemove`: já não há tooltip flutuante a seguir o cursor (essa
         // é agora a caixa fixa no painel, da responsabilidade do app.js).
         g.addEventListener('click', function () { callbacks.onNodeClick(n.id); });
+        if (isFocusable) {
+          g.addEventListener('keydown', function (ev) {
+            if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); callbacks.onNodeClick(n.id); }
+          });
+        }
         if (n.kind !== 'uniao' && n.kind !== 'capitulo') {
           g.addEventListener('mouseenter', function () { callbacks.onNodeHover(n.id); });
           g.addEventListener('mouseleave', function () { callbacks.onNodeUnhover(); });
