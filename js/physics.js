@@ -261,6 +261,23 @@
           // capítulo cada nó descende; sem esta guarda, abrir um segundo
           // capítulo empurrava/mexia nas personagens do primeiro já
           // estabilizadas.
+          //
+          // Limitação residual conhecida (não introduzida por esta guarda,
+          // já existia antes): `alpha`/`asleep`/`calmFrames` continuam
+          // globais, não por capítulo. Abrir um novo capítulo chama
+          // `wake()`, que repõe `alpha=1` para a simulação inteira — por
+          // isso QUALQUER nó sem âncora de capítulo (não só os de união;
+          // qualquer personagem, já que só os nós `kind:'capitulo'` têm
+          // `effectiveHome`) sofre um pequeno reajuste do seu próprio grupo
+          // ao acordar de novo, mesmo sem nenhuma força vinda do outro
+          // capítulo. Medido: ~20 unidades (~1.5% da largura do mundo) numa
+          // única personagem já ligada por mola (não só em nós de união
+          // ainda sem cônjuge fixo), acumulando ao longo de vários capítulos
+          // abertos em sequência. Imperceptível na prática hoje (mascarado
+          // pelo próprio zoom da câmara ao ajustar-se para caber os dois
+          // grupos), mas corrigir a sério exigiria `alpha`/sono por grupo,
+          // não só a guarda de repulsão abaixo — candidato para uma ronda
+          // futura se algum dia se tornar visível.
           if (a.rootCapitulo && b.rootCapitulo && a.rootCapitulo !== b.rootCapitulo) continue;
           var dx = a.x - b.x, dy = a.y - b.y;
           var d2 = dx * dx + dy * dy; if (d2 < 1) d2 = 1;
