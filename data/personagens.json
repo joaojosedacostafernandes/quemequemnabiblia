@@ -483,7 +483,23 @@
     { "id": "jesua", "nome": "Jesua", "tipo": "sacerdote", "retrato": "assets/retratos/jesua.svg", "tier": "minor", "era": "Esdras-Neemias", "refs": "Ed 2–5; Zc 3",
       "resumo": "Sumo sacerdote do regresso, trabalha lado a lado com Zorobábel na reconstrução do Templo. Numa visão simbólica de Zacarias, as suas vestes sujas são trocadas por vestes limpas — sinal da purificação do sacerdócio depois do exílio.",
       "contexto": "O nome \"Jesua\" é a mesma forma hebraica de \"Josué\", mas mantido aqui deliberadamente distinto do Josué conquistador de Canaã (outra personagem já existente neste grafo) para não confundir os dois na interface.",
-      "relacoes": "Sem relações familiares registadas no grafo. Contemporâneo de Zorobábel." }
+      "relacoes": "Sem relações familiares registadas no grafo. Contemporâneo de Zorobábel." },
+    { "id": "ester", "nome": "Ester", "tipo": "matriarca", "retrato": "assets/retratos/ester.svg", "tier": "major", "era": "Ester", "refs": "Et 1–10",
+      "resumo": "Jovem judia órfã, criada pelo primo Mardoqueu, torna-se rainha da Pérsia depois de um concurso de beleza em todo o império. Quando um decreto ameaça exterminar todos os judeus, arrisca a própria vida ao apresentar-se ao rei sem ser chamada — \"quem sabe se não foi para uma hora como esta que chegaste à realeza?\" (Et 4:14).",
+      "contexto": "É o único livro da Bíblia que nunca menciona Deus explicitamente — a sua presença lê-se nas \"coincidências\" da trama. A festa judaica do Purim celebra até hoje esta libertação.",
+      "relacoes": "Prima e filha adotiva de Mardoqueu. Casada com o rei Assuero." },
+    { "id": "mardoqueu", "nome": "Mardoqueu", "tipo": "povo", "retrato": "assets/retratos/mardoqueu.svg", "tier": "major", "era": "Ester", "refs": "Et 2–10",
+      "resumo": "Oficial judeu da corte persa, cria a prima órfã Ester \"como sua própria filha\" (Et 2:7). Recusa-se a curvar-se perante Amã, descobre uma conspiração contra o rei, e acaba elevado a segundo homem mais poderoso do império depois da queda de Amã.",
+      "contexto": "O seu nome pode estar relacionado com o deus babilónico Marduk — uma prática comum entre judeus exilados, que adotavam nomes de sonoridade local sem abandonar a sua fé.",
+      "relacoes": "Primo e pai adotivo de Ester." },
+    { "id": "assuero", "nome": "Assuero", "tipo": "rei", "retrato": "assets/retratos/assuero.svg", "tier": "standard", "era": "Ester", "refs": "Et 1–10",
+      "resumo": "Rei persa (tradicionalmente identificado com Xerxes I) que deposta a rainha Vasti por desobediência e escolhe Ester como nova rainha através de uma busca por todo o império. Mais tarde, concede aos judeus o direito de se defenderem do decreto de extermínio tramado por Amã.",
+      "contexto": "A identificação com Xerxes I baseia-se na correspondência do nome hebraico/persa e na cronologia histórica do seu reinado.",
+      "relacoes": "Casado com Ester." },
+    { "id": "ama", "nome": "Amã", "tipo": "povo", "retrato": "assets/retratos/ama.svg", "tier": "standard", "era": "Ester", "refs": "Et 3–7",
+      "resumo": "Vizir promovido pelo rei Assuero, enfurece-se quando Mardoqueu se recusa a curvar-se perante ele e trama a aniquilação de todos os judeus do império. A forca que manda construir para Mardoqueu acaba por ser a sua própria ruína.",
+      "contexto": "É identificado como \"agagita\" — descendente de Agag, rei dos amalecitas, um antigo povo inimigo de Israel (1 Sm 15) — aprofundando o sentido de rivalidade antiga por trás do conflito.",
+      "relacoes": "Sem relações familiares registadas no grafo." }
   ],
   "edges": [
     ["adao", "caim", "parent"], ["eva", "caim", "parent"],
@@ -578,7 +594,9 @@
     ["dina", "issacar", "sibling"],
     ["dina", "zabulao", "sibling"],
     ["zabulao", "issacar", "sibling"],
-    ["joaquim", "zorobabel", "descendant", "3 gerações, via Jeconias · 1 Cr 3:17-19"]
+    ["joaquim", "zorobabel", "descendant", "3 gerações, via Jeconias · 1 Cr 3:17-19"],
+    ["mardoqueu", "ester", "parent"],
+    ["assuero", "ester", "spouse"]
   ],
   "capitulos": [
     { "nome": "As Origens", "arranque": ["adao", "noe"] },
@@ -588,6 +606,6 @@
     { "nome": "Os Reis", "arranque": ["elcana", "eli", "jesse", "golias", "natan", "rainha_seba", "jeroboao", "elias", "acab", "eliseu", "naama", "josias", "saul"] },
     { "nome": "Os Grandes Profetas", "arranque": ["acaz", "uzias", "isaias", "senaqueribe", "jeremias", "baruque", "godolias", "ebede_meleque", "nabucodonosor", "ezequiel"] },
     { "nome": "Os Profetas Menores", "arranque": ["oseias", "amos", "amasias", "jonas", "miqueias", "naum", "habacuc", "sofonias", "ageu", "zacarias", "malaquias", "joel", "abdias"] },
-    { "nome": "O Exílio e o Regresso", "arranque": ["daniel", "belsazar", "dario", "esdras", "neemias", "zorobabel", "jesua"] }
+    { "nome": "O Exílio e o Regresso", "arranque": ["daniel", "belsazar", "dario", "esdras", "neemias", "zorobabel", "jesua", "ester", "mardoqueu", "assuero", "ama"] }
   ]
 }
