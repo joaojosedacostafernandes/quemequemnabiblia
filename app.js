@@ -41,6 +41,7 @@
     var eventDesc = document.getElementById('eventDesc');
     var eventImportancia = document.getElementById('eventImportancia');
     var eventMensagem = document.getElementById('eventMensagem');
+    var eventContexto = document.getElementById('eventContexto');
     var eventPassagens = document.getElementById('eventPassagens');
     var eventInfo = document.getElementById('eventInfo');
     var charButtons = document.getElementById('charButtons');
@@ -117,6 +118,7 @@
       eventDesc.textContent = ev.desc;
       eventImportancia.textContent = ev.importancia;
       eventMensagem.textContent = ev.mensagem;
+      eventContexto.textContent = ev.contexto || '';
       eventPassagens.innerHTML = ev.passagens.map(function (p) { return '<li>' + p + '</li>'; }).join('');
       eventIcon.innerHTML = window.EVENT_ICONS[ev.id] || '';
       eventAmbient.style.setProperty('--tint', ev.tint);
@@ -208,6 +210,7 @@
         (d.importancia ? '<p class="card-section-title">Importância</p><p class="card-body">' + d.importancia + '</p>' : '') +
         (d.licao ? '<p class="card-section-title">O que aprendemos com Deus</p><p class="card-body">' + d.licao + '</p>' : '') +
         (d.citacao ? '<p class="card-section-title">Citação</p><p class="card-quote">' + d.citacao + '</p>' : '') +
+        (d.contexto ? '<p class="card-section-title">Contexto histórico</p><p class="card-body">' + d.contexto + '</p>' : '') +
         '<p class="card-section-title">Família (neste acontecimento)</p>' +
         familyHtml +
         crossEventRefsHtml(charId);
