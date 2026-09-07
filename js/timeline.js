@@ -90,6 +90,22 @@
       applyOffset();
     });
     window.addEventListener('mouseup', function () { dragging = false; view.classList.remove('dragging'); });
+    // Arrastar com o dedo — o toque nunca dispara `mousedown`/`mousemove`,
+    // por isso sem isto a linha do tempo era completamente impossível de
+    // percorrer por arrasto num telemóvel real (só as setas funcionavam).
+    view.addEventListener('touchstart', function (e) {
+      if (e.target.closest('.event-marker') || e.touches.length !== 1) return;
+      dragging = true; dragStartX = e.touches[0].clientX; dragStartOffset = railOffset;
+      view.classList.add('dragging');
+    }, { passive: true });
+    view.addEventListener('touchmove', function (e) {
+      if (!dragging) return;
+      e.preventDefault();
+      railOffset = dragStartOffset + (e.touches[0].clientX - dragStartX);
+      applyOffset();
+    }, { passive: false });
+    window.addEventListener('touchend', function () { dragging = false; view.classList.remove('dragging'); });
+    window.addEventListener('touchcancel', function () { dragging = false; view.classList.remove('dragging'); });
     view.addEventListener('wheel', function (e) {
       e.preventDefault();
       railOffset -= (e.deltaY || e.deltaX);

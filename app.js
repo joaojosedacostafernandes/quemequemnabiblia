@@ -82,6 +82,22 @@
       applyCam();
     });
     window.addEventListener('mouseup', function () { panningChars = false; charField.classList.remove('panning'); });
+    // Arrastar com o dedo — sem isto, explorar uma árvore genealógica larga
+    // (ex: os 12 apóstolos) num telemóvel real só era possível pelo botão
+    // de reduzir zoom, nunca por arrasto.
+    charField.addEventListener('touchstart', function (e) {
+      if (e.target.closest('.char') || e.target.closest('.union-node') || e.touches.length !== 1) return;
+      panningChars = true; panStartX = e.touches[0].clientX; panStartY = e.touches[0].clientY; panStartTx = camTx; panStartTy = camTy;
+      charField.classList.add('panning');
+    }, { passive: true });
+    charField.addEventListener('touchmove', function (e) {
+      if (!panningChars) return;
+      e.preventDefault();
+      camTx = panStartTx + (e.touches[0].clientX - panStartX); camTy = panStartTy + (e.touches[0].clientY - panStartY);
+      applyCam();
+    }, { passive: false });
+    window.addEventListener('touchend', function () { panningChars = false; charField.classList.remove('panning'); });
+    window.addEventListener('touchcancel', function () { panningChars = false; charField.classList.remove('panning'); });
 
     // --- mapa de acontecimentos (linha do tempo) ---
     Timeline.init({
