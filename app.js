@@ -15,241 +15,252 @@
   }
 
   function init(data) {
-    var built = RevealGraph.build(data.personagens, data.edges, data.capitulos);
-    var defs = built.defs, weakRefs = built.weakRefs;
-    var ownerMap = RevealGraph.groupByCapitulo(defs);
-
-    var memberCounts = {};
-    Object.keys(ownerMap).forEach(function (id) {
-      if (['major', 'standard', 'minor'].indexOf(defs[id].kind) === -1) return;
-      var capId = ownerMap[id];
-      memberCounts[capId] = (memberCounts[capId] || 0) + 1;
-    });
-
     var byId = {};
     data.personagens.forEach(function (p) { byId[p.id] = p; });
+    var events = data.acontecimentos;
 
-    var W = 1400, H = 900, SAFE_TOP = 110;
-    Physics.init(defs, weakRefs, W, H, SAFE_TOP);
+    // A que acontecimento pertence cada personagem, para saltos (pesquisa e
+    // "também aparece em") — usa sempre o primeiro em que aparece, quando
+    // uma personagem participa em mais do que um (ex: David em 3).
+    var firstEventOf = {};
+    events.forEach(function (ev) {
+      ev.personagens.forEach(function (id) {
+        if (!firstEventOf[id]) firstEventOf[id] = ev;
+      });
+    });
 
     var bgStars = document.getElementById('bgStars');
     WarpTransition.init(bgStars);
 
-    var mapView = document.getElementById('mapView');
-    var galaxyView = document.getElementById('galaxyView');
-    var galaxyGrid = document.getElementById('galaxyGrid');
-    var galaxyTitle = document.getElementById('galaxyTitle');
-    var backBtn = document.getElementById('backBtn');
-
-    var stage = document.getElementById('stage');
-    var world = document.getElementById('world');
-    var edgeLayer = document.getElementById('edgeLayer');
-    var nodeLayer = document.getElementById('nodeLayer');
+    var timelineView = document.getElementById('timelineView');
+    var eventView = document.getElementById('eventView');
+    var eventAmbient = document.getElementById('eventAmbient');
+    var eventIcon = document.getElementById('eventIcon');
+    var eventTitle = document.getElementById('eventTitle');
+    var eventEra = document.getElementById('eventEra');
+    var eventDesc = document.getElementById('eventDesc');
+    var eventImportancia = document.getElementById('eventImportancia');
+    var eventMensagem = document.getElementById('eventMensagem');
+    var eventPassagens = document.getElementById('eventPassagens');
+    var eventInfo = document.getElementById('eventInfo');
+    var charButtons = document.getElementById('charButtons');
+    var charLines = document.getElementById('charLines');
+    var camLayer = document.getElementById('camLayer');
+    var charField = document.getElementById('charField');
     var panel = document.getElementById('panel');
     var panelBody = document.getElementById('panelBody');
     var panelEmptyHtml = panelBody.innerHTML;
+    var backBtn = document.getElementById('backBtn');
+    var panelClose = document.getElementById('panelClose');
 
-    var selectedId = null; // última personagem CLICADA — o painel volta a isto quando o rato sai de um hover
-    var currentCapId = null; // galáxia aberta neste momento (null = no mapa)
+    document.getElementById('eventInfoToggle').addEventListener('click', function () { eventInfo.classList.toggle('collapsed'); });
+    panelClose.addEventListener('click', function () {
+      panel.classList.remove('open');
+      document.querySelectorAll('.char.focused').forEach(function (el) { el.classList.remove('focused'); });
+    });
 
-    function requestDraw() {
-      RenderGraph.draw(world, edgeLayer, nodeLayer, defs, Physics, {
-        onNodeClick: onNodeClick,
-        onNodeHover: onNodeHover,
-        onNodeUnhover: onNodeUnhover
+    // --- câmara (zoom/pan) dentro de um acontecimento — sem física, só
+    // estado de transformação, tal como o protótipo validado ---
+    var camScale = 1, camTx = 0, camTy = 0;
+    function applyCam() { camLayer.style.transform = 'translate(' + camTx + 'px,' + camTy + 'px) scale(' + camScale + ')'; }
+    function resetCam() { camScale = 1; camTx = 0; camTy = 0; applyCam(); }
+    function zoomBy(factor) { camScale = Math.max(0.5, Math.min(3, camScale * factor)); applyCam(); }
+    document.getElementById('zoomIn').addEventListener('click', function () { zoomBy(1.25); });
+    document.getElementById('zoomOut').addEventListener('click', function () { zoomBy(0.8); });
+    document.getElementById('zoomReset').addEventListener('click', resetCam);
+    charField.addEventListener('wheel', function (e) { e.preventDefault(); zoomBy(e.deltaY < 0 ? 1.12 : 0.89); }, { passive: false });
+    var panningChars = false, panStartX = 0, panStartY = 0, panStartTx = 0, panStartTy = 0;
+    charField.addEventListener('mousedown', function (e) {
+      if (e.target.closest('.char') || e.target.closest('.union-node')) return;
+      panningChars = true; panStartX = e.clientX; panStartY = e.clientY; panStartTx = camTx; panStartTy = camTy;
+      charField.classList.add('panning');
+    });
+    window.addEventListener('mousemove', function (e) {
+      if (!panningChars) return;
+      camTx = panStartTx + (e.clientX - panStartX); camTy = panStartTy + (e.clientY - panStartY);
+      applyCam();
+    });
+    window.addEventListener('mouseup', function () { panningChars = false; charField.classList.remove('panning'); });
+
+    // --- mapa de acontecimentos (linha do tempo) ---
+    Timeline.init({
+      view: timelineView,
+      rail: document.getElementById('timelineRail'),
+      railPath: document.getElementById('railPath'),
+      railSvg: document.getElementById('railSvg'),
+      progressDots: document.getElementById('progressDots'),
+      scrollLeftBtn: document.getElementById('scrollLeft'),
+      scrollRightBtn: document.getElementById('scrollRight'),
+      events: events,
+      defs: byId,
+      onEnter: function (ev, x, y) { enterEvent(ev, x, y); }
+    });
+
+    var currentEvent = null;
+
+    function enterEvent(ev, clickX, clickY) {
+      var stageEl = document.querySelector('.stage');
+      var rect = stageEl.getBoundingClientRect();
+      var originXFrac = (clickX - rect.left) / rect.width, originYFrac = (clickY - rect.top) / rect.height;
+      var originPct = (originXFrac * 100).toFixed(1) + '% ' + (originYFrac * 100).toFixed(1) + '%';
+      timelineView.style.transformOrigin = originPct;
+      eventView.style.transformOrigin = originPct;
+      WarpTransition.trigger(originXFrac, originYFrac, ev.tint);
+
+      timelineView.classList.add('diving');
+      document.body.classList.add('in-event');
+      eventInfo.classList.add('collapsed');
+      resetCam();
+      currentEvent = ev;
+      eventTitle.textContent = ev.nome;
+      eventEra.textContent = ev.era;
+      eventDesc.textContent = ev.desc;
+      eventImportancia.textContent = ev.importancia;
+      eventMensagem.textContent = ev.mensagem;
+      eventPassagens.innerHTML = ev.passagens.map(function (p) { return '<li>' + p + '</li>'; }).join('');
+      eventIcon.innerHTML = window.EVENT_ICONS[ev.id] || '';
+      eventAmbient.style.setProperty('--tint', ev.tint);
+      eventView.style.setProperty('--tint', ev.tint);
+      EventGraph.render(charLines, charButtons, ev.personagens, byId, data.edges, function (id) { focusChar(id); });
+      panelBody.innerHTML = panelEmptyHtml;
+      panel.classList.remove('open');
+      document.getElementById('eventScroll').scrollTop = 0;
+      requestAnimationFrame(function () { eventView.classList.add('shown'); });
+    }
+
+    function exitToTimeline(e) {
+      var stageEl = document.querySelector('.stage');
+      var rect = stageEl.getBoundingClientRect();
+      var fx = (e.clientX - rect.left) / rect.width, fy = (e.clientY - rect.top) / rect.height;
+      var originPct = (fx * 100).toFixed(1) + '% ' + (fy * 100).toFixed(1) + '%';
+      timelineView.style.transformOrigin = originPct;
+      eventView.style.transformOrigin = originPct;
+      WarpTransition.trigger(fx, fy, currentEvent ? currentEvent.tint : '#f0d060');
+      eventView.classList.remove('shown');
+      timelineView.classList.remove('diving');
+      document.body.classList.remove('in-event');
+    }
+    backBtn.addEventListener('click', exitToTimeline);
+
+    // --- cartão de detalhe ---
+    function familyOf(charId) {
+      var family = EventGraph.deriveFamily(currentEvent.personagens, data.edges);
+      var rel = [];
+      family.casais.forEach(function (pair) {
+        if (pair[0] === charId) rel.push({ id: pair[1], label: 'cônjuge' });
+        else if (pair[1] === charId) rel.push({ id: pair[0], label: 'cônjuge' });
       });
+      family.filhos.forEach(function (f) {
+        if (f.filho === charId) f.pais.forEach(function (pid) { rel.push({ id: pid, label: 'progenitor' }); });
+        else if (f.pais.indexOf(charId) !== -1) rel.push({ id: f.filho, label: 'filho(a)' });
+      });
+      family.irmaos.forEach(function (pair) {
+        var label = pair[2] || 'irmão/irmã';
+        if (pair[0] === charId) rel.push({ id: pair[1], label: label });
+        else if (pair[1] === charId) rel.push({ id: pair[0], label: label });
+      });
+      return rel;
     }
 
-    function onNodeClick(id) {
-      Physics.toggleExpand(id, RenderGraph.markDirty);
-      Physics.wake();
-      var d = defs[id];
-      if (d.kind !== 'uniao') {
-        selectedId = id;
-        renderCardFull(id);
-        panel.classList.add('open');
-      }
-    }
-    function onNodeHover(id) {
-      var d = defs[id];
-      if (d.kind === 'uniao') return;
-      renderCardPreview(id);
-      panel.classList.add('open');
-    }
-    function onNodeUnhover() {
-      if (selectedId) { renderCardFull(selectedId); }
-      else { panelBody.innerHTML = panelEmptyHtml; panel.classList.remove('open'); }
-    }
-
-    function renderCardPreview(id) {
-      var d = defs[id];
-      panelBody.innerHTML =
-        '<p class="card-era">' + d.era + '</p>' +
-        '<h2 class="card-name">' + d.nome + '</h2>' +
-        (d.rel ? '<p class="card-refs">' + d.rel + '</p>' : '');
-    }
-
-    // "Também aparece em" — só ligações que atravessam uma fronteira de
-    // galáxia (capítulo diferente), não qualquer diferença de era interna.
-    // A etiqueta mostra o nome da galáxia, porque é para lá que o clique
-    // salta (Ronda 12 — antes mostrava a era, e o critério era "era
-    // diferente"; ver spec 2026-09-06-galaxias-navegacao-design.md).
-    function crossGalaxyRefsHtml(n, id) {
+    function crossEventRefsHtml(id) {
       var refs = [];
+      var roster = currentEvent.personagens;
       data.edges.forEach(function (e) {
         if (e[0] !== id && e[1] !== id) return;
         var otherId = e[0] === id ? e[1] : e[0];
+        if (roster.indexOf(otherId) !== -1) return;
         var other = byId[otherId];
-        if (!other) return;
-        var otherCap = ownerMap[otherId];
-        if (!otherCap || otherCap === ownerMap[id]) return;
+        var otherEvent = firstEventOf[otherId];
+        if (!other || !otherEvent || otherEvent.id === currentEvent.id) return;
         var typeLabel = { parent: 'Família', spouse: 'Casamento', sibling: 'Irmão/irmã', descendant: e[3] || 'Descendência', affinity: e[3] || 'Parentesco' }[e[2]] || e[2];
-        refs.push('<span class="cross-galaxy-ref" data-goto-id="' + escapeAttr(otherId) + '" tabindex="0" role="button" aria-label="Ir para ' + escapeAttr(other.nome) + '">' + other.nome + ' (' + typeLabel + ' · ' + defs[otherCap].nome + ')</span>');
+        refs.push('<span class="cross-event-ref" data-goto-id="' + escapeAttr(otherId) + '" tabindex="0" role="button" aria-label="Ir para ' + escapeAttr(other.nome) + '">' + other.nome + ' (' + typeLabel + ' · ' + otherEvent.nome + ')</span>');
       });
       return refs.length ? '<p class="card-section-title">Também aparece em</p><p>' + refs.join(', ') + '</p>' : '';
     }
 
-    function renderCardFull(id) {
-      var n = defs[id];
-      var portraitHtml = n.retrato
-        ? '<img class="card-portrait" src="' + n.retrato + '" alt="Retrato de ' + n.nome + '">'
-        : '';
+    function focusChar(charId) {
+      document.querySelectorAll('.char').forEach(function (el) { el.classList.toggle('focused', el.getAttribute('data-char-id') === charId); });
+      // Uma personagem que aparece em vários acontecimentos (ex: Jesus em 9,
+      // David em 3) tem texto próprio para cada aparição — `notas` do
+      // acontecimento atual têm sempre prioridade sobre o registo global,
+      // para nunca mostrar, por exemplo, a descrição do Jesus glorificado
+      // do Apocalipse dentro do acontecimento do Nascimento.
+      var base = byId[charId];
+      var overrides = (currentEvent.notas && currentEvent.notas[charId]) || {};
+      var d = Object.assign({}, base, overrides);
+      var family = familyOf(charId);
+      var familyHtml = family.length
+        ? '<div class="family-chips">' + family.map(function (f) {
+            var other = byId[f.id];
+            return '<button class="family-chip" data-goto="' + escapeAttr(f.id) + '">' + (other ? other.nome : f.id) + '<span class="rel">' + f.label + '</span></button>';
+          }).join('') + '</div>'
+        : '<p class="no-family">Sem relações de família registadas neste acontecimento.</p>';
+      var portrait = d.retrato
+        ? '<div class="card-portrait"><img src="' + d.retrato + '" alt="Retrato de ' + escapeAttr(d.nome) + '"></div>'
+        : '<div class="card-portrait"></div>';
       panelBody.innerHTML =
-        portraitHtml +
-        '<p class="card-era">' + n.era + '</p>' +
-        '<h2 class="card-name">' + n.nome + '</h2>' +
-        '<p class="card-refs">' + n.refs + '</p>' +
-        '<p class="card-summary">' + n.resumo + '</p>' +
-        '<p class="card-section-title">Contexto histórico</p>' +
-        '<p class="card-contexto">' + n.contexto + '</p>' +
-        '<p class="card-section-title">Família</p>' +
-        '<p class="card-relations">' + (n.rel || '') + '</p>' +
-        crossGalaxyRefsHtml(n, id);
-
-      panelBody.querySelectorAll('.cross-galaxy-ref').forEach(function (span) {
-        span.addEventListener('click', function () { revealAndSelect(span.getAttribute('data-goto-id')); });
+        portrait +
+        '<span class="card-era">' + currentEvent.nome + '</span>' +
+        '<h2 class="card-name">' + d.nome + '</h2>' +
+        '<p class="card-refs">' + (d.refs || '') + '</p>' +
+        '<hr class="card-divider">' +
+        '<p class="card-summary">' + d.resumo + '</p>' +
+        (d.importancia ? '<p class="card-section-title">Importância</p><p class="card-body">' + d.importancia + '</p>' : '') +
+        (d.licao ? '<p class="card-section-title">O que aprendemos com Deus</p><p class="card-body">' + d.licao + '</p>' : '') +
+        (d.citacao ? '<p class="card-section-title">Citação</p><p class="card-quote">' + d.citacao + '</p>' : '') +
+        '<p class="card-section-title">Família (neste acontecimento)</p>' +
+        familyHtml +
+        crossEventRefsHtml(charId);
+      panelBody.querySelectorAll('.family-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () { focusChar(chip.getAttribute('data-goto')); });
+      });
+      panelBody.querySelectorAll('.cross-event-ref').forEach(function (span) {
+        span.addEventListener('click', function () { jumpToPersonagem(span.getAttribute('data-goto-id')); });
         span.addEventListener('keydown', function (ev) {
-          if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); revealAndSelect(span.getAttribute('data-goto-id')); }
+          if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); jumpToPersonagem(span.getAttribute('data-goto-id')); }
         });
       });
+      panel.classList.add('open');
     }
 
-    function closePanel() {
-      panel.classList.remove('open');
-    }
-    document.getElementById('panelClose').addEventListener('click', function () {
-      closePanel();
-      panelBody.innerHTML = panelEmptyHtml;
-      selectedId = null;
-    });
-
-    // --- mapa de galáxias <-> interior de uma galáxia ---
-    function renderGalaxyMap() {
-      GalaxyMap.render(galaxyGrid, defs, memberCounts, enterGalaxy);
-    }
-
-    function enterGalaxy(capId) {
-      WarpTransition.trigger();
-      currentCapId = capId;
-      galaxyTitle.textContent = defs[capId].nome;
-      mapView.classList.add('hidden');
-      galaxyView.classList.add('shown');
-      Physics.enterCapitulo(capId);
-      RenderGraph.markDirty();
-      Physics.fitView();
-      requestDraw();
-    }
-
-    function exitToMap() {
-      WarpTransition.trigger();
-      currentCapId = null;
-      mapView.classList.remove('hidden');
-      galaxyView.classList.remove('shown');
-      selectedId = null;
-      panelBody.innerHTML = panelEmptyHtml;
-      closePanel();
-    }
-    backBtn.addEventListener('click', exitToMap);
-
-    // --- revelar por id (partilhado pela pesquisa e pelas ligações
-    // cruzadas entre galáxias) ---
-    // BFS a partir dos capítulos (as únicas raízes verdadeiras) sobre o grafo
-    // de `reveals`: dá a cada nó exatamente um predecessor, sem ciclos.
-    // Um mapa "o último a escrever ganha" sobre `Object.keys(defs)` (versão
-    // anterior desta task) partia-se sempre que uma personagem casava: a
-    // união revela os dois cônjuges E cada cônjuge revela a união (para
-    // nenhum ficar sem caminho de revelação próprio — ver reveal-graph.js),
-    // o que cria sempre um ciclo de 2 nós entre uma personagem e a sua
-    // própria união conjugal. BFS nunca revisita um nó já visitado, por
-    // isso não há ciclo possível.
-    var revealedBy = {};
-    (function () {
-      var visited = {};
-      var queue = [];
-      Object.keys(defs).forEach(function (id) {
-        if (defs[id].kind === 'capitulo') { visited[id] = true; queue.push(id); }
-      });
-      while (queue.length) {
-        var cur = queue.shift();
-        (defs[cur].reveals || []).forEach(function (cid) {
-          if (!visited[cid]) { visited[cid] = true; revealedBy[cid] = cur; queue.push(cid); }
-        });
+    // Salta para uma personagem, mudando de acontecimento se for preciso —
+    // usado pela pesquisa e por "também aparece em".
+    function jumpToPersonagem(id) {
+      var targetEvent = firstEventOf[id];
+      if (!targetEvent) return;
+      if (!currentEvent || targetEvent.id !== currentEvent.id) {
+        var stageEl = document.querySelector('.stage');
+        var rect = stageEl.getBoundingClientRect();
+        var cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
+        enterEvent(targetEvent, cx, cy);
       }
-    })();
-    function pathToRoot(id) {
-      var path = []; var cur = id;
-      while (revealedBy[cur]) { path.unshift(revealedBy[cur]); cur = revealedBy[cur]; }
-      return path;
-    }
-    function revealAndSelect(id) {
-      var targetCap = ownerMap[id];
-      if (targetCap && targetCap !== currentCapId) {
-        enterGalaxy(targetCap);
-      }
-      var path = pathToRoot(id);
-      path.forEach(function (pid) {
-        var n = Physics.getNode(pid);
-        if (n && !n.expanded) Physics.toggleExpand(pid, RenderGraph.markDirty);
-      });
-      Physics.wake();
-      setTimeout(function () {
-        selectedId = id;
-        renderCardFull(id);
-        panel.classList.add('open');
-        Physics.focusNode(id);
-        var foundEl = nodeLayer.querySelector('[data-id="' + id + '"]');
-        if (foundEl) {
-          foundEl.classList.add('found-highlight');
-          setTimeout(function () { foundEl.classList.remove('found-highlight'); }, 2400);
-        }
-      }, 700);
+      setTimeout(function () { focusChar(id); }, currentEvent && currentEvent.id === targetEvent.id ? 0 : 700);
     }
 
     // --- pesquisa ---
     var searchBox = document.getElementById('searchBox');
     var searchResults = document.getElementById('searchResults');
-    var searchablePeople = Object.keys(defs).filter(function (id) {
-      return ['major', 'standard', 'minor'].indexOf(defs[id].kind) !== -1;
+    var searchablePeople = Object.keys(byId).filter(function (id) {
+      return ['major', 'standard', 'minor'].indexOf(byId[id].tier) !== -1;
     });
     searchBox.addEventListener('input', function () {
       var q = normalize(searchBox.value.trim());
       if (!q) { searchResults.hidden = true; searchResults.innerHTML = ''; return; }
-      var matches = searchablePeople.filter(function (id) { return normalize(defs[id].nome).indexOf(q) !== -1; }).slice(0, 8);
+      var matches = searchablePeople.filter(function (id) { return normalize(byId[id].nome).indexOf(q) !== -1; }).slice(0, 8);
       if (!matches.length) { searchResults.hidden = true; searchResults.innerHTML = ''; return; }
       searchResults.innerHTML = matches.map(function (id) {
-        return '<div class="search-result" data-id="' + escapeAttr(id) + '" tabindex="0" role="button" aria-label="' + escapeAttr(defs[id].nome) + '">' + defs[id].nome + '<span class="sr-era">' + defs[id].era + '</span></div>';
+        return '<div class="search-result" data-id="' + escapeAttr(id) + '" tabindex="0" role="button" aria-label="' + escapeAttr(byId[id].nome) + '">' + byId[id].nome + '<span class="sr-era">' + (firstEventOf[id] ? firstEventOf[id].nome : '') + '</span></div>';
       }).join('');
       searchResults.hidden = false;
     });
     function activateSearchResult(row) {
       searchResults.hidden = true;
-      searchBox.value = defs[row.getAttribute('data-id')].nome;
-      revealAndSelect(row.getAttribute('data-id'));
+      searchBox.value = byId[row.getAttribute('data-id')].nome;
+      jumpToPersonagem(row.getAttribute('data-id'));
     }
     searchResults.addEventListener('click', function (ev) {
       var row = ev.target.closest('.search-result');
-      if (!row) return;
-      activateSearchResult(row);
+      if (row) activateSearchResult(row);
     });
     searchResults.addEventListener('keydown', function (ev) {
       var row = ev.target.closest('.search-result');
@@ -257,52 +268,7 @@
       if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); activateSearchResult(row); }
     });
     document.addEventListener('click', function (ev) {
-      if (!ev.target.closest('.search-wrap')) { searchResults.hidden = true; }
+      if (!ev.target.closest('.search-wrap')) searchResults.hidden = true;
     });
-
-    // --- controlos de zoom/reset/recomeçar galáxia ---
-    document.getElementById('zoomIn').addEventListener('click', function () { Physics.zoomBy(1.25); requestDraw(); });
-    document.getElementById('zoomOut').addEventListener('click', function () { Physics.zoomBy(0.8); requestDraw(); });
-    document.getElementById('zoomReset').addEventListener('click', function () { Physics.resetView(); requestDraw(); });
-    document.getElementById('collapseAllBtn').addEventListener('click', function () {
-      Physics.resetGalaxy(RenderGraph.markDirty);
-      Physics.fitView();
-      requestDraw();
-      selectedId = null;
-      panelBody.innerHTML = panelEmptyHtml;
-      closePanel();
-    });
-
-    // --- pan/zoom/toque (porto direto do mockup, ver
-    //     docs/superpowers/specs/2026-09-05-grafo-fisica-mockup-A.html:548-621) ---
-    stage.addEventListener('wheel', function (ev) {
-      ev.preventDefault();
-      var rect = stage.getBoundingClientRect();
-      var px = (ev.clientX - rect.left) * (W / rect.width);
-      var py = (ev.clientY - rect.top) * (H / rect.height);
-      Physics.zoomBy(ev.deltaY < 0 ? 1.12 : 0.89, px, py);
-      requestDraw();
-    }, { passive: false });
-
-    var panning = false, lastX = 0, lastY = 0;
-    stage.addEventListener('mousedown', function (ev) {
-      if (ev.target.closest('.node')) return;
-      panning = true; lastX = ev.clientX; lastY = ev.clientY;
-      stage.classList.add('panning');
-    });
-    window.addEventListener('mousemove', function (ev) {
-      if (!panning) return;
-      var rect = stage.getBoundingClientRect();
-      Physics.panBy((ev.clientX - lastX) * (W / rect.width), (ev.clientY - lastY) * (H / rect.height));
-      lastX = ev.clientX; lastY = ev.clientY;
-      requestDraw();
-    });
-    window.addEventListener('mouseup', function () { panning = false; stage.classList.remove('panning'); });
-
-    // --- arranque: mapa de galáxias visível, física a postos mas parada
-    // até a primeira galáxia ser aberta ---
-    renderGalaxyMap();
-    Physics.tick(requestDraw);
-    requestDraw();
   }
 })();

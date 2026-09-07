@@ -1,0 +1,219 @@
+(function () {
+  // Motor de desenho do interior de um acontecimento — substitui por completo
+  // o par reveal-graph.js/physics.js da Ronda 11/12. Duas responsabilidades:
+  //
+  // 1. `deriveFamily(ids, edges)` — deriva casais/filhos/irmãos SÓ a partir
+  //    das arestas reais (`edges`) filtradas ao conjunto de personagens do
+  //    acontecimento. Nunca há dados de família duplicados a manter
+  //    sincronizados; nunca há revelação progressiva, por isso o ciclo
+  //    união↔cônjuge que causou 4 bugs reais nas Rondas 11-12 deixa de poder
+  //    existir — não há aqui nenhum grafo de "reveals" para percorrer.
+  //
+  // 2. Layout genealógico determinístico por gerações (BFS a partir de quem
+  //    não é filho de ninguém dentro do acontecimento) — testado no
+  //    protótipo com casos difíceis (14 personagens numa só fila; três
+  //    uniões a partilhar a mesma pessoa) sem sobreposições de linhas.
+
+  function deriveFamily(ids, edges) {
+    var idSet = {};
+    ids.forEach(function (id) { idSet[id] = true; });
+    var parentsOf = {};
+    var spouseEdges = [];
+    var weakEdges = [];
+    edges.forEach(function (e) {
+      var a = e[0], b = e[1], type = e[2], label = e[3];
+      if (!idSet[a] || !idSet[b]) return;
+      if (type === 'parent') (parentsOf[b] = parentsOf[b] || []).push(a);
+      else if (type === 'spouse') spouseEdges.push([a, b]);
+      else if (type === 'sibling' || type === 'descendant' || type === 'affinity') {
+        weakEdges.push([a, b, label || (type === 'sibling' ? 'irmão/irmã' : type)]);
+      }
+    });
+    function unionKey(a, b) { return [a, b].sort().join('|'); }
+    var casaisMap = {};
+    spouseEdges.forEach(function (p) { casaisMap[unionKey(p[0], p[1])] = p; });
+    var filhos = [];
+    Object.keys(parentsOf).forEach(function (childId) {
+      var parents = parentsOf[childId].filter(function (v, i, arr) { return arr.indexOf(v) === i; });
+      if (parents.length >= 2) {
+        // Dois progenitores conhecidos sem aresta "spouse" formal (ex: Agar)
+        // sintetizam uma união implícita — mesma ideia do antigo
+        // reveal-graph.js, agora só para desenhar, nunca para revelar.
+        var key = unionKey(parents[0], parents[1]);
+        if (!casaisMap[key]) casaisMap[key] = [parents[0], parents[1]];
+        filhos.push({ pais: casaisMap[key], filho: childId });
+      } else if (parents.length === 1) {
+        filhos.push({ pais: parents, filho: childId });
+      }
+    });
+    var casais = Object.keys(casaisMap).map(function (k) { return casaisMap[k]; });
+    return { casais: casais, filhos: filhos, irmaos: weakEdges };
+  }
+
+  function layoutEvent(ids, family) {
+    var parentOf = {};
+    family.filhos.forEach(function (f) {
+      parentOf[f.filho] = f.pais.length === 2
+        ? { type: 'uniao', a: f.pais[0], b: f.pais[1] }
+        : { type: 'unico', id: f.pais[0] };
+    });
+    var gen = {};
+    function computeGen(id, path) {
+      if (gen[id] !== undefined) return gen[id];
+      if (path.indexOf(id) !== -1) return gen[id] = 0;
+      path = path.concat([id]);
+      var p = parentOf[id];
+      if (!p) return gen[id] = 0;
+      var pg = p.type === 'uniao' ? Math.max(computeGen(p.a, path), computeGen(p.b, path)) : computeGen(p.id, path);
+      return gen[id] = pg + 1;
+    }
+    ids.forEach(function (id) { computeGen(id, []); });
+
+    var slot = {};
+    var nextSlot = 0;
+    var placed = {};
+    ids.filter(function (id) { return gen[id] === 0; }).forEach(function (id) {
+      if (placed[id]) return;
+      slot[id] = nextSlot++; placed[id] = true;
+      family.casais.forEach(function (pair) {
+        if (pair[0] === id && !placed[pair[1]] && gen[pair[1]] === 0) { slot[pair[1]] = nextSlot++; placed[pair[1]] = true; }
+        if (pair[1] === id && !placed[pair[0]] && gen[pair[0]] === 0) { slot[pair[0]] = nextSlot++; placed[pair[0]] = true; }
+      });
+    });
+
+    var maxGen = 0;
+    ids.forEach(function (id) { maxGen = Math.max(maxGen, gen[id]); });
+    for (var g = 1; g <= maxGen; g++) {
+      var rowIds = ids.filter(function (id) { return gen[id] === g; });
+      var groups = {}, order = [];
+      rowIds.forEach(function (id) {
+        var p = parentOf[id];
+        var key = p.type === 'uniao' ? 'u:' + [p.a, p.b].sort().join('|') : 's:' + p.id;
+        if (!groups[key]) { groups[key] = []; order.push(key); }
+        groups[key].push(id);
+      });
+      var cursor = 0;
+      order.forEach(function (key) {
+        var group = groups[key];
+        var parentSlot;
+        if (key.charAt(0) === 'u') {
+          var pair = key.slice(2).split('|');
+          parentSlot = (slot[pair[0]] + slot[pair[1]]) / 2;
+        } else {
+          parentSlot = slot[key.slice(2)];
+        }
+        var startSlot = Math.max(cursor, parentSlot - (group.length - 1) / 2);
+        group.forEach(function (id, i) { slot[id] = startSlot + i; });
+        cursor = startSlot + group.length;
+      });
+    }
+    return { gen: gen, slot: slot, maxGen: maxGen };
+  }
+
+  var SVG_NS = 'http://www.w3.org/2000/svg';
+
+  // `container` precisa de: .charLines (svg), .charButtons (div) — filhos de
+  // um elemento com transform de câmara já aplicado pelo chamador (app.js).
+  function render(charLinesEl, charButtonsEl, ids, defs, edges, onCharClick) {
+    charLinesEl.innerHTML = '';
+    charButtonsEl.innerHTML = '';
+    var family = deriveFamily(ids, edges);
+    var layout = layoutEvent(ids, family);
+    var slots = ids.map(function (id) { return layout.slot[id]; });
+    var minSlot = Math.min.apply(null, slots), maxSlot = Math.max.apply(null, slots);
+    var slotSpan = Math.max(maxSlot - minSlot, 1);
+    // Nunca comprimir abaixo do que cabe um retrato (56px) sem sobrepor —
+    // para filas com muitas personagens (ex: os 12 apóstolos), a fila
+    // cresce para além dos 100% do contentor e o utilizador navega-a por
+    // arrasto/zoom, tal como já acontece na linha do tempo principal.
+    var colWidthPct = Math.max(9, Math.min(17, 62 / (slotSpan + 1)));
+    // O nome sob o retrato nunca pode ser mais largo que o espaço real entre
+    // colunas (em px) — senão sobrepõe-se ao vizinho mesmo truncado, como
+    // acontecia com nomes longos do Novo Testamento (ex: "Tadeu (Judas,
+    // filho de Tiago)") em filas com muitas personagens.
+    var containerW = charButtonsEl.getBoundingClientRect().width || 800;
+    var labelMaxPx = Math.max(46, Math.round(colWidthPct / 100 * containerW - 6));
+    var rowHeightPct = layout.maxGen > 0 ? Math.min(30, 64 / (layout.maxGen + 1)) : 0;
+    var topPct = layout.maxGen > 0 ? 18 : 50;
+    var positions = {};
+    ids.forEach(function (id) {
+      positions[id] = {
+        x: 50 + (layout.slot[id] - (minSlot + maxSlot) / 2) * colWidthPct,
+        y: topPct + layout.gen[id] * rowHeightPct
+      };
+    });
+
+    function drawLine(a, b, cls) {
+      var line = document.createElementNS(SVG_NS, 'line');
+      line.setAttribute('x1', a.x + '%'); line.setAttribute('y1', a.y + '%');
+      line.setAttribute('x2', b.x + '%'); line.setAttribute('y2', b.y + '%');
+      line.setAttribute('class', 'cline' + (cls ? ' ' + cls : ''));
+      charLinesEl.appendChild(line);
+    }
+
+    var unions = {};
+    family.casais.forEach(function (pair) {
+      var a = positions[pair[0]], b = positions[pair[1]];
+      if (!a || !b) return;
+      var ux = (a.x + b.x) / 2, uy = (a.y + b.y) / 2;
+      var collided = true;
+      while (collided) {
+        collided = false;
+        ids.forEach(function (id) {
+          var p = positions[id];
+          if (Math.abs(p.x - ux) < 4 && Math.abs(p.y - uy) < 4) { uy += 7; collided = true; }
+        });
+        Object.keys(unions).forEach(function (k) {
+          var u2 = unions[k];
+          if (Math.abs(u2.x - ux) < 4 && Math.abs(u2.y - uy) < 4) { uy += 7; collided = true; }
+        });
+      }
+      var key = pair.slice().sort().join('|');
+      unions[key] = { x: ux, y: uy };
+      drawLine(a, { x: ux, y: uy }, 'casamento');
+      drawLine(b, { x: ux, y: uy }, 'casamento');
+      var u = document.createElement('div');
+      u.className = 'union-node';
+      u.style.left = ux + '%'; u.style.top = uy + '%';
+      charButtonsEl.appendChild(u);
+    });
+    family.filhos.forEach(function (f) {
+      var childPos = positions[f.filho];
+      if (!childPos) return;
+      if (f.pais.length === 2) {
+        var key = f.pais.slice().sort().join('|');
+        var u = unions[key];
+        if (u) drawLine(u, childPos, '');
+      } else {
+        var p = positions[f.pais[0]];
+        if (p) drawLine(p, childPos, '');
+      }
+    });
+    family.irmaos.forEach(function (pair) {
+      var a = positions[pair[0]], b = positions[pair[1]];
+      if (a && b) drawLine(a, b, 'weak');
+    });
+
+    ids.forEach(function (id) {
+      var d = defs[id];
+      var btn = document.createElement('button');
+      btn.className = 'char';
+      btn.setAttribute('data-char-id', id);
+      btn.style.left = positions[id].x + '%';
+      btn.style.top = positions[id].y + '%';
+      btn.style.animationDelay = (Math.random() * -7).toFixed(2) + 's';
+      var portrait = d.retrato
+        ? '<img src="' + d.retrato + '" alt="" draggable="false">'
+        : '';
+      btn.innerHTML = '<span class="char-orb">' + portrait + '</span><span class="char-label" style="max-width:' + labelMaxPx + 'px">' + d.nome + '</span>';
+      btn.addEventListener('click', function () { onCharClick(id); });
+      charButtonsEl.appendChild(btn);
+    });
+
+    return family;
+  }
+
+  var EventGraph = { deriveFamily: deriveFamily, layoutEvent: layoutEvent, render: render };
+  if (typeof module !== 'undefined' && module.exports) module.exports = EventGraph;
+  if (typeof window !== 'undefined') window.EventGraph = EventGraph;
+})();
