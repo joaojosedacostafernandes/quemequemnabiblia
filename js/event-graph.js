@@ -111,6 +111,13 @@
   }
 
   var SVG_NS = 'http://www.w3.org/2000/svg';
+  var LABEL_FONT = "600 15px 'Cormorant Garamond', Georgia, serif";
+  var _measureCtx = null;
+  function measureTextWidth(text) {
+    if (!_measureCtx) _measureCtx = document.createElement('canvas').getContext('2d');
+    _measureCtx.font = LABEL_FONT;
+    return _measureCtx.measureText(text).width;
+  }
 
   // `container` precisa de: .charLines (svg), .charButtons (div) — filhos de
   // um elemento com transform de câmara já aplicado pelo chamador (app.js).
@@ -121,24 +128,38 @@
     var layout = layoutEvent(ids, family);
     var slots = ids.map(function (id) { return layout.slot[id]; });
     var minSlot = Math.min.apply(null, slots), maxSlot = Math.max.apply(null, slots);
-    var slotSpan = Math.max(maxSlot - minSlot, 1);
-    // Nunca comprimir abaixo do que cabe um retrato (56px) sem sobrepor —
-    // para filas com muitas personagens (ex: os 12 apóstolos), a fila
-    // cresce para além dos 100% do contentor e o utilizador navega-a por
-    // arrasto/zoom, tal como já acontece na linha do tempo principal.
-    var colWidthPct = Math.max(9, Math.min(17, 62 / (slotSpan + 1)));
-    // O nome sob o retrato nunca pode ser mais largo que o espaço real entre
-    // colunas (em px) — senão sobrepõe-se ao vizinho mesmo truncado, como
-    // acontecia com nomes longos do Novo Testamento (ex: "Tadeu (Judas,
-    // filho de Tiago)") em filas com muitas personagens.
     var containerW = charButtonsEl.getBoundingClientRect().width || 800;
-    var labelMaxPx = Math.max(46, Math.round(colWidthPct / 100 * containerW - 6));
+
+    // O espaçamento entre colunas nunca corta um nome — em vez de uma
+    // largura de coluna única para o acontecimento todo, cada fila
+    // (geração) tem a sua própria largura, calculada a partir do nome mais
+    // largo *dessa* fila (medido a sério, com canvas, não adivinhado). Uma
+    // fila com muitas personagens de nomes longos (ex: os 12 apóstolos)
+    // cresce para além dos 100% do contentor — o utilizador navega-a por
+    // arrasto/zoom, tal como já acontece na linha do tempo principal — mas
+    // nenhum nome fica alguma vez cortado com "...".
+    var rowIds = {};
+    ids.forEach(function (id) { (rowIds[layout.gen[id]] = rowIds[layout.gen[id]] || []).push(id); });
+    var rowColWidthPct = {};
+    Object.keys(rowIds).forEach(function (g) {
+      var maxLabelPx = 0;
+      rowIds[g].forEach(function (id) {
+        var w = measureTextWidth((defs[id] && defs[id].nome) || '');
+        if (w > maxLabelPx) maxLabelPx = w;
+      });
+      // margem de segurança: a medição por canvas pode divergir ligeiramente
+      // da fonte real se o Google Font ainda não tiver carregado.
+      var neededPx = Math.max(64, maxLabelPx * 1.1 + 10);
+      rowColWidthPct[g] = Math.min(28, Math.max(9, neededPx / containerW * 100));
+    });
+
     var rowHeightPct = layout.maxGen > 0 ? Math.min(30, 64 / (layout.maxGen + 1)) : 0;
     var topPct = layout.maxGen > 0 ? 18 : 50;
     var positions = {};
     ids.forEach(function (id) {
+      var cw = rowColWidthPct[layout.gen[id]];
       positions[id] = {
-        x: 50 + (layout.slot[id] - (minSlot + maxSlot) / 2) * colWidthPct,
+        x: 50 + (layout.slot[id] - (minSlot + maxSlot) / 2) * cw,
         y: topPct + layout.gen[id] * rowHeightPct
       };
     });
@@ -205,7 +226,7 @@
       var portrait = d.retrato
         ? '<img src="' + d.retrato + '" alt="" draggable="false">'
         : '';
-      btn.innerHTML = '<span class="char-orb">' + portrait + '</span><span class="char-label" style="max-width:' + labelMaxPx + 'px">' + d.nome + '</span>';
+      btn.innerHTML = '<span class="char-orb">' + portrait + '</span><span class="char-label">' + d.nome + '</span>';
       btn.addEventListener('click', function () { onCharClick(id); });
       charButtonsEl.appendChild(btn);
     });

@@ -52,6 +52,7 @@
     var panelBody = document.getElementById('panelBody');
     var panelEmptyHtml = panelBody.innerHTML;
     var backBtn = document.getElementById('backBtn');
+    var scrollHintText = document.getElementById('scrollHintText');
     var panelClose = document.getElementById('panelClose');
 
     document.getElementById('eventInfoToggle').addEventListener('click', function () { eventInfo.classList.toggle('collapsed'); });
@@ -100,7 +101,7 @@
     window.addEventListener('touchcancel', function () { panningChars = false; charField.classList.remove('panning'); });
 
     // --- mapa de acontecimentos (linha do tempo) ---
-    Timeline.init({
+    var timelineApi = Timeline.init({
       view: timelineView,
       rail: document.getElementById('timelineRail'),
       railPath: document.getElementById('railPath'),
@@ -110,6 +111,7 @@
       scrollRightBtn: document.getElementById('scrollRight'),
       events: events,
       defs: byId,
+      isSuspended: function () { return document.body.classList.contains('in-event'); },
       onEnter: function (ev, x, y) { enterEvent(ev, x, y); }
     });
 
@@ -126,9 +128,11 @@
 
       timelineView.classList.add('diving');
       document.body.classList.add('in-event');
+      scrollHintText.textContent = 'usa as setas para o acontecimento anterior/seguinte';
       eventInfo.classList.add('collapsed');
       resetCam();
       currentEvent = ev;
+      timelineApi.jumpTo(events.indexOf(ev));
       eventTitle.textContent = ev.nome;
       eventEra.textContent = ev.era;
       eventDesc.textContent = ev.desc;
@@ -157,8 +161,35 @@
       eventView.classList.remove('shown');
       timelineView.classList.remove('diving');
       document.body.classList.remove('in-event');
+      scrollHintText.textContent = 'arrasta a linha do tempo';
     }
     backBtn.addEventListener('click', exitToTimeline);
+
+    // O menu inferior (setas + pontos de progresso) é partilhado com a
+    // linha do tempo, mas dentro de um acontecimento passa a navegar
+    // diretamente para o acontecimento anterior/seguinte (ou o escolhido),
+    // em vez de só deslocar a calha invisível por trás — antes não fazia
+    // nada de visível, a pedido da Isabel. `Timeline.init`'s próprios
+    // handlers ignoram-se a si mesmos enquanto `isSuspended()` (in-event).
+    function gotoAdjacentEvent(delta, e) {
+      if (!currentEvent) return;
+      var next = events[events.indexOf(currentEvent) + delta];
+      if (!next) return;
+      enterEvent(next, e.clientX, e.clientY);
+    }
+    document.getElementById('scrollLeft').addEventListener('click', function (e) {
+      if (document.body.classList.contains('in-event')) gotoAdjacentEvent(-1, e);
+    });
+    document.getElementById('scrollRight').addEventListener('click', function (e) {
+      if (document.body.classList.contains('in-event')) gotoAdjacentEvent(1, e);
+    });
+    document.getElementById('progressDots').addEventListener('click', function (e) {
+      if (!document.body.classList.contains('in-event')) return;
+      var dot = e.target.closest('.progress-dot');
+      if (!dot) return;
+      var target = events[parseInt(dot.getAttribute('data-idx'), 10)];
+      if (target && target.id !== currentEvent.id) enterEvent(target, e.clientX, e.clientY);
+    });
 
     // --- cartão de detalhe ---
     function familyOf(charId) {
@@ -289,5 +320,17 @@
     document.addEventListener('click', function (ev) {
       if (!ev.target.closest('.search-wrap')) searchResults.hidden = true;
     });
+
+    // O espaçamento das colunas dentro de um acontecimento é calculado a
+    // partir da largura real dos nomes (canvas measureText) — se a fonte
+    // Cormorant Garamond ainda não tiver carregado nesse momento, a medição
+    // usa a serif de recurso e pode ficar ligeiramente errada. Assim que a
+    // fonte carrega a sério, volta a desenhar o acontecimento aberto (se
+    // algum) com a medição correta.
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function () {
+        if (currentEvent) EventGraph.render(charLines, charButtons, currentEvent.personagens, byId, data.edges, function (id) { focusChar(id); });
+      });
+    }
   }
 })();
