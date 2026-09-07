@@ -63,6 +63,7 @@
       }).join('');
       Array.prototype.forEach.call(progressDots.querySelectorAll('.progress-dot'), function (dot) {
         dot.addEventListener('click', function () {
+          if (opts.isSuspended && opts.isSuspended()) return;
           railOffset = -parseInt(dot.getAttribute('data-idx'), 10) * SPACING;
           applyOffset();
         });
@@ -95,12 +96,27 @@
       railOffset -= (e.deltaY || e.deltaX);
       applyOffset();
     }, { passive: false });
-    if (opts.scrollLeftBtn) opts.scrollLeftBtn.addEventListener('click', function () { railOffset += SPACING; applyOffset(); });
-    if (opts.scrollRightBtn) opts.scrollRightBtn.addEventListener('click', function () { railOffset -= SPACING; applyOffset(); });
+    if (opts.scrollLeftBtn) opts.scrollLeftBtn.addEventListener('click', function () {
+      if (opts.isSuspended && opts.isSuspended()) return;
+      railOffset += SPACING; applyOffset();
+    });
+    if (opts.scrollRightBtn) opts.scrollRightBtn.addEventListener('click', function () {
+      if (opts.isSuspended && opts.isSuspended()) return;
+      railOffset -= SPACING; applyOffset();
+    });
     window.addEventListener('resize', applyOffset);
 
+    // Sincroniza os pontos de progresso e a posição da calha com um
+    // acontecimento entrado por qualquer outro caminho (marcador, pesquisa,
+    // "também aparece em", ou as setas do menu inferior enquanto já se está
+    // dentro de um acontecimento) — sem disparar `onEnter` de novo.
+    function jumpTo(idx) {
+      railOffset = -idx * SPACING;
+      applyOffset();
+    }
+
     render();
-    return { applyOffset: applyOffset };
+    return { applyOffset: applyOffset, jumpTo: jumpTo };
   }
 
   var Timeline = { init: init };
