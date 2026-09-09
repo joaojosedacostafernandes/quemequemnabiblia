@@ -32,6 +32,7 @@
     var events = opts.events;
     var onEnter = opts.onEnter;
     var railOffset = 0;
+    var lastCenterIdx = -1;
 
     function render() {
       var totalWidth = (events.length - 1) * SPACING;
@@ -69,6 +70,20 @@
       railSvg.style.left = '-100px';
       railPath.setAttribute('transform', 'translate(100,0)');
 
+      // Colorir a calha pelas cores das eras (o gradiente flui pelo tint de
+      // cada acontecimento, distribuído ao longo do seu comprimento).
+      var grad = railSvg.querySelector('#railGrad');
+      if (grad) {
+        grad.innerHTML = '';
+        events.forEach(function (ev, i) {
+          var stop = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+          stop.setAttribute('offset', (events.length > 1 ? (i / (events.length - 1)) * 100 : 0) + '%');
+          stop.setAttribute('stop-color', ev.tint || '#4a4580');
+          stop.setAttribute('stop-opacity', '.9');
+          grad.appendChild(stop);
+        });
+      }
+
       renderProgressDots();
       applyOffset();
     }
@@ -93,6 +108,10 @@
         dot.classList.toggle('active', i === nearest);
       });
       updateArrowState();
+      if (nearest !== lastCenterIdx) {
+        lastCenterIdx = nearest;
+        if (opts.onCenter && events[nearest]) opts.onCenter(events[nearest].tint, nearest);
+      }
     }
 
     function updateArrowState() {
