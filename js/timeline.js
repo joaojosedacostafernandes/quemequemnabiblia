@@ -6,6 +6,22 @@
   var SPACING = 340;
   var WAVE_AMP = 30;
 
+  function boundsFor(n) { return { min: (n > 1 ? -(n - 1) * SPACING : 0), max: 0 }; }
+  function nearestIndex(offset, n) {
+    return Math.max(0, Math.min(n - 1, Math.round(-offset / SPACING)));
+  }
+  function snapTarget(offset, n) { return -nearestIndex(offset, n) * SPACING; }
+  function clampHard(raw, n) {
+    var b = boundsFor(n);
+    return Math.max(b.min, Math.min(b.max, raw));
+  }
+  function clampElastic(raw, n) {
+    var b = boundsFor(n);
+    if (raw > b.max) return b.max + (raw - b.max) / 3;
+    if (raw < b.min) return b.min + (raw - b.min) / 3;
+    return raw;
+  }
+
   function markerY(i) { return Math.sin(i * 0.8) * WAVE_AMP; }
 
   function init(opts) {
@@ -135,7 +151,15 @@
     return { applyOffset: applyOffset, jumpTo: jumpTo };
   }
 
-  var Timeline = { init: init };
+  var Timeline = {
+    init: init,
+    SPACING: SPACING,
+    boundsFor: boundsFor,
+    nearestIndex: nearestIndex,
+    snapTarget: snapTarget,
+    clampHard: clampHard,
+    clampElastic: clampElastic
+  };
   if (typeof module !== 'undefined' && module.exports) module.exports = Timeline;
   if (typeof window !== 'undefined') window.Timeline = Timeline;
 })();
