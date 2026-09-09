@@ -195,7 +195,8 @@
     window.addEventListener('touchcancel', function () { dragging = false; view.classList.remove('dragging'); });
     view.addEventListener('wheel', function (e) {
       e.preventDefault();
-      railOffset = clampElastic(railOffset - (e.deltaY || e.deltaX), events.length);
+      cancelMomentum();
+      railOffset = clampHard(railOffset - (e.deltaY || e.deltaX), events.length);
       applyOffset();
     }, { passive: false });
     if (opts.scrollLeftBtn) opts.scrollLeftBtn.addEventListener('click', function () {
@@ -213,6 +214,7 @@
     // "também aparece em", ou as setas do menu inferior enquanto já se está
     // dentro de um acontecimento) — sem disparar `onEnter` de novo.
     function jumpTo(idx) {
+      cancelMomentum();
       railOffset = clampHard(-idx * SPACING, events.length);
       applyOffset();
     }

@@ -118,6 +118,7 @@
     var currentEvent = null;
 
     function enterEvent(ev, clickX, clickY, fromHistory) {
+      var wasInEvent = !!currentEvent;
       var stageEl = document.querySelector('.stage');
       var rect = stageEl.getBoundingClientRect();
       var originXFrac = (clickX - rect.left) / rect.width, originYFrac = (clickY - rect.top) / rect.height;
@@ -149,7 +150,10 @@
       document.getElementById('eventScroll').scrollTop = 0;
       requestAnimationFrame(function () { eventView.classList.add('shown'); });
       if (!fromHistory) {
-        try { history.pushState({ ev: ev.id }, '', '#' + ev.id); } catch (e) {}
+        try {
+          if (wasInEvent) history.replaceState({ ev: ev.id }, '', '#' + ev.id);
+          else history.pushState({ ev: ev.id }, '', '#' + ev.id);
+        } catch (e) {}
       }
     }
 
@@ -356,10 +360,11 @@
     // algum) com a medição correta.
     // Base de linha do tempo no histórico, para o "voltar" nunca sair do
     // site — mesmo quando se entra por deep-link (#id) já dentro de um
-    // acontecimento.
+    // acontecimento. A hash tem de ser lida ANTES do replaceState, que a apaga.
+    var initHash = location.hash ? location.hash.slice(1) : '';
     try { history.replaceState({}, '', location.pathname + location.search); } catch (e) {}
-    if (location.hash) {
-      var initEv = eventById(location.hash.slice(1));
+    if (initHash) {
+      var initEv = eventById(initHash);
       if (initEv) enterEventCentered(initEv, false);
     }
     if (document.fonts && document.fonts.ready) {
