@@ -206,6 +206,12 @@ Depois da correção do auto-ajuste da câmara (acima), o utilizador precisou me
 
 **Correção (CSS, `style.css`):** `.char-label` passou a `position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 8px` — o nome deixa de contribuir para a altura do `.char`, por isso o centro do `.char` (onde `transform: translate(-50%,-50%)` o ancora, e para onde as linhas apontam) coincide agora com o **centro do círculo**. O nome continua a aparecer por baixo do orbe; continua clicável (é descendente do `<button>`, mesmo estando fora do fluxo). Verificado: desvio orbe-âncora = **0px** em todas as 8 personagens de `saul_david_ev`, e as linhas (descendência, casamento, irmãos) entram no meio dos círculos.
 
+### Melhoria — Casamento como linha direta com ♥ (2026-09-09)
+
+Ainda a pedido do utilizador sobre as ligações "não estarem fixe": mesmo depois de as linhas passarem a ligar ao centro do círculo, os **losangos rosa de união a flutuar** entre um casal (e as várias linhas compridas a cruzar quando alguém casou duas vezes, ex: Abigail com Nabal e com David) liam-se mal. Medição por CDP confirmou que **geometricamente estava tudo ligado** (cada `.cline` a ≤4px do círculo/losango, `off=0px`) — o problema era de leitura, não de conexão.
+
+**Mudança (escolhida pelo utilizador: "linha direta + símbolo"):** o casamento passa a ser **UMA linha direta entre os dois círculos, com um ♥ a meio** (`js/event-graph.js` + `.marriage-mark` em `style.css`), em vez de dois segmentos que iam ter a um losango. O ponto médio (`unions[key]`) continua a ser de onde os **filhos descem**, por isso a família lê-se como `círculo —♥— círculo` com os filhos a sair do ♥. Removida a lógica de colisão que empurrava o losango para baixo (já não é precisa). O `.union-node` (losango) deixou de ser criado; a sua regra CSS ficou (morta, inofensiva) — candidata a limpeza futura. Verificado em `saul_david_ev` (casais sem filhos) e `origens` (Adão-Eva com Caim/Abel/Set a descer do ♥).
+
 ### Correção pós-merge — Eva e isolamento de física entre capítulos (2026-09-06)
 
 Ainda no mesmo dia da Ronda 11, a Isabel testou o site já integrado e encontrou **um terceiro sítio** com o mesmo bug de ciclo (a mesma classe já referida acima, desta vez em `collapseSubtree`) mais um pedido de comportamento novo:
