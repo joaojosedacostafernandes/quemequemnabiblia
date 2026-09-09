@@ -278,6 +278,7 @@
       var portrait = d.retrato
         ? '<div class="card-portrait"><img src="' + d.retrato + '" alt="Retrato de ' + escapeAttr(d.nome) + '"></div>'
         : '<div class="card-portrait"></div>';
+      panelBody.style.opacity = '0';
       panelBody.innerHTML =
         portrait +
         '<span class="card-era">' + currentEvent.nome + '</span>' +
@@ -300,6 +301,10 @@
         span.addEventListener('keydown', function (ev) {
           if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); jumpToPersonagem(span.getAttribute('data-goto-id')); }
         });
+      });
+      // fade-in do conteúdo novo (o antigo é substituído já invisível)
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () { panelBody.style.opacity = ''; });
       });
       panel.classList.add('open');
     }
