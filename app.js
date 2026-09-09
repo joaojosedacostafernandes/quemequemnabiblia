@@ -112,7 +112,11 @@
       events: events,
       defs: byId,
       isSuspended: function () { return document.body.classList.contains('in-event'); },
-      onEnter: function (ev, x, y) { enterEvent(ev, x, y); }
+      onEnter: function (ev, x, y) { enterEvent(ev, x, y); },
+      onCenter: function (tint) {
+        var neb = document.querySelector('.nebula.n1');
+        if (neb && tint) neb.style.background = 'radial-gradient(circle, ' + tint + ', transparent 68%)';
+      }
     });
 
     var currentEvent = null;
@@ -268,6 +272,7 @@
       var base = byId[charId];
       var overrides = (currentEvent.notas && currentEvent.notas[charId]) || {};
       var d = Object.assign({}, base, overrides);
+      var tint = (currentEvent && currentEvent.tint) || '#f0d060';
       var family = familyOf(charId);
       var familyHtml = family.length
         ? '<div class="family-chips">' + family.map(function (f) {
@@ -276,23 +281,22 @@
           }).join('') + '</div>'
         : '<p class="no-family">Sem relações de família registadas neste acontecimento.</p>';
       var portrait = d.retrato
-        ? '<div class="card-portrait"><img src="' + d.retrato + '" alt="Retrato de ' + escapeAttr(d.nome) + '"></div>'
-        : '<div class="card-portrait"></div>';
+        ? '<div class="card-portrait" style="border-color:' + tint + '; box-shadow:0 0 26px ' + tint + '66"><img src="' + d.retrato + '" alt="Retrato de ' + escapeAttr(d.nome) + '"></div>'
+        : '<div class="card-portrait" style="border-color:' + tint + '"></div>';
       panelBody.style.opacity = '0';
       panelBody.innerHTML =
         portrait +
-        '<span class="card-era">' + currentEvent.nome + '</span>' +
+        '<span class="card-era" style="color:' + tint + '">' + currentEvent.nome + '</span>' +
         '<h2 class="card-name">' + d.nome + '</h2>' +
         '<p class="card-refs">' + (d.refs || '') + '</p>' +
-        '<hr class="card-divider">' +
         '<p class="card-summary">' + d.resumo + '</p>' +
-        (d.importancia ? '<p class="card-section-title">Importância</p><p class="card-body">' + d.importancia + '</p>' : '') +
-        (d.licao ? '<p class="card-section-title">O que aprendemos com Deus</p><p class="card-body">' + d.licao + '</p>' : '') +
-        (d.citacao ? '<p class="card-section-title">Citação</p><p class="card-quote">' + d.citacao + '</p>' : '') +
-        (d.contexto ? '<p class="card-section-title">Contexto histórico</p><p class="card-body">' + d.contexto + '</p>' : '') +
+        (d.licao ? '<div class="card-highlight" style="--accent:' + tint + '"><span class="card-highlight-label">O que aprendemos</span><p>' + d.licao + '</p></div>' : '') +
+        (d.citacao ? '<blockquote class="card-quote" style="border-color:' + tint + '">' + d.citacao + '</blockquote>' : '') +
+        (d.importancia ? '<p class="card-section-title">Porque é importante</p><p class="card-body">' + d.importancia + '</p>' : '') +
         '<p class="card-section-title">Família (neste acontecimento)</p>' +
         familyHtml +
-        crossEventRefsHtml(charId);
+        crossEventRefsHtml(charId) +
+        (d.contexto ? '<button class="card-context-toggle" type="button"><span class="arrow">&#9654;</span> Contexto histórico</button><div class="card-context-body" hidden><p class="card-body">' + d.contexto + '</p></div>' : '');
       panelBody.querySelectorAll('.family-chip').forEach(function (chip) {
         chip.addEventListener('click', function () { focusChar(chip.getAttribute('data-goto')); });
       });
@@ -301,6 +305,13 @@
         span.addEventListener('keydown', function (ev) {
           if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); jumpToPersonagem(span.getAttribute('data-goto-id')); }
         });
+      });
+      var ctxToggle = panelBody.querySelector('.card-context-toggle');
+      if (ctxToggle) ctxToggle.addEventListener('click', function () {
+        var body = panelBody.querySelector('.card-context-body');
+        var open = body.hasAttribute('hidden');
+        if (open) body.removeAttribute('hidden'); else body.setAttribute('hidden', '');
+        ctxToggle.classList.toggle('open', open);
       });
       // fade-in do conteúdo novo (o antigo é substituído já invisível)
       requestAnimationFrame(function () {
