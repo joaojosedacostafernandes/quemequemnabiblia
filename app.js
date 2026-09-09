@@ -66,10 +66,36 @@
     var camScale = 1, camTx = 0, camTy = 0;
     function applyCam() { camLayer.style.transform = 'translate(' + camTx + 'px,' + camTy + 'px) scale(' + camScale + ')'; }
     function resetCam() { camScale = 1; camTx = 0; camTy = 0; applyCam(); }
+    // Ajusta o zoom/posição para caber TODAS as personagens do acontecimento
+    // no ecrã — sem isto, um acontecimento largo (ex: Saul e a Ascensão de
+    // David) deixa personagens fora do ecrã e as linhas de família parecem
+    // "partidas" por ligarem a nós invisíveis. camLayer tem transform-origin
+    // 50% 50% e preenche o char-field, por isso a fórmula de centragem usa
+    // o centro do campo.
+    function fitEventView() {
+      var chars = charButtons.querySelectorAll('.char');
+      var w = charField.clientWidth, h = charField.clientHeight;
+      if (!chars.length || !w || !h) { resetCam(); return; }
+      var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      Array.prototype.forEach.call(chars, function (c) {
+        var x = parseFloat(c.style.left), y = parseFloat(c.style.top);
+        if (x < minX) minX = x; if (x > maxX) maxX = x;
+        if (y < minY) minY = y; if (y > maxY) maxY = y;
+      });
+      // margens (em % do campo) para medalhões e nomes não ficarem colados às bordas
+      minX -= 10; maxX += 10; minY -= 14; maxY += 16;
+      var spanX = Math.max(1, maxX - minX), spanY = Math.max(1, maxY - minY);
+      var scale = Math.max(0.25, Math.min(1, Math.min(100 / spanX, 100 / spanY)));
+      camScale = scale;
+      var cx = (minX + maxX) / 2 / 100 * w, cy = (minY + maxY) / 2 / 100 * h;
+      camTx = (w / 2 - cx) * scale;
+      camTy = (h / 2 - cy) * scale;
+      applyCam();
+    }
     function zoomBy(factor) { camScale = Math.max(0.5, Math.min(3, camScale * factor)); applyCam(); }
     document.getElementById('zoomIn').addEventListener('click', function () { zoomBy(1.25); });
     document.getElementById('zoomOut').addEventListener('click', function () { zoomBy(0.8); });
-    document.getElementById('zoomReset').addEventListener('click', resetCam);
+    document.getElementById('zoomReset').addEventListener('click', fitEventView);
     charField.addEventListener('wheel', function (e) { e.preventDefault(); zoomBy(e.deltaY < 0 ? 1.12 : 0.89); }, { passive: false });
     var panningChars = false, panStartX = 0, panStartY = 0, panStartTx = 0, panStartTy = 0;
     charField.addEventListener('mousedown', function (e) {
@@ -149,6 +175,7 @@
       eventAmbient.style.setProperty('--tint', ev.tint);
       eventView.style.setProperty('--tint', ev.tint);
       EventGraph.render(charLines, charButtons, ev.personagens, byId, data.edges, function (id) { focusChar(id); });
+      fitEventView();
       panelBody.innerHTML = panelEmptyHtml;
       panel.classList.remove('open');
       document.getElementById('eventScroll').scrollTop = 0;
@@ -385,7 +412,7 @@
     }
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(function () {
-        if (currentEvent) EventGraph.render(charLines, charButtons, currentEvent.personagens, byId, data.edges, function (id) { focusChar(id); });
+        if (currentEvent) { EventGraph.render(charLines, charButtons, currentEvent.personagens, byId, data.edges, function (id) { focusChar(id); }); fitEventView(); }
       });
     }
   }
