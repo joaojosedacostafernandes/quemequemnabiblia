@@ -266,6 +266,14 @@
         var delay = g * 120 + 120; // ligeiramente depois do nó dessa geração
         ln.style.transition = 'stroke-dashoffset .5s ease ' + delay + 'ms';
         ln.style.strokeDashoffset = '0';
+        // No fim do traçado, limpar os estilos inline para o CSS voltar a
+        // mandar — senão o `strokeDasharray = L` inline tornava sólidas as
+        // linhas tracejadas por classe (casamento `2 5`, irmãos `1 5`).
+        ln.addEventListener('transitionend', function () {
+          ln.style.strokeDasharray = '';
+          ln.style.strokeDashoffset = '';
+          ln.style.transition = '';
+        }, { once: true });
       });
     }
 
