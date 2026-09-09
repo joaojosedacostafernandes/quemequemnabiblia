@@ -80,8 +80,7 @@
       Array.prototype.forEach.call(progressDots.querySelectorAll('.progress-dot'), function (dot) {
         dot.addEventListener('click', function () {
           if (opts.isSuspended && opts.isSuspended()) return;
-          railOffset = -parseInt(dot.getAttribute('data-idx'), 10) * SPACING;
-          applyOffset();
+          animateTo(-parseInt(dot.getAttribute('data-idx'), 10) * SPACING);
         });
       });
     }
@@ -93,6 +92,18 @@
       Array.prototype.forEach.call(progressDots.querySelectorAll('.progress-dot'), function (dot, i) {
         dot.classList.toggle('active', i === nearest);
       });
+      updateArrowState();
+    }
+
+    function updateArrowState() {
+      var idx = nearestIndex(railOffset, events.length);
+      if (opts.scrollLeftBtn) opts.scrollLeftBtn.disabled = (idx <= 0);
+      if (opts.scrollRightBtn) opts.scrollRightBtn.disabled = (idx >= events.length - 1);
+    }
+    function stepEvent(delta) {
+      var idx = nearestIndex(railOffset, events.length);
+      var target = Math.max(0, Math.min(events.length - 1, idx + delta));
+      animateTo(-target * SPACING);
     }
 
     var dragging = false, dragStartX = 0, dragStartOffset = 0;
@@ -189,11 +200,11 @@
     }, { passive: false });
     if (opts.scrollLeftBtn) opts.scrollLeftBtn.addEventListener('click', function () {
       if (opts.isSuspended && opts.isSuspended()) return;
-      railOffset += SPACING; applyOffset();
+      stepEvent(-1);
     });
     if (opts.scrollRightBtn) opts.scrollRightBtn.addEventListener('click', function () {
       if (opts.isSuspended && opts.isSuspended()) return;
-      railOffset -= SPACING; applyOffset();
+      stepEvent(1);
     });
     window.addEventListener('resize', applyOffset);
 
