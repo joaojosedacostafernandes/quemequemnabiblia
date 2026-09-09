@@ -96,17 +96,67 @@
     }
 
     var dragging = false, dragStartX = 0, dragStartOffset = 0;
+    var lastX = 0, lastT = 0, velocity = 0, momentumRAF = null;
+    var reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+    function cancelMomentum() { if (momentumRAF) { cancelAnimationFrame(momentumRAF); momentumRAF = null; } }
+
+    function animateTo(to, dur) {
+      cancelMomentum();
+      if (reduceMotion) { railOffset = to; applyOffset(); return; }
+      var from = railOffset, start = performance.now();
+      dur = dur || 320;
+      function anim(now) {
+        var t = Math.min(1, (now - start) / dur);
+        var e = 1 - Math.pow(1 - t, 3); // easeOutCubic
+        railOffset = from + (to - from) * e;
+        applyOffset();
+        if (t < 1) momentumRAF = requestAnimationFrame(anim); else momentumRAF = null;
+      }
+      momentumRAF = requestAnimationFrame(anim);
+    }
+
+    function settleFromVelocity() {
+      cancelMomentum();
+      var b = boundsFor(events.length);
+      if (reduceMotion) { animateTo(snapTarget(railOffset, events.length)); return; }
+      var v = velocity * 16; // px por frame (~16ms)
+      function step() {
+        v *= 0.94;
+        railOffset += v;
+        if (railOffset > b.max) { railOffset += (b.max - railOffset) * 0.2; v *= 0.5; }
+        else if (railOffset < b.min) { railOffset += (b.min - railOffset) * 0.2; v *= 0.5; }
+        applyOffset();
+        var outOfBounds = railOffset > b.max + 0.5 || railOffset < b.min - 0.5;
+        if (Math.abs(v) > 0.4 || outOfBounds) {
+          momentumRAF = requestAnimationFrame(step);
+        } else {
+          animateTo(snapTarget(railOffset, events.length)); // encaixe final
+        }
+      }
+      momentumRAF = requestAnimationFrame(step);
+    }
+
     view.addEventListener('mousedown', function (e) {
       if (e.target.closest('.event-marker')) return;
       dragging = true; dragStartX = e.clientX; dragStartOffset = railOffset;
       view.classList.add('dragging');
+      cancelMomentum();
+      lastX = e.clientX; lastT = performance.now(); velocity = 0;
     });
     window.addEventListener('mousemove', function (e) {
       if (!dragging) return;
       railOffset = clampElastic(dragStartOffset + (e.clientX - dragStartX), events.length);
+      var nowT = performance.now(), dt = nowT - lastT;
+      if (dt > 0) velocity = (e.clientX - lastX) / dt;
+      lastX = e.clientX; lastT = nowT;
       applyOffset();
     });
-    window.addEventListener('mouseup', function () { dragging = false; view.classList.remove('dragging'); });
+    window.addEventListener('mouseup', function () {
+      if (!dragging) return;
+      dragging = false; view.classList.remove('dragging');
+      settleFromVelocity();
+    });
     // Arrastar com o dedo — o toque nunca dispara `mousedown`/`mousemove`,
     // por isso sem isto a linha do tempo era completamente impossível de
     // percorrer por arrasto num telemóvel real (só as setas funcionavam).
@@ -114,14 +164,23 @@
       if (e.target.closest('.event-marker') || e.touches.length !== 1) return;
       dragging = true; dragStartX = e.touches[0].clientX; dragStartOffset = railOffset;
       view.classList.add('dragging');
+      cancelMomentum();
+      lastX = e.touches[0].clientX; lastT = performance.now(); velocity = 0;
     }, { passive: true });
     view.addEventListener('touchmove', function (e) {
       if (!dragging) return;
       e.preventDefault();
       railOffset = clampElastic(dragStartOffset + (e.touches[0].clientX - dragStartX), events.length);
+      var nowT2 = performance.now(), dt2 = nowT2 - lastT;
+      if (dt2 > 0) velocity = (e.touches[0].clientX - lastX) / dt2;
+      lastX = e.touches[0].clientX; lastT = nowT2;
       applyOffset();
     }, { passive: false });
-    window.addEventListener('touchend', function () { dragging = false; view.classList.remove('dragging'); });
+    window.addEventListener('touchend', function () {
+      if (!dragging) return;
+      dragging = false; view.classList.remove('dragging');
+      settleFromVelocity();
+    });
     window.addEventListener('touchcancel', function () { dragging = false; view.classList.remove('dragging'); });
     view.addEventListener('wheel', function (e) {
       e.preventDefault();
