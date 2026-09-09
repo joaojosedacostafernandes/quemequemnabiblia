@@ -117,7 +117,8 @@
 
     var currentEvent = null;
 
-    function enterEvent(ev, clickX, clickY) {
+    function enterEvent(ev, clickX, clickY, fromHistory) {
+      var wasInEvent = !!currentEvent;
       var stageEl = document.querySelector('.stage');
       var rect = stageEl.getBoundingClientRect();
       var originXFrac = (clickX - rect.left) / rect.width, originYFrac = (clickY - rect.top) / rect.height;
@@ -148,12 +149,20 @@
       panel.classList.remove('open');
       document.getElementById('eventScroll').scrollTop = 0;
       requestAnimationFrame(function () { eventView.classList.add('shown'); });
+      if (!fromHistory) {
+        try {
+          if (wasInEvent) history.replaceState({ ev: ev.id }, '', '#' + ev.id);
+          else history.pushState({ ev: ev.id }, '', '#' + ev.id);
+        } catch (e) {}
+      }
     }
 
-    function exitToTimeline(e) {
-      var stageEl = document.querySelector('.stage');
-      var rect = stageEl.getBoundingClientRect();
-      var fx = (e.clientX - rect.left) / rect.width, fy = (e.clientY - rect.top) / rect.height;
+    // Parte visual da saída — sem tocar no histórico. `fx`/`fy` são frações
+    // (0..1) da stage; por omissão o centro (usado quando a saída vem do
+    // teclado ou do `popstate`, que não têm coordenadas de clique).
+    function exitVisual(fx, fy) {
+      if (typeof fx !== 'number') fx = 0.5;
+      if (typeof fy !== 'number') fy = 0.5;
       var originPct = (fx * 100).toFixed(1) + '% ' + (fy * 100).toFixed(1) + '%';
       timelineView.style.transformOrigin = originPct;
       eventView.style.transformOrigin = originPct;
@@ -162,8 +171,30 @@
       timelineView.classList.remove('diving');
       document.body.classList.remove('in-event');
       scrollHintText.textContent = 'arrasta a linha do tempo';
+      currentEvent = null;
+      panel.classList.remove('open');
     }
-    backBtn.addEventListener('click', exitToTimeline);
+    // O botão "voltar" da app recua no histórico; o `popstate` faz a saída
+    // visual — assim o botão "voltar" do telemóvel e o da app são o mesmo.
+    backBtn.addEventListener('click', function () { history.back(); });
+
+    function enterEventCentered(ev, fromHistory) {
+      var rect = document.querySelector('.stage').getBoundingClientRect();
+      enterEvent(ev, rect.left + rect.width / 2, rect.top + rect.height / 2, fromHistory);
+    }
+    function eventById(id) {
+      for (var i = 0; i < events.length; i++) if (events[i].id === id) return events[i];
+      return null;
+    }
+    window.addEventListener('popstate', function () {
+      var id = location.hash ? location.hash.slice(1) : '';
+      if (!id) {
+        if (currentEvent) exitVisual();
+        return;
+      }
+      var ev = eventById(id);
+      if (ev && (!currentEvent || currentEvent.id !== ev.id)) enterEventCentered(ev, true);
+    });
 
     // O menu inferior (setas + pontos de progresso) é partilhado com a
     // linha do tempo, mas dentro de um acontecimento passa a navegar
@@ -327,6 +358,15 @@
     // usa a serif de recurso e pode ficar ligeiramente errada. Assim que a
     // fonte carrega a sério, volta a desenhar o acontecimento aberto (se
     // algum) com a medição correta.
+    // Base de linha do tempo no histórico, para o "voltar" nunca sair do
+    // site — mesmo quando se entra por deep-link (#id) já dentro de um
+    // acontecimento. A hash tem de ser lida ANTES do replaceState, que a apaga.
+    var initHash = location.hash ? location.hash.slice(1) : '';
+    try { history.replaceState({}, '', location.pathname + location.search); } catch (e) {}
+    if (initHash) {
+      var initEv = eventById(initHash);
+      if (initEv) enterEventCentered(initEv, false);
+    }
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(function () {
         if (currentEvent) EventGraph.render(charLines, charButtons, currentEvent.personagens, byId, data.edges, function (id) { focusChar(id); });
