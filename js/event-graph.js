@@ -112,6 +112,9 @@
 
   var SVG_NS = 'http://www.w3.org/2000/svg';
   var LABEL_FONT = "600 15px 'Cormorant Garamond', Georgia, serif";
+  function prefersReduce() {
+    return !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }
   var _measureCtx = null;
   function measureTextWidth(text) {
     if (!_measureCtx) _measureCtx = document.createElement('canvas').getContext('2d');
@@ -153,6 +156,17 @@
       rowColWidthPct[g] = Math.min(28, Math.max(9, neededPx / containerW * 100));
     });
 
+    // Atraso de entrada por personagem: por geração (pais primeiro) e, dentro
+    // da geração, da esquerda para a direita (ordem de slot).
+    var enterDelay = {};
+    var reduce = prefersReduce();
+    Object.keys(rowIds).forEach(function (g) {
+      var ordered = rowIds[g].slice().sort(function (a, b) { return layout.slot[a] - layout.slot[b]; });
+      ordered.forEach(function (id, i) {
+        enterDelay[id] = reduce ? 0 : (parseInt(g, 10) * 120 + i * 40);
+      });
+    });
+
     var rowHeightPct = layout.maxGen > 0 ? Math.min(30, 64 / (layout.maxGen + 1)) : 0;
     var topPct = layout.maxGen > 0 ? 18 : 50;
     var positions = {};
@@ -164,11 +178,12 @@
       };
     });
 
-    function drawLine(a, b, cls) {
+    function drawLine(a, b, cls, gen) {
       var line = document.createElementNS(SVG_NS, 'line');
       line.setAttribute('x1', a.x + '%'); line.setAttribute('y1', a.y + '%');
       line.setAttribute('x2', b.x + '%'); line.setAttribute('y2', b.y + '%');
       line.setAttribute('class', 'cline' + (cls ? ' ' + cls : ''));
+      if (gen != null) line.setAttribute('data-gen', gen);
       charLinesEl.appendChild(line);
     }
 
@@ -191,8 +206,8 @@
       }
       var key = pair.slice().sort().join('|');
       unions[key] = { x: ux, y: uy };
-      drawLine(a, { x: ux, y: uy }, 'casamento');
-      drawLine(b, { x: ux, y: uy }, 'casamento');
+      drawLine(a, { x: ux, y: uy }, 'casamento', layout.gen[pair[0]]);
+      drawLine(b, { x: ux, y: uy }, 'casamento', layout.gen[pair[0]]);
       var u = document.createElement('div');
       u.className = 'union-node';
       u.style.left = ux + '%'; u.style.top = uy + '%';
@@ -204,15 +219,15 @@
       if (f.pais.length === 2) {
         var key = f.pais.slice().sort().join('|');
         var u = unions[key];
-        if (u) drawLine(u, childPos, '');
+        if (u) drawLine(u, childPos, '', layout.gen[f.filho]);
       } else {
         var p = positions[f.pais[0]];
-        if (p) drawLine(p, childPos, '');
+        if (p) drawLine(p, childPos, '', layout.gen[f.filho]);
       }
     });
     family.irmaos.forEach(function (pair) {
       var a = positions[pair[0]], b = positions[pair[1]];
-      if (a && b) drawLine(a, b, 'weak');
+      if (a && b) drawLine(a, b, 'weak', layout.gen[pair[0]]);
     });
 
     ids.forEach(function (id) {
@@ -222,7 +237,10 @@
       btn.setAttribute('data-char-id', id);
       btn.style.left = positions[id].x + '%';
       btn.style.top = positions[id].y + '%';
-      btn.style.animationDelay = (Math.random() * -7).toFixed(2) + 's';
+      // duas animações em .char: charEnter (entrada, uma vez) e floatChar
+      // (flutuar, perpétuo). A lista de delays casa com a ordem em `animation`.
+      var floatDelay = (Math.random() * -7).toFixed(2);
+      btn.style.animationDelay = enterDelay[id] + 'ms, ' + floatDelay + 's';
       var portrait = d.retrato
         ? '<img src="' + d.retrato + '" alt="" draggable="false">'
         : '';
@@ -230,6 +248,34 @@
       btn.addEventListener('click', function () { onCharClick(id); });
       charButtonsEl.appendChild(btn);
     });
+
+    // Traçar as linhas progressivamente, alinhadas com a geração a que ligam
+    // (as de gerações mais baixas desenham-se depois, a acompanhar a cascata
+    // dos personagens). Desligado sob prefers-reduced-motion.
+    if (!reduce) {
+      var lineEls = charLinesEl.querySelectorAll('.cline');
+      Array.prototype.forEach.call(lineEls, function (ln) {
+        var L = ln.getTotalLength();
+        ln.style.strokeDasharray = L;
+        ln.style.strokeDashoffset = L;
+        ln.style.transition = 'none';
+      });
+      charLinesEl.getBoundingClientRect(); // força reflow para o estado inicial "pegar"
+      Array.prototype.forEach.call(lineEls, function (ln) {
+        var g = parseInt(ln.getAttribute('data-gen') || '0', 10);
+        var delay = g * 120 + 120; // ligeiramente depois do nó dessa geração
+        ln.style.transition = 'stroke-dashoffset .5s ease ' + delay + 'ms';
+        ln.style.strokeDashoffset = '0';
+        // No fim do traçado, limpar os estilos inline para o CSS voltar a
+        // mandar — senão o `strokeDasharray = L` inline tornava sólidas as
+        // linhas tracejadas por classe (casamento `2 5`, irmãos `1 5`).
+        ln.addEventListener('transitionend', function () {
+          ln.style.strokeDasharray = '';
+          ln.style.strokeDashoffset = '';
+          ln.style.transition = '';
+        }, { once: true });
+      });
+    }
 
     return family;
   }
