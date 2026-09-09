@@ -103,7 +103,7 @@
     });
     window.addEventListener('mousemove', function (e) {
       if (!dragging) return;
-      railOffset = dragStartOffset + (e.clientX - dragStartX);
+      railOffset = clampElastic(dragStartOffset + (e.clientX - dragStartX), events.length);
       applyOffset();
     });
     window.addEventListener('mouseup', function () { dragging = false; view.classList.remove('dragging'); });
@@ -118,14 +118,14 @@
     view.addEventListener('touchmove', function (e) {
       if (!dragging) return;
       e.preventDefault();
-      railOffset = dragStartOffset + (e.touches[0].clientX - dragStartX);
+      railOffset = clampElastic(dragStartOffset + (e.touches[0].clientX - dragStartX), events.length);
       applyOffset();
     }, { passive: false });
     window.addEventListener('touchend', function () { dragging = false; view.classList.remove('dragging'); });
     window.addEventListener('touchcancel', function () { dragging = false; view.classList.remove('dragging'); });
     view.addEventListener('wheel', function (e) {
       e.preventDefault();
-      railOffset -= (e.deltaY || e.deltaX);
+      railOffset = clampElastic(railOffset - (e.deltaY || e.deltaX), events.length);
       applyOffset();
     }, { passive: false });
     if (opts.scrollLeftBtn) opts.scrollLeftBtn.addEventListener('click', function () {
@@ -143,7 +143,7 @@
     // "também aparece em", ou as setas do menu inferior enquanto já se está
     // dentro de um acontecimento) — sem disparar `onEnter` de novo.
     function jumpTo(idx) {
-      railOffset = -idx * SPACING;
+      railOffset = clampHard(-idx * SPACING, events.length);
       applyOffset();
     }
 
