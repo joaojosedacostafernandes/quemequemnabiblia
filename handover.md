@@ -200,6 +200,12 @@ Logo depois da Ronda 21, o utilizador reportou (com screenshot) que num aconteci
 
 **Verificação (screenshots reais):** 4 acontecimentos de tamanhos muito diferentes — `origens` (5 pers, escala 1), `saul_david_ev` (8, escala 0.76), `apostolos_ev` (13, escala 0.28), `tribos_ev` (15, escala 0.30) — **todos 100% das personagens visíveis e com as linhas a ligar**. Antes desta correção, `saul_david_ev` mostrava só parte e `tribos_ev` 9/15.
 
+### Correção — Linhas ligam ao centro do círculo (2026-09-09)
+
+Depois da correção do auto-ajuste da câmara (acima), o utilizador precisou melhor o problema: "há linhas que não tocam os círculos, estão desconectadas". Medição (Chrome/CDP) confirmou a causa real: o ponto de ancoragem das linhas (`positions[id]` em `event-graph.js` = o `style.left/top` do botão `.char`) é o centro do **elemento `.char` inteiro** (círculo + gap + nome), que fica **~13px abaixo** do centro do círculo (medido: desvio orbe-vs-âncora = -10px a 0.76× de escala). As linhas tocavam por baixo do orbe, junto ao nome, e pareciam desligadas.
+
+**Correção (CSS, `style.css`):** `.char-label` passou a `position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 8px` — o nome deixa de contribuir para a altura do `.char`, por isso o centro do `.char` (onde `transform: translate(-50%,-50%)` o ancora, e para onde as linhas apontam) coincide agora com o **centro do círculo**. O nome continua a aparecer por baixo do orbe; continua clicável (é descendente do `<button>`, mesmo estando fora do fluxo). Verificado: desvio orbe-âncora = **0px** em todas as 8 personagens de `saul_david_ev`, e as linhas (descendência, casamento, irmãos) entram no meio dos círculos.
+
 ### Correção pós-merge — Eva e isolamento de física entre capítulos (2026-09-06)
 
 Ainda no mesmo dia da Ronda 11, a Isabel testou o site já integrado e encontrou **um terceiro sítio** com o mesmo bug de ciclo (a mesma classe já referida acima, desta vez em `collapseSubtree`) mais um pedido de comportamento novo:
