@@ -192,6 +192,14 @@ Terceira ronda da iniciativa de UX/UI (Fable), **reordenada** a pedido do utiliz
 
 ⚠️ **Ainda por fazer (o que a Ronda 21 *original* previa):** o **mobile a sério** — pinch-zoom, câmara que centra no personagem, alvos de toque ≥44px, bottom sheet com pega/swipe, teclado — continua por fazer e é o próximo candidato natural.
 
+### Correção — Auto-ajuste da câmara ao entrar num acontecimento (2026-09-09)
+
+Logo depois da Ronda 21, o utilizador reportou (com screenshot) que num acontecimento largo ("Saul e a Ascensão de David") as **linhas de família pareciam "partidas"/não ligavam**. Diagnóstico (Chrome headless/CDP, extraindo as coordenadas reais de cada `.cline`): as linhas estavam geometricamente corretas (`stroke-dasharray`/`dashoffset` bem repostos pela animação da Ronda 20) — o problema era que o acontecimento é **mais largo que o ecrã**, com personagens em `x` = -6% e 106% (fora do campo), pelo que as linhas de casamento ligavam a nós invisíveis e pareciam soltas.
+
+**Correção:** nova função `fitEventView()` em `app.js` — ao entrar num acontecimento (e no "repor vista" e no re-desenho pós-`document.fonts.ready`), calcula a caixa envolvente de todas as personagens (a partir dos `style.left/top` em %) e ajusta `camScale`/`camTx`/`camTy` da câmara para caber tudo com margens. `camLayer` tem `transform-origin: 50% 50%` e preenche o `char-field`, por isso a centragem usa o centro do campo: `camTx = (w/2 - cx)*scale`. Piso de escala **0.25** (para filas extremas — 12 tribos, 12 apóstolos — caberem inteiras, ainda que com medalhões pequenos, navegáveis por zoom; os nomes nunca são cortados, garantia da Ronda 16). O `zoomReset` ("repor vista") passou a chamar `fitEventView` em vez de `resetCam`.
+
+**Verificação (screenshots reais):** 4 acontecimentos de tamanhos muito diferentes — `origens` (5 pers, escala 1), `saul_david_ev` (8, escala 0.76), `apostolos_ev` (13, escala 0.28), `tribos_ev` (15, escala 0.30) — **todos 100% das personagens visíveis e com as linhas a ligar**. Antes desta correção, `saul_david_ev` mostrava só parte e `tribos_ev` 9/15.
+
 ### Correção pós-merge — Eva e isolamento de física entre capítulos (2026-09-06)
 
 Ainda no mesmo dia da Ronda 11, a Isabel testou o site já integrado e encontrou **um terceiro sítio** com o mesmo bug de ciclo (a mesma classe já referida acima, desta vez em `collapseSubtree`) mais um pedido de comportamento novo:
