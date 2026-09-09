@@ -112,6 +112,9 @@
 
   var SVG_NS = 'http://www.w3.org/2000/svg';
   var LABEL_FONT = "600 15px 'Cormorant Garamond', Georgia, serif";
+  function prefersReduce() {
+    return !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }
   var _measureCtx = null;
   function measureTextWidth(text) {
     if (!_measureCtx) _measureCtx = document.createElement('canvas').getContext('2d');
@@ -151,6 +154,17 @@
       // da fonte real se o Google Font ainda não tiver carregado.
       var neededPx = Math.max(64, maxLabelPx * 1.1 + 10);
       rowColWidthPct[g] = Math.min(28, Math.max(9, neededPx / containerW * 100));
+    });
+
+    // Atraso de entrada por personagem: por geração (pais primeiro) e, dentro
+    // da geração, da esquerda para a direita (ordem de slot).
+    var enterDelay = {};
+    var reduce = prefersReduce();
+    Object.keys(rowIds).forEach(function (g) {
+      var ordered = rowIds[g].slice().sort(function (a, b) { return layout.slot[a] - layout.slot[b]; });
+      ordered.forEach(function (id, i) {
+        enterDelay[id] = reduce ? 0 : (parseInt(g, 10) * 120 + i * 40);
+      });
     });
 
     var rowHeightPct = layout.maxGen > 0 ? Math.min(30, 64 / (layout.maxGen + 1)) : 0;
@@ -222,7 +236,10 @@
       btn.setAttribute('data-char-id', id);
       btn.style.left = positions[id].x + '%';
       btn.style.top = positions[id].y + '%';
-      btn.style.animationDelay = (Math.random() * -7).toFixed(2) + 's';
+      // duas animações em .char: charEnter (entrada, uma vez) e floatChar
+      // (flutuar, perpétuo). A lista de delays casa com a ordem em `animation`.
+      var floatDelay = (Math.random() * -7).toFixed(2);
+      btn.style.animationDelay = enterDelay[id] + 'ms, ' + floatDelay + 's';
       var portrait = d.retrato
         ? '<img src="' + d.retrato + '" alt="" draggable="false">'
         : '';
