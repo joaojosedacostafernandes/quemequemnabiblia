@@ -125,6 +125,7 @@ body.in-event h1 { font-size: 16px; }
 .cline.casamento { stroke-dasharray: 2 5; stroke: var(--pink); opacity: .8; }
 .cline.weak { stroke-dasharray: 1 5; opacity: .45; stroke-width: 1; }
 .union-node { position: absolute; width: 13px; height: 13px; transform: translate(-50%,-50%) rotate(45deg); background: radial-gradient(circle at 35% 30%, #ffe0ec, var(--pink) 60%, #a83a63 100%); box-shadow: 0 0 8px rgba(232,96,143,.5); }
+.marriage-mark { position: absolute; transform: translate(-50%, -50%); color: var(--pink); font-size: 15px; line-height: 1; text-shadow: 0 0 8px rgba(232,96,143,.85); pointer-events: none; z-index: 1; }
 .zoom-controls { position: absolute; bottom: 20px; right: 20px; z-index: 4; display: flex; flex-direction: column; gap: 8px; }
 
 .char { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; background: none; border: none; color: inherit; transform: translate(-50%, -50%); animation: charEnter .55s cubic-bezier(.34, 1.56, .64, 1) both, floatChar 7s ease-in-out infinite; }

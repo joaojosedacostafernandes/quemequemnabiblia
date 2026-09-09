@@ -187,31 +187,23 @@
       charLinesEl.appendChild(line);
     }
 
+    // Casamento = UMA linha direta entre os dois círculos, com um símbolo (♥)
+    // a meio. O ponto médio (`unions[key]`) é também de onde os filhos do
+    // casal descem — por isso não há losango a flutuar; a família lê-se como
+    // círculo —♥— círculo, com os filhos a sair do ♥.
     var unions = {};
     family.casais.forEach(function (pair) {
       var a = positions[pair[0]], b = positions[pair[1]];
       if (!a || !b) return;
-      var ux = (a.x + b.x) / 2, uy = (a.y + b.y) / 2;
-      var collided = true;
-      while (collided) {
-        collided = false;
-        ids.forEach(function (id) {
-          var p = positions[id];
-          if (Math.abs(p.x - ux) < 4 && Math.abs(p.y - uy) < 4) { uy += 7; collided = true; }
-        });
-        Object.keys(unions).forEach(function (k) {
-          var u2 = unions[k];
-          if (Math.abs(u2.x - ux) < 4 && Math.abs(u2.y - uy) < 4) { uy += 7; collided = true; }
-        });
-      }
       var key = pair.slice().sort().join('|');
+      var ux = (a.x + b.x) / 2, uy = (a.y + b.y) / 2;
       unions[key] = { x: ux, y: uy };
-      drawLine(a, { x: ux, y: uy }, 'casamento', layout.gen[pair[0]]);
-      drawLine(b, { x: ux, y: uy }, 'casamento', layout.gen[pair[0]]);
-      var u = document.createElement('div');
-      u.className = 'union-node';
-      u.style.left = ux + '%'; u.style.top = uy + '%';
-      charButtonsEl.appendChild(u);
+      drawLine(a, b, 'casamento', layout.gen[pair[0]]);
+      var mark = document.createElement('div');
+      mark.className = 'marriage-mark';
+      mark.style.left = ux + '%'; mark.style.top = uy + '%';
+      mark.innerHTML = '♥';
+      charButtonsEl.appendChild(mark);
     });
     family.filhos.forEach(function (f) {
       var childPos = positions[f.filho];
