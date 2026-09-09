@@ -65,7 +65,7 @@
         ctx.lineWidth = 1 + progress * 1.8;
         ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
       });
-      var flash = Math.max(0, 1 - Math.abs(progress - 0.8) * 6);
+      var flash = Math.max(0, 1 - Math.abs(progress - 0.45) * 5);
       if (flash > 0 && warpParticles.length) {
         var grad = ctx.createRadialGradient(warpParticles[0].ox, warpParticles[0].oy, 0, warpParticles[0].ox, warpParticles[0].oy, Math.max(canvas.width, canvas.height) * 0.55);
         grad.addColorStop(0, warpTint + Math.round(flash * 55).toString(16).padStart(2, '0'));
