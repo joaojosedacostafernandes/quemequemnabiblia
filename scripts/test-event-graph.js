@@ -178,4 +178,20 @@ const EventGraph = sandbox.EventGraph;
   console.log('ok: filhos colocados por baixo dos pais (ordem dos pais, não dos dados)');
 })();
 
+// --- Caso 14: a colocação do grupo é INDEPENDENTE da ordem dos dados — mesmo
+// que o cônjuge de um membro venha ANTES no array, o grupo mantém-se contíguo
+// e os cônjuges ficam por fora (regressão: antes partia a chaveta) ---
+(function () {
+  const ids = ['sA', 'a', 'b', 'sB']; // cônjuge de 'a' vem PRIMEIRO nos dados
+  const edges = [['a', 'b', 'affinity', 'primas'], ['sA', 'a', 'spouse'], ['sB', 'b', 'spouse']];
+  const family = EventGraph.deriveFamily(ids, edges);
+  const layout = EventGraph.layoutEvent(ids, family);
+  const s = id => layout.slot[id];
+  assert.strictEqual(Math.abs(s('a') - s('b')), 1, 'membros do grupo contíguos, seja qual for a ordem dos dados');
+  const lo = Math.min(s('a'), s('b')), hi = Math.max(s('a'), s('b'));
+  assert.ok(s('sA') < lo || s('sA') > hi, 'cônjuge de a fica fora do intervalo do grupo');
+  assert.ok(s('sB') < lo || s('sB') > hi, 'cônjuge de b fica fora do intervalo do grupo');
+  console.log('ok: colocação de grupo independente da ordem dos dados (cônjuge antes do membro)');
+})();
+
 console.log('\nALL PASS');

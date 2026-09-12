@@ -95,8 +95,6 @@
 
   function layoutEvent(ids, family) {
     var groups = deriveGroups(family);
-    var groupOf = {};
-    groups.forEach(function (g, gi) { g.ids.forEach(function (id) { groupOf[id] = gi; }); });
     var parentOf = {};
     family.filhos.forEach(function (f) {
       parentOf[f.filho] = f.pais.length === 2
@@ -118,14 +116,13 @@
     var slot = {};
     var nextSlot = 0;
     var placed = {};
-    // Colocação da geração 0 em "clusters", para satisfazer ao mesmo tempo:
-    //  - membros de um grupo fraco contíguos (para a chaveta os abraçar);
-    //  - cada cônjuge ao lado do seu par (para a linha de casamento).
-    // Um membro de grupo com cônjuge presente fica com o grupo no meio e os
-    // cônjuges a flanquear por fora, para a chaveta não abraçar o cônjuge
-    // (ex: [José, Maria, Isabel, Zacarias] — as "primas" no meio, maridos fora).
-    // Um progenitor com dois cônjuges presentes (ex: Abraão/Sara/Agar) mantém
-    // os dois cônjuges adjacentes, como antes.
+    // Colocação da geração 0, INDEPENDENTE da ordem dos dados:
+    //  1) grupos fracos primeiro, para um membro nunca ser "consumido" como
+    //     cônjuge de um id sem grupo que apareça antes no JSON (senão a chaveta
+    //     partia-se). Membros no meio, cônjuges a flanquear por fora
+    //     (ex: [José, Maria, Isabel, Zacarias] — as "primas" no meio).
+    //  2) o resto da geração 0, na ordem dos dados, cada um com os seus
+    //     cônjuges adjacentes (inclui poligamia: Abraão com Sara e Agar).
     function spousesOf(id) {
       var out = [];
       family.casais.forEach(function (p) {
@@ -134,24 +131,23 @@
       });
       return out;
     }
+    function placeCluster(list) { list.forEach(function (m) { slot[m] = nextSlot++; }); }
+    groups.forEach(function (grp) {
+      var members = grp.ids.filter(function (m) { return gen[m] === 0 && !placed[m]; });
+      if (!members.length) return;
+      members.forEach(function (m) { placed[m] = true; });
+      var left = spousesOf(members[0]);
+      left.forEach(function (s) { placed[s] = true; });
+      var right = members.length > 1 ? spousesOf(members[members.length - 1]) : [];
+      right.forEach(function (s) { placed[s] = true; });
+      placeCluster(left.concat(members).concat(right));
+    });
     ids.filter(function (id) { return gen[id] === 0; }).forEach(function (id) {
       if (placed[id]) return;
-      var ordered;
-      if (groupOf[id] !== undefined) {
-        var members = groups[groupOf[id]].ids.filter(function (m) { return gen[m] === 0 && !placed[m]; });
-        members.forEach(function (m) { placed[m] = true; });
-        var left = spousesOf(members[0]);
-        left.forEach(function (s) { placed[s] = true; });
-        var right = members.length > 1 ? spousesOf(members[members.length - 1]) : [];
-        right.forEach(function (s) { placed[s] = true; });
-        ordered = left.concat(members).concat(right);
-      } else {
-        placed[id] = true;
-        var sp = spousesOf(id);
-        sp.forEach(function (s) { placed[s] = true; });
-        ordered = [id].concat(sp);
-      }
-      ordered.forEach(function (m) { slot[m] = nextSlot++; });
+      placed[id] = true;
+      var sp = spousesOf(id);
+      sp.forEach(function (s) { placed[s] = true; });
+      placeCluster([id].concat(sp));
     });
 
     var maxGen = 0;
