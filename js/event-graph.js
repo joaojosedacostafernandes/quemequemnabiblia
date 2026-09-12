@@ -180,18 +180,13 @@
     charButtonsEl.innerHTML = '';
     var family = deriveFamily(ids, edges);
     var layout = layoutEvent(ids, family);
+    var groups = deriveGroups(family);
     var slots = ids.map(function (id) { return layout.slot[id]; });
     var minSlot = Math.min.apply(null, slots), maxSlot = Math.max.apply(null, slots);
     var containerW = charButtonsEl.getBoundingClientRect().width || 800;
 
-    // O espaçamento entre colunas nunca corta um nome — em vez de uma
-    // largura de coluna única para o acontecimento todo, cada fila
-    // (geração) tem a sua própria largura, calculada a partir do nome mais
-    // largo *dessa* fila (medido a sério, com canvas, não adivinhado). Uma
-    // fila com muitas personagens de nomes longos (ex: os 12 apóstolos)
-    // cresce para além dos 100% do contentor — o utilizador navega-a por
-    // arrasto/zoom, tal como já acontece na linha do tempo principal — mas
-    // nenhum nome fica alguma vez cortado com "...".
+    // Largura de coluna por fila — cada geração dimensiona-se pelo seu nome
+    // mais largo (medido a sério), para nenhum nome ser cortado.
     var rowIds = {};
     ids.forEach(function (id) { (rowIds[layout.gen[id]] = rowIds[layout.gen[id]] || []).push(id); });
     var rowColWidthPct = {};
@@ -201,21 +196,16 @@
         var w = measureTextWidth((defs[id] && defs[id].nome) || '');
         if (w > maxLabelPx) maxLabelPx = w;
       });
-      // margem de segurança: a medição por canvas pode divergir ligeiramente
-      // da fonte real se o Google Font ainda não tiver carregado.
       var neededPx = Math.max(64, maxLabelPx * 1.1 + 10);
       rowColWidthPct[g] = Math.min(28, Math.max(9, neededPx / containerW * 100));
     });
 
-    // Atraso de entrada por personagem: por geração (pais primeiro) e, dentro
-    // da geração, da esquerda para a direita (ordem de slot).
+    // Entrada por geração (pais primeiro), esquerda→direita dentro da geração.
     var enterDelay = {};
     var reduce = prefersReduce();
     Object.keys(rowIds).forEach(function (g) {
       var ordered = rowIds[g].slice().sort(function (a, b) { return layout.slot[a] - layout.slot[b]; });
-      ordered.forEach(function (id, i) {
-        enterDelay[id] = reduce ? 0 : (parseInt(g, 10) * 120 + i * 40);
-      });
+      ordered.forEach(function (id, i) { enterDelay[id] = reduce ? 0 : (parseInt(g, 10) * 120 + i * 40); });
     });
 
     var rowHeightPct = layout.maxGen > 0 ? Math.min(30, 64 / (layout.maxGen + 1)) : 0;
@@ -229,19 +219,24 @@
       };
     });
 
-    function drawLine(a, b, cls, gen) {
+    function drawSeg(x1, y1, x2, y2, cls, gen) {
       var line = document.createElementNS(SVG_NS, 'line');
-      line.setAttribute('x1', a.x + '%'); line.setAttribute('y1', a.y + '%');
-      line.setAttribute('x2', b.x + '%'); line.setAttribute('y2', b.y + '%');
+      line.setAttribute('x1', x1 + '%'); line.setAttribute('y1', y1 + '%');
+      line.setAttribute('x2', x2 + '%'); line.setAttribute('y2', y2 + '%');
       line.setAttribute('class', 'cline' + (cls ? ' ' + cls : ''));
       if (gen != null) line.setAttribute('data-gen', gen);
       charLinesEl.appendChild(line);
     }
+    function addLabel(xPct, yPct, text, cls) {
+      var el = document.createElement('div');
+      el.className = cls;
+      el.style.left = xPct + '%'; el.style.top = yPct + '%';
+      el.textContent = text;
+      charButtonsEl.appendChild(el);
+    }
 
-    // Casamento = UMA linha direta entre os dois círculos, com um símbolo (♥)
-    // a meio. O ponto médio (`unions[key]`) é também de onde os filhos do
-    // casal descem — por isso não há losango a flutuar; a família lê-se como
-    // círculo —♥— círculo, com os filhos a sair do ♥.
+    // Casamento: linha horizontal direta com ♥ a meio; o ponto médio é a
+    // origem de onde a descendência arranca.
     var unions = {};
     family.casais.forEach(function (pair) {
       var a = positions[pair[0]], b = positions[pair[1]];
@@ -249,30 +244,63 @@
       var key = pair.slice().sort().join('|');
       var ux = (a.x + b.x) / 2, uy = (a.y + b.y) / 2;
       unions[key] = { x: ux, y: uy };
-      drawLine(a, b, 'casamento', layout.gen[pair[0]]);
+      drawSeg(a.x, a.y, b.x, b.y, 'casamento', layout.gen[pair[0]]);
       var mark = document.createElement('div');
       mark.className = 'marriage-mark';
       mark.style.left = ux + '%'; mark.style.top = uy + '%';
       mark.innerHTML = '♥';
       charButtonsEl.appendChild(mark);
     });
+
+    // Descendência em ângulo reto, agrupada por unidade (casal ou progenitor
+    // único): queda vertical da origem → barra horizontal → queda a cada filho.
+    var byUnit = {};
     family.filhos.forEach(function (f) {
-      var childPos = positions[f.filho];
-      if (!childPos) return;
-      if (f.pais.length === 2) {
-        var key = f.pais.slice().sort().join('|');
-        var u = unions[key];
-        if (u) drawLine(u, childPos, '', layout.gen[f.filho]);
-      } else {
-        var p = positions[f.pais[0]];
-        if (p) drawLine(p, childPos, '', layout.gen[f.filho]);
-      }
+      var key = f.pais.length === 2 ? ('u:' + f.pais.slice().sort().join('|')) : ('s:' + f.pais[0]);
+      (byUnit[key] = byUnit[key] || { pais: f.pais, filhos: [] }).filhos.push(f.filho);
     });
-    family.irmaos.forEach(function (pair) {
-      var a = positions[pair[0]], b = positions[pair[1]];
-      if (a && b) drawLine(a, b, 'weak', layout.gen[pair[0]]);
+    Object.keys(byUnit).forEach(function (key) {
+      var unit = byUnit[key];
+      var source;
+      if (unit.pais.length === 2) {
+        source = unions[unit.pais.slice().sort().join('|')];
+        if (!source) {
+          var pa = positions[unit.pais[0]], pb = positions[unit.pais[1]];
+          if (!pa || !pb) return;
+          source = { x: (pa.x + pb.x) / 2, y: (pa.y + pb.y) / 2 };
+        }
+      } else {
+        source = positions[unit.pais[0]];
+      }
+      if (!source) return;
+      var kids = unit.filhos.map(function (id) { return positions[id]; }).filter(Boolean);
+      if (!kids.length) return;
+      var gen = layout.gen[unit.filhos[0]];
+      var childY = kids[0].y;
+      var busY = source.y + (childY - source.y) * 0.5;
+      var kidXs = kids.map(function (p) { return p.x; });
+      var minX = Math.min.apply(null, kidXs), maxX = Math.max.apply(null, kidXs);
+      drawSeg(source.x, source.y, source.x, busY, '', gen);
+      drawSeg(Math.min(minX, source.x), busY, Math.max(maxX, source.x), busY, '', gen);
+      kids.forEach(function (p) { drawSeg(p.x, busY, p.x, p.y, '', gen); });
+      addLabel(source.x, busY, unit.pais.length === 2 ? 'pais de' : 'pai/mãe de', 'rel-label');
     });
 
+    // Relações fracas: chaveta rotulada, sem linhas a cruzar.
+    groups.forEach(function (g) {
+      var pts = g.ids.map(function (id) { return positions[id]; }).filter(Boolean);
+      if (pts.length < 2) return;
+      var xs = pts.map(function (p) { return p.x; }), ys = pts.map(function (p) { return p.y; });
+      var gMinX = Math.min.apply(null, xs), gMaxX = Math.max.apply(null, xs);
+      var gy = Math.max.apply(null, ys);
+      var brace = document.createElement('div');
+      brace.className = 'group-brace';
+      brace.style.left = gMinX + '%'; brace.style.width = (gMaxX - gMinX) + '%'; brace.style.top = gy + '%';
+      charButtonsEl.appendChild(brace);
+      if (g.label) addLabel((gMinX + gMaxX) / 2, gy, g.label, 'group-label');
+    });
+
+    // Orbes — só entrada suave, sem flutuação perpétua (floatChar removido).
     ids.forEach(function (id) {
       var d = defs[id];
       var btn = document.createElement('button');
@@ -280,10 +308,7 @@
       btn.setAttribute('data-char-id', id);
       btn.style.left = positions[id].x + '%';
       btn.style.top = positions[id].y + '%';
-      // duas animações em .char: charEnter (entrada, uma vez) e floatChar
-      // (flutuar, perpétuo). A lista de delays casa com a ordem em `animation`.
-      var floatDelay = (Math.random() * -7).toFixed(2);
-      btn.style.animationDelay = enterDelay[id] + 'ms, ' + floatDelay + 's';
+      btn.style.animationDelay = enterDelay[id] + 'ms';
       var portrait = d.retrato
         ? '<img src="' + d.retrato + '" alt="" draggable="false">'
         : '';
@@ -292,30 +317,22 @@
       charButtonsEl.appendChild(btn);
     });
 
-    // Traçar as linhas progressivamente, alinhadas com a geração a que ligam
-    // (as de gerações mais baixas desenham-se depois, a acompanhar a cascata
-    // dos personagens). Desligado sob prefers-reduced-motion.
+    // Traçar as linhas progressivamente, por geração. Desligado sob
+    // prefers-reduced-motion.
     if (!reduce) {
       var lineEls = charLinesEl.querySelectorAll('.cline');
       Array.prototype.forEach.call(lineEls, function (ln) {
         var L = ln.getTotalLength();
-        ln.style.strokeDasharray = L;
-        ln.style.strokeDashoffset = L;
-        ln.style.transition = 'none';
+        ln.style.strokeDasharray = L; ln.style.strokeDashoffset = L; ln.style.transition = 'none';
       });
-      charLinesEl.getBoundingClientRect(); // força reflow para o estado inicial "pegar"
+      charLinesEl.getBoundingClientRect();
       Array.prototype.forEach.call(lineEls, function (ln) {
         var g = parseInt(ln.getAttribute('data-gen') || '0', 10);
-        var delay = g * 120 + 120; // ligeiramente depois do nó dessa geração
+        var delay = g * 120 + 120;
         ln.style.transition = 'stroke-dashoffset .5s ease ' + delay + 'ms';
         ln.style.strokeDashoffset = '0';
-        // No fim do traçado, limpar os estilos inline para o CSS voltar a
-        // mandar — senão o `strokeDasharray = L` inline tornava sólidas as
-        // linhas tracejadas por classe (casamento `2 5`, irmãos `1 5`).
         ln.addEventListener('transitionend', function () {
-          ln.style.strokeDasharray = '';
-          ln.style.strokeDashoffset = '';
-          ln.style.transition = '';
+          ln.style.strokeDasharray = ''; ln.style.strokeDashoffset = ''; ln.style.transition = '';
         }, { once: true });
       });
     }
