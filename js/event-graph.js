@@ -50,6 +50,49 @@
     return { casais: casais, filhos: filhos, irmaos: weakEdges };
   }
 
+  // Transforma as arestas fracas (irmãos sem pai no evento, afinidade,
+  // companheiros) em grupos rotulados. Exclui pares que já partilham
+  // progenitor dentro do acontecimento — esses já ficam lado a lado sob o
+  // mesmo pai na árvore, não precisam de chaveta. Cada grupo é um componente
+  // ligado (≥2 membros); a etiqueta é a da primeira aresta do componente.
+  function deriveGroups(family) {
+    var parentKey = {};
+    family.filhos.forEach(function (f) {
+      parentKey[f.filho] = f.pais.slice().sort().join('|');
+    });
+    var adj = {};
+    var labelOf = {};
+    var order = [];
+    family.irmaos.forEach(function (w) {
+      var a = w[0], b = w[1], label = w[2];
+      if (parentKey[a] && parentKey[b] && parentKey[a] === parentKey[b]) return;
+      (adj[a] = adj[a] || []).push(b);
+      (adj[b] = adj[b] || []).push(a);
+      var key = [a, b].sort().join('|');
+      if (labelOf[key] === undefined) { labelOf[key] = (label != null ? label : null); order.push(key); }
+    });
+    var seen = {}, groups = [];
+    Object.keys(adj).forEach(function (start) {
+      if (seen[start]) return;
+      var stack = [start], comp = [];
+      while (stack.length) {
+        var n = stack.pop();
+        if (seen[n]) continue;
+        seen[n] = true; comp.push(n);
+        (adj[n] || []).forEach(function (m) { if (!seen[m]) stack.push(m); });
+      }
+      if (comp.length < 2) return;
+      var inComp = {}; comp.forEach(function (id) { inComp[id] = true; });
+      var label = null;
+      for (var i = 0; i < order.length; i++) {
+        var pts = order[i].split('|');
+        if (inComp[pts[0]] && inComp[pts[1]]) { label = labelOf[order[i]]; break; }
+      }
+      groups.push({ ids: comp, label: label });
+    });
+    return groups;
+  }
+
   function layoutEvent(ids, family) {
     var parentOf = {};
     family.filhos.forEach(function (f) {
@@ -272,7 +315,7 @@
     return family;
   }
 
-  var EventGraph = { deriveFamily: deriveFamily, layoutEvent: layoutEvent, render: render };
+  var EventGraph = { deriveFamily: deriveFamily, deriveGroups: deriveGroups, layoutEvent: layoutEvent, render: render };
   if (typeof module !== 'undefined' && module.exports) module.exports = EventGraph;
   if (typeof window !== 'undefined') window.EventGraph = EventGraph;
 })();

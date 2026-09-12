@@ -83,4 +83,41 @@ const EventGraph = sandbox.EventGraph;
   console.log('ok: arestas com uma ponta fora do acontecimento são ignoradas');
 })();
 
+// --- Caso 7: deriveGroups agrupa arestas fracas em componentes ligados,
+// excluindo pares que já partilham progenitor no acontecimento ---
+(function () {
+  // Pedro-André-Tiago ligados por arestas fracas (companheiros) → 1 grupo de 3.
+  const family = {
+    casais: [], filhos: [],
+    irmaos: [['pedro', 'andre', 'apóstolos'], ['andre', 'tiago', 'apóstolos']]
+  };
+  const groups = EventGraph.deriveGroups(family);
+  assert.strictEqual(groups.length, 1, 'devia haver 1 grupo');
+  assert.deepStrictEqual(groups[0].ids.slice().sort(), ['andre', 'pedro', 'tiago']);
+  assert.strictEqual(groups[0].label, 'apóstolos', 'usa a etiqueta da aresta');
+  console.log('ok: deriveGroups une componentes ligados com a etiqueta da aresta');
+})();
+
+// --- Caso 8: irmãos que já partilham progenitor no acontecimento NÃO formam
+// grupo (a árvore já os põe lado a lado sob o mesmo pai) ---
+(function () {
+  const family = {
+    casais: [['adao', 'eva']],
+    filhos: [{ pais: ['adao', 'eva'], filho: 'caim' }, { pais: ['adao', 'eva'], filho: 'abel' }],
+    irmaos: [['caim', 'abel', 'irmão/irmã']]
+  };
+  const groups = EventGraph.deriveGroups(family);
+  assert.strictEqual(groups.length, 0, 'caim e abel já partilham pais → sem grupo/chaveta');
+  console.log('ok: deriveGroups exclui irmãos que já partilham progenitor no evento');
+})();
+
+// --- Caso 9: afinidade sem progenitor comum forma grupo com a sua etiqueta ---
+(function () {
+  const family = { casais: [], filhos: [], irmaos: [['noemi', 'rute', 'sogra e nora']] };
+  const groups = EventGraph.deriveGroups(family);
+  assert.strictEqual(groups.length, 1);
+  assert.strictEqual(groups[0].label, 'sogra e nora');
+  console.log('ok: deriveGroups agrupa afinidade com a etiqueta real');
+})();
+
 console.log('\nALL PASS');
