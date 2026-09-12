@@ -120,4 +120,15 @@ const EventGraph = sandbox.EventGraph;
   console.log('ok: deriveGroups agrupa afinidade com a etiqueta real');
 })();
 
+// --- Caso 11: numa componente com etiquetas diferentes, ganha a etiqueta
+// da PRIMEIRA aresta em ordem de entrada ---
+(function () {
+  const family = { casais: [], filhos: [], irmaos: [['a', 'b', 'primeira'], ['b', 'c', 'segunda']] };
+  const groups = EventGraph.deriveGroups(family);
+  assert.strictEqual(groups.length, 1);
+  assert.deepStrictEqual(groups[0].ids.slice().sort(), ['a', 'b', 'c']);
+  assert.strictEqual(groups[0].label, 'primeira', 'a etiqueta da primeira aresta da componente ganha');
+  console.log('ok: deriveGroups usa a etiqueta da primeira aresta em ordem de entrada');
+})();
+
 console.log('\nALL PASS');

@@ -69,7 +69,7 @@
       (adj[a] = adj[a] || []).push(b);
       (adj[b] = adj[b] || []).push(a);
       var key = [a, b].sort().join('|');
-      if (labelOf[key] === undefined) { labelOf[key] = (label != null ? label : null); order.push(key); }
+      if (labelOf[key] === undefined) { labelOf[key] = label; order.push(key); }
     });
     var seen = {}, groups = [];
     Object.keys(adj).forEach(function (start) {
