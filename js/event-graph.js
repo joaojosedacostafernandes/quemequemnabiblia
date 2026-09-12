@@ -118,18 +118,40 @@
     var slot = {};
     var nextSlot = 0;
     var placed = {};
+    // Colocação da geração 0 em "clusters", para satisfazer ao mesmo tempo:
+    //  - membros de um grupo fraco contíguos (para a chaveta os abraçar);
+    //  - cada cônjuge ao lado do seu par (para a linha de casamento).
+    // Um membro de grupo com cônjuge presente fica com o grupo no meio e os
+    // cônjuges a flanquear por fora, para a chaveta não abraçar o cônjuge
+    // (ex: [José, Maria, Isabel, Zacarias] — as "primas" no meio, maridos fora).
+    // Um progenitor com dois cônjuges presentes (ex: Abraão/Sara/Agar) mantém
+    // os dois cônjuges adjacentes, como antes.
+    function spousesOf(id) {
+      var out = [];
+      family.casais.forEach(function (p) {
+        var o = p[0] === id ? p[1] : (p[1] === id ? p[0] : null);
+        if (o && gen[o] === 0 && !placed[o]) out.push(o);
+      });
+      return out;
+    }
     ids.filter(function (id) { return gen[id] === 0; }).forEach(function (id) {
       if (placed[id]) return;
-      slot[id] = nextSlot++; placed[id] = true;
-      family.casais.forEach(function (pair) {
-        if (pair[0] === id && !placed[pair[1]] && gen[pair[1]] === 0) { slot[pair[1]] = nextSlot++; placed[pair[1]] = true; }
-        if (pair[1] === id && !placed[pair[0]] && gen[pair[0]] === 0) { slot[pair[0]] = nextSlot++; placed[pair[0]] = true; }
-      });
+      var ordered;
       if (groupOf[id] !== undefined) {
-        groups[groupOf[id]].ids.forEach(function (m) {
-          if (!placed[m] && gen[m] === 0) { slot[m] = nextSlot++; placed[m] = true; }
-        });
+        var members = groups[groupOf[id]].ids.filter(function (m) { return gen[m] === 0 && !placed[m]; });
+        members.forEach(function (m) { placed[m] = true; });
+        var left = spousesOf(members[0]);
+        left.forEach(function (s) { placed[s] = true; });
+        var right = members.length > 1 ? spousesOf(members[members.length - 1]) : [];
+        right.forEach(function (s) { placed[s] = true; });
+        ordered = left.concat(members).concat(right);
+      } else {
+        placed[id] = true;
+        var sp = spousesOf(id);
+        sp.forEach(function (s) { placed[s] = true; });
+        ordered = [id].concat(sp);
       }
+      ordered.forEach(function (m) { slot[m] = nextSlot++; });
     });
 
     var maxGen = 0;

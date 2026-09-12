@@ -142,4 +142,22 @@ const EventGraph = sandbox.EventGraph;
   console.log('ok: layoutEvent mantém os membros de um grupo fraco consecutivos');
 })();
 
+// --- Caso 12: grupo fraco cujos DOIS membros têm cônjuge presente — os
+// membros ficam contíguos (para a chaveta) e cada cônjuge fica-lhes ao lado,
+// por fora do intervalo do grupo (caso Maria/Isabel + José/Zacarias) ---
+(function () {
+  const ids = ['a', 'sA', 'b', 'sB']; // cônjuges intercalados de propósito
+  const edges = [['a', 'b', 'affinity', 'primas'], ['sA', 'a', 'spouse'], ['sB', 'b', 'spouse']];
+  const family = EventGraph.deriveFamily(ids, edges);
+  const layout = EventGraph.layoutEvent(ids, family);
+  const s = id => layout.slot[id];
+  assert.strictEqual(Math.abs(s('a') - s('b')), 1, 'os membros do grupo ficam contíguos');
+  assert.strictEqual(Math.abs(s('a') - s('sA')), 1, 'a e o seu cônjuge ficam adjacentes');
+  assert.strictEqual(Math.abs(s('b') - s('sB')), 1, 'b e o seu cônjuge ficam adjacentes');
+  const lo = Math.min(s('a'), s('b')), hi = Math.max(s('a'), s('b'));
+  assert.ok(s('sA') < lo || s('sA') > hi, 'o cônjuge de a fica FORA do intervalo do grupo (chaveta)');
+  assert.ok(s('sB') < lo || s('sB') > hi, 'o cônjuge de b fica FORA do intervalo do grupo (chaveta)');
+  console.log('ok: grupo com ambos os cônjuges presentes — membros no meio, cônjuges por fora');
+})();
+
 console.log('\nALL PASS');
