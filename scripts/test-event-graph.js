@@ -83,4 +83,115 @@ const EventGraph = sandbox.EventGraph;
   console.log('ok: arestas com uma ponta fora do acontecimento são ignoradas');
 })();
 
+// --- Caso 7: deriveGroups agrupa arestas fracas em componentes ligados,
+// excluindo pares que já partilham progenitor no acontecimento ---
+(function () {
+  // Pedro-André-Tiago ligados por arestas fracas (companheiros) → 1 grupo de 3.
+  const family = {
+    casais: [], filhos: [],
+    irmaos: [['pedro', 'andre', 'apóstolos'], ['andre', 'tiago', 'apóstolos']]
+  };
+  const groups = EventGraph.deriveGroups(family);
+  assert.strictEqual(groups.length, 1, 'devia haver 1 grupo');
+  assert.deepStrictEqual(groups[0].ids.slice().sort(), ['andre', 'pedro', 'tiago']);
+  assert.strictEqual(groups[0].label, 'apóstolos', 'usa a etiqueta da aresta');
+  console.log('ok: deriveGroups une componentes ligados com a etiqueta da aresta');
+})();
+
+// --- Caso 8: irmãos que já partilham progenitor no acontecimento NÃO formam
+// grupo (a árvore já os põe lado a lado sob o mesmo pai) ---
+(function () {
+  const family = {
+    casais: [['adao', 'eva']],
+    filhos: [{ pais: ['adao', 'eva'], filho: 'caim' }, { pais: ['adao', 'eva'], filho: 'abel' }],
+    irmaos: [['caim', 'abel', 'irmão/irmã']]
+  };
+  const groups = EventGraph.deriveGroups(family);
+  assert.strictEqual(groups.length, 0, 'caim e abel já partilham pais → sem grupo/chaveta');
+  console.log('ok: deriveGroups exclui irmãos que já partilham progenitor no evento');
+})();
+
+// --- Caso 9: afinidade sem progenitor comum forma grupo com a sua etiqueta ---
+(function () {
+  const family = { casais: [], filhos: [], irmaos: [['noemi', 'rute', 'sogra e nora']] };
+  const groups = EventGraph.deriveGroups(family);
+  assert.strictEqual(groups.length, 1);
+  assert.strictEqual(groups[0].label, 'sogra e nora');
+  console.log('ok: deriveGroups agrupa afinidade com a etiqueta real');
+})();
+
+// --- Caso 11: numa componente com etiquetas diferentes, ganha a etiqueta
+// da PRIMEIRA aresta em ordem de entrada ---
+(function () {
+  const family = { casais: [], filhos: [], irmaos: [['a', 'b', 'primeira'], ['b', 'c', 'segunda']] };
+  const groups = EventGraph.deriveGroups(family);
+  assert.strictEqual(groups.length, 1);
+  assert.deepStrictEqual(groups[0].ids.slice().sort(), ['a', 'b', 'c']);
+  assert.strictEqual(groups[0].label, 'primeira', 'a etiqueta da primeira aresta da componente ganha');
+  console.log('ok: deriveGroups usa a etiqueta da primeira aresta em ordem de entrada');
+})();
+
+// --- Caso 10: membros de um grupo fraco ficam em slots consecutivos ---
+(function () {
+  const ids = ['pedro', 'x', 'andre', 'tiago']; // x é ruído no meio da ordem
+  const edges = [['pedro', 'andre', 'sibling', 'apóstolos'], ['andre', 'tiago', 'sibling', 'apóstolos']];
+  const family = EventGraph.deriveFamily(ids, edges);
+  const layout = EventGraph.layoutEvent(ids, family);
+  const groupSlots = ['pedro', 'andre', 'tiago'].map(function (id) { return layout.slot[id]; }).sort(function (a, b) { return a - b; });
+  assert.strictEqual(groupSlots[2] - groupSlots[0], 2, 'os 3 membros do grupo ocupam 3 slots contíguos');
+  console.log('ok: layoutEvent mantém os membros de um grupo fraco consecutivos');
+})();
+
+// --- Caso 12: grupo fraco cujos DOIS membros têm cônjuge presente — os
+// membros ficam contíguos (para a chaveta) e cada cônjuge fica-lhes ao lado,
+// por fora do intervalo do grupo (caso Maria/Isabel + José/Zacarias) ---
+(function () {
+  const ids = ['a', 'sA', 'b', 'sB']; // cônjuges intercalados de propósito
+  const edges = [['a', 'b', 'affinity', 'primas'], ['sA', 'a', 'spouse'], ['sB', 'b', 'spouse']];
+  const family = EventGraph.deriveFamily(ids, edges);
+  const layout = EventGraph.layoutEvent(ids, family);
+  const s = id => layout.slot[id];
+  assert.strictEqual(Math.abs(s('a') - s('b')), 1, 'os membros do grupo ficam contíguos');
+  assert.strictEqual(Math.abs(s('a') - s('sA')), 1, 'a e o seu cônjuge ficam adjacentes');
+  assert.strictEqual(Math.abs(s('b') - s('sB')), 1, 'b e o seu cônjuge ficam adjacentes');
+  const lo = Math.min(s('a'), s('b')), hi = Math.max(s('a'), s('b'));
+  assert.ok(s('sA') < lo || s('sA') > hi, 'o cônjuge de a fica FORA do intervalo do grupo (chaveta)');
+  assert.ok(s('sB') < lo || s('sB') > hi, 'o cônjuge de b fica FORA do intervalo do grupo (chaveta)');
+  console.log('ok: grupo com ambos os cônjuges presentes — membros no meio, cônjuges por fora');
+})();
+
+// --- Caso 13: filhos colocados por baixo dos pais (ordem dos pais), não pela
+// ordem dos dados — evita a barra de descendência a atravessar o ecrã
+// (caso Jesus/João Batista no Nascimento) ---
+(function () {
+  // dois casais no topo; nos dados o filho do casal DA DIREITA vem primeiro
+  const ids = ['pa', 'ma', 'pb', 'mb', 'filho_b', 'filho_a'];
+  const edges = [
+    ['pa', 'ma', 'spouse'], ['pb', 'mb', 'spouse'],
+    ['pa', 'filho_a', 'parent'], ['ma', 'filho_a', 'parent'],
+    ['pb', 'filho_b', 'parent'], ['mb', 'filho_b', 'parent']
+  ];
+  const family = EventGraph.deriveFamily(ids, edges);
+  const layout = EventGraph.layoutEvent(ids, family);
+  assert.ok(layout.slot['pa'] < layout.slot['pb'], 'casal A à esquerda de casal B');
+  assert.ok(layout.slot['filho_a'] < layout.slot['filho_b'], 'o filho segue a posição dos pais, não a ordem dos dados');
+  console.log('ok: filhos colocados por baixo dos pais (ordem dos pais, não dos dados)');
+})();
+
+// --- Caso 14: a colocação do grupo é INDEPENDENTE da ordem dos dados — mesmo
+// que o cônjuge de um membro venha ANTES no array, o grupo mantém-se contíguo
+// e os cônjuges ficam por fora (regressão: antes partia a chaveta) ---
+(function () {
+  const ids = ['sA', 'a', 'b', 'sB']; // cônjuge de 'a' vem PRIMEIRO nos dados
+  const edges = [['a', 'b', 'affinity', 'primas'], ['sA', 'a', 'spouse'], ['sB', 'b', 'spouse']];
+  const family = EventGraph.deriveFamily(ids, edges);
+  const layout = EventGraph.layoutEvent(ids, family);
+  const s = id => layout.slot[id];
+  assert.strictEqual(Math.abs(s('a') - s('b')), 1, 'membros do grupo contíguos, seja qual for a ordem dos dados');
+  const lo = Math.min(s('a'), s('b')), hi = Math.max(s('a'), s('b'));
+  assert.ok(s('sA') < lo || s('sA') > hi, 'cônjuge de a fica fora do intervalo do grupo');
+  assert.ok(s('sB') < lo || s('sB') > hi, 'cônjuge de b fica fora do intervalo do grupo');
+  console.log('ok: colocação de grupo independente da ordem dos dados (cônjuge antes do membro)');
+})();
+
 console.log('\nALL PASS');
