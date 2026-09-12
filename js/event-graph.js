@@ -94,6 +94,9 @@
   }
 
   function layoutEvent(ids, family) {
+    var groups = deriveGroups(family);
+    var groupOf = {};
+    groups.forEach(function (g, gi) { g.ids.forEach(function (id) { groupOf[id] = gi; }); });
     var parentOf = {};
     family.filhos.forEach(function (f) {
       parentOf[f.filho] = f.pais.length === 2
@@ -122,6 +125,11 @@
         if (pair[0] === id && !placed[pair[1]] && gen[pair[1]] === 0) { slot[pair[1]] = nextSlot++; placed[pair[1]] = true; }
         if (pair[1] === id && !placed[pair[0]] && gen[pair[0]] === 0) { slot[pair[0]] = nextSlot++; placed[pair[0]] = true; }
       });
+      if (groupOf[id] !== undefined) {
+        groups[groupOf[id]].ids.forEach(function (m) {
+          if (!placed[m] && gen[m] === 0) { slot[m] = nextSlot++; placed[m] = true; }
+        });
+      }
     });
 
     var maxGen = 0;

@@ -131,4 +131,15 @@ const EventGraph = sandbox.EventGraph;
   console.log('ok: deriveGroups usa a etiqueta da primeira aresta em ordem de entrada');
 })();
 
+// --- Caso 10: membros de um grupo fraco ficam em slots consecutivos ---
+(function () {
+  const ids = ['pedro', 'x', 'andre', 'tiago']; // x é ruído no meio da ordem
+  const edges = [['pedro', 'andre', 'sibling', 'apóstolos'], ['andre', 'tiago', 'sibling', 'apóstolos']];
+  const family = EventGraph.deriveFamily(ids, edges);
+  const layout = EventGraph.layoutEvent(ids, family);
+  const groupSlots = ['pedro', 'andre', 'tiago'].map(function (id) { return layout.slot[id]; }).sort(function (a, b) { return a - b; });
+  assert.strictEqual(groupSlots[2] - groupSlots[0], 2, 'os 3 membros do grupo ocupam 3 slots contíguos');
+  console.log('ok: layoutEvent mantém os membros de um grupo fraco consecutivos');
+})();
+
 console.log('\nALL PASS');
