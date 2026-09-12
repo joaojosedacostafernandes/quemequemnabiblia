@@ -121,14 +121,15 @@ body.in-event h1 { font-size: 16px; }
 .char-orbit { position: relative; width: 100%; height: 100%; }
 #camLayer { position: absolute; inset: 0; transform-origin: 50% 50%; will-change: transform; }
 .char-lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-.cline { stroke: var(--lavender); stroke-width: 1.4; opacity: .7; }
-.cline.casamento { stroke-dasharray: 2 5; stroke: var(--pink); opacity: .8; }
-.cline.weak { stroke-dasharray: 1 5; opacity: .45; stroke-width: 1; }
-.union-node { position: absolute; width: 13px; height: 13px; transform: translate(-50%,-50%) rotate(45deg); background: radial-gradient(circle at 35% 30%, #ffe0ec, var(--pink) 60%, #a83a63 100%); box-shadow: 0 0 8px rgba(232,96,143,.5); }
+.cline { stroke: var(--lavender); stroke-width: 1.6; opacity: .75; stroke-linecap: round; }
+.cline.casamento { stroke: var(--pink); opacity: .85; stroke-width: 1.6; }
 .marriage-mark { position: absolute; transform: translate(-50%, -50%); color: var(--pink); font-size: 15px; line-height: 1; text-shadow: 0 0 8px rgba(232,96,143,.85); pointer-events: none; z-index: 1; }
+.rel-label { position: absolute; transform: translate(-50%, -50%); font-family: var(--font-ui); font-size: 10.5px; font-weight: 600; letter-spacing: .06em; color: var(--ink-dim); background: rgba(20,23,46,.72); padding: 1px 6px; border-radius: 999px; white-space: nowrap; pointer-events: none; z-index: 1; }
+.group-brace { position: absolute; height: 10px; border-top: 1.6px solid var(--lavender); border-left: 1.6px solid var(--lavender); border-right: 1.6px solid var(--lavender); border-radius: 6px 6px 0 0; opacity: .55; transform: translateY(46px); pointer-events: none; }
+.group-label { position: absolute; transform: translate(-50%, 60px); font-family: var(--font-ui); font-size: 11px; font-weight: 600; letter-spacing: .06em; color: var(--gold-soft); background: rgba(20,23,46,.72); padding: 1px 7px; border-radius: 999px; white-space: nowrap; pointer-events: none; z-index: 1; }
 .zoom-controls { position: absolute; bottom: 20px; right: 20px; z-index: 4; display: flex; flex-direction: column; gap: 8px; }
 
-.char { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; background: none; border: none; color: inherit; transform: translate(-50%, -50%); animation: charEnter .55s cubic-bezier(.34, 1.56, .64, 1) both, floatChar 7s ease-in-out infinite; }
+.char { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; background: none; border: none; color: inherit; transform: translate(-50%, -50%); animation: charEnter .55s cubic-bezier(.34, 1.56, .64, 1) both; }
 .char-orb { width: 56px; height: 56px; border-radius: 50%; overflow: hidden; background: radial-gradient(circle at 35% 30%, #efe9ff, var(--lavender) 58%, #362f5e 100%); box-shadow: 0 4px 14px rgba(0,0,0,.5), 0 0 14px 2px rgba(107,100,168,.4); transition: transform .18s cubic-bezier(.3,1.4,.5,1), box-shadow .18s ease; }
 .char-orb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .char.focused .char-orb { box-shadow: 0 0 0 3px var(--gold-soft), 0 0 24px 6px rgba(240,208,96,.55), 0 4px 14px rgba(0,0,0,.5); }
@@ -139,7 +140,6 @@ body.in-event h1 { font-size: 16px; }
    ligam ao meio do círculo (antes ancoravam no centro de círculo+nome, ~13px
    abaixo, e pareciam desligadas). */
 .char-label { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 8px; font-family: var(--font-display); font-size: 15px; font-weight: 600; color: #ece7f5; white-space: nowrap; text-shadow: 0 2px 6px rgba(0,0,0,.6); text-align: center; }
-@keyframes floatChar { 0%,100% { margin-top: 0; } 50% { margin-top: -7px; } }
 @keyframes charEnter {
   from { opacity: 0; transform: translate(-50%, -50%) scale(.3); }
   to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
