@@ -165,17 +165,23 @@
         if (!rowGroups[key]) { rowGroups[key] = []; order.push(key); }
         rowGroups[key].push(id);
       });
+      function parentSlotOf(key) {
+        if (key.charAt(0) === 'u') {
+          var pr = key.slice(2).split('|');
+          return (slot[pr[0]] + slot[pr[1]]) / 2;
+        }
+        return slot[key.slice(2)];
+      }
+      // Colocar os grupos de filhos pela ordem horizontal dos pais (não pela
+      // ordem dos dados) — assim cada filho desce por baixo dos seus pais e a
+      // barra de descendência nunca atravessa o ecrã para alcançar um filho
+      // colocado longe (ex: Jesus, filho de Maria/José, deixa de ser empurrado
+      // para a direita por João Batista).
+      order.sort(function (a, b) { return parentSlotOf(a) - parentSlotOf(b); });
       var cursor = 0;
       order.forEach(function (key) {
         var group = rowGroups[key];
-        var parentSlot;
-        if (key.charAt(0) === 'u') {
-          var pair = key.slice(2).split('|');
-          parentSlot = (slot[pair[0]] + slot[pair[1]]) / 2;
-        } else {
-          parentSlot = slot[key.slice(2)];
-        }
-        var startSlot = Math.max(cursor, parentSlot - (group.length - 1) / 2);
+        var startSlot = Math.max(cursor, parentSlotOf(key) - (group.length - 1) / 2);
         group.forEach(function (id, i) { slot[id] = startSlot + i; });
         cursor = startSlot + group.length;
       });

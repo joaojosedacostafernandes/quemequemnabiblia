@@ -160,4 +160,22 @@ const EventGraph = sandbox.EventGraph;
   console.log('ok: grupo com ambos os cônjuges presentes — membros no meio, cônjuges por fora');
 })();
 
+// --- Caso 13: filhos colocados por baixo dos pais (ordem dos pais), não pela
+// ordem dos dados — evita a barra de descendência a atravessar o ecrã
+// (caso Jesus/João Batista no Nascimento) ---
+(function () {
+  // dois casais no topo; nos dados o filho do casal DA DIREITA vem primeiro
+  const ids = ['pa', 'ma', 'pb', 'mb', 'filho_b', 'filho_a'];
+  const edges = [
+    ['pa', 'ma', 'spouse'], ['pb', 'mb', 'spouse'],
+    ['pa', 'filho_a', 'parent'], ['ma', 'filho_a', 'parent'],
+    ['pb', 'filho_b', 'parent'], ['mb', 'filho_b', 'parent']
+  ];
+  const family = EventGraph.deriveFamily(ids, edges);
+  const layout = EventGraph.layoutEvent(ids, family);
+  assert.ok(layout.slot['pa'] < layout.slot['pb'], 'casal A à esquerda de casal B');
+  assert.ok(layout.slot['filho_a'] < layout.slot['filho_b'], 'o filho segue a posição dos pais, não a ordem dos dados');
+  console.log('ok: filhos colocados por baixo dos pais (ordem dos pais, não dos dados)');
+})();
+
 console.log('\nALL PASS');
