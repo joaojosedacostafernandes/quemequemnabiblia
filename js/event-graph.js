@@ -136,16 +136,16 @@
     ids.forEach(function (id) { maxGen = Math.max(maxGen, gen[id]); });
     for (var g = 1; g <= maxGen; g++) {
       var rowIds = ids.filter(function (id) { return gen[id] === g; });
-      var groups = {}, order = [];
+      var rowGroups = {}, order = [];
       rowIds.forEach(function (id) {
         var p = parentOf[id];
         var key = p.type === 'uniao' ? 'u:' + [p.a, p.b].sort().join('|') : 's:' + p.id;
-        if (!groups[key]) { groups[key] = []; order.push(key); }
-        groups[key].push(id);
+        if (!rowGroups[key]) { rowGroups[key] = []; order.push(key); }
+        rowGroups[key].push(id);
       });
       var cursor = 0;
       order.forEach(function (key) {
-        var group = groups[key];
+        var group = rowGroups[key];
         var parentSlot;
         if (key.charAt(0) === 'u') {
           var pair = key.slice(2).split('|');
