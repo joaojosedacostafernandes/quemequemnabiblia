@@ -277,21 +277,47 @@
       charButtonsEl.appendChild(el);
     }
 
-    // Casamento: linha horizontal direta com ♥ a meio; o ponto médio é a
-    // origem de onde a descendência arranca.
+    // Casamento:
+    //  - casal lado a lado na mesma fila (sem orbe entre eles): linha
+    //    horizontal direta com ♥ a meio (caso comum; o ♥ é a origem da
+    //    descendência).
+    //  - casal afastado ou de gerações diferentes: percurso em ÂNGULO RETO por
+    //    uma faixa horizontal no intervalo logo abaixo do orbe mais alto do par
+    //    (descida/subida vertical + segmento horizontal), nunca em diagonal.
     var unions = {};
+    function heartAt(xPct, yPct) {
+      var mark = document.createElement('div');
+      mark.className = 'marriage-mark';
+      mark.style.left = xPct + '%'; mark.style.top = yPct + '%';
+      mark.innerHTML = '♥';
+      charButtonsEl.appendChild(mark);
+    }
     family.casais.forEach(function (pair) {
       var a = positions[pair[0]], b = positions[pair[1]];
       if (!a || !b) return;
       var key = pair.slice().sort().join('|');
-      var ux = (a.x + b.x) / 2, uy = (a.y + b.y) / 2;
-      unions[key] = { x: ux, y: uy };
-      drawSeg(a.x, a.y, b.x, b.y, 'casamento', layout.gen[pair[0]]);
-      var mark = document.createElement('div');
-      mark.className = 'marriage-mark';
-      mark.style.left = ux + '%'; mark.style.top = uy + '%';
-      mark.innerHTML = '♥';
-      charButtonsEl.appendChild(mark);
+      var gen = layout.gen[pair[0]];
+      var sameRow = Math.abs(a.y - b.y) < 0.01;
+      var loX = Math.min(a.x, b.x), hiX = Math.max(a.x, b.x);
+      var ux = (a.x + b.x) / 2;
+      var between = sameRow && ids.some(function (id) {
+        if (id === pair[0] || id === pair[1]) return false;
+        var p = positions[id];
+        return p && layout.gen[id] === gen && p.x > loX + 0.01 && p.x < hiX - 0.01;
+      });
+      if (sameRow && !between) {
+        unions[key] = { x: ux, y: a.y };
+        drawSeg(a.x, a.y, b.x, b.y, 'casamento', gen);
+        heartAt(ux, a.y);
+      } else {
+        var laneGap = Math.max(rowHeightPct * 0.4, 7);
+        var laneY = Math.min(a.y, b.y) + laneGap;
+        drawSeg(a.x, a.y, a.x, laneY, 'casamento', gen);
+        drawSeg(b.x, b.y, b.x, laneY, 'casamento', gen);
+        drawSeg(loX, laneY, hiX, laneY, 'casamento', gen);
+        unions[key] = { x: ux, y: laneY };
+        heartAt(ux, laneY);
+      }
     });
 
     // Descendência em ângulo reto, agrupada por unidade (casal ou progenitor
