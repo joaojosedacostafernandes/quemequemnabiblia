@@ -2128,7 +2128,7 @@
       "era": "Lucas 1–2, Mateus 1–2",
       "refs": "Lc 1",
       "resumo": "Prima de Maria, mãe de João Batista já em idade avançada.",
-      "contexto": "Sendo mulher de um sacerdote, Isabel pertencia a uma família ligada ao serviço do Templo de Jerusalém — o Evangelho de Lucas sublinha explicitamente a sua descendência de Aarão, o primeiro sumo sacerdote de Israel, dando-lhe um estatuto religioso próprio, independente do marido.",
+      "contexto": "Sendo mulher de um sacerdote, Isabel pertencia a uma família ligada ao serviço do Templo de Jerusalém — o Evangelho de Lucas sublinha explicitamente a sua descendência de Aarão, o primeiro sumo sacerdote de Israel, dando-lhe um estatuto religioso próprio, independente do marido. O seu filho nasce-lhe já em idade avançada, um nascimento inesperado como o de outras mães da Bíblia. Quando Maria a vai visitar, ainda as duas grávidas, o bebé de Isabel salta de alegria dentro dela ao sentir a presença de Jesus — é o encontro a que chamamos a Visitação.",
       "relacoes": null,
       "importancia": "O seu encontro com Maria (a Visitação) é o momento em que ela reconhece, pelo Espírito Santo, que a prima é \"a mãe do meu Senhor\".",
       "licao": "Reconhecer a presença de Deus na vida dos outros é também um sinal de fé profunda.",
@@ -2143,7 +2143,7 @@
       "era": "Lucas 1–2, Mateus 1–2",
       "refs": "Lc 1",
       "resumo": "Sacerdote, pai de João Batista.",
-      "contexto": "Os sacerdotes judeus estavam organizados em 24 turnos (ou \"classes\"), cada um servindo no Templo de Jerusalém por uma semana, duas vezes por ano. Zacarias pertencia à classe de Abias, e é precisamente durante o seu turno no santuário que recebe a visita do anjo Gabriel.",
+      "contexto": "Os sacerdotes judeus estavam organizados em 24 turnos (ou \"classes\"), cada um servindo no Templo de Jerusalém por uma semana, duas vezes por ano. Zacarias pertencia à classe de Abias, e é precisamente durante o seu turno no santuário que recebe a visita do anjo Gabriel. Quando volta a falar, depois de meses em silêncio, as suas primeiras palavras são um cântico de louvor a Deus, o Benedictus, que a Igreja ainda hoje reza todas as manhãs.",
       "relacoes": null,
       "importancia": "Fica mudo por duvidar do anúncio do anjo — só recupera a fala ao confirmar por escrito o nome do filho, João.",
       "licao": "A dúvida diante de uma promessa de Deus tem consequências, mas não impede o cumprimento do seu plano.",
@@ -2158,7 +2158,7 @@
       "era": "Lucas 1–2, Mateus 1–2",
       "refs": "Lc 1; 3; Mt 3; 14",
       "resumo": "Nasce a Isabel e Zacarias; mais tarde batiza Jesus no Jordão.",
-      "contexto": "Vestido de peles e alimentando-se de gafanhotos e mel silvestre, João Batista vivia como um asceta no deserto da Judeia — uma forma de vida que ecoava deliberadamente a do profeta Elias, e que o distinguia claramente dos sacerdotes urbanos e bem vestidos de Jerusalém.",
+      "contexto": "Vestido de peles e alimentando-se de gafanhotos e mel silvestre, João Batista vivia como um asceta no deserto da Judeia — uma forma de vida que ecoava deliberadamente a do profeta Elias, e que o distinguia claramente dos sacerdotes urbanos e bem vestidos de Jerusalém. A palavra \"batismo\" vem do grego e quer dizer simplesmente mergulho: João mergulhava no rio Jordão quem se queria arrepender e recomeçar. Firme e destemido, chegou a repreender o poderoso Herodes Antipas, e por isso acabou preso e morto. Sabias que muitos portugueses o festejam como São João? A sua festa é a 24 de junho, um dos dias mais compridos do ano — a partir daí os dias vão encurtando até ao Natal, e há uma leitura antiga muito bonita que vê nisto o próprio João a lembrar-nos que \"ele tem de crescer e eu diminuir\".",
       "relacoes": null,
       "importancia": "É o \"precursor\" anunciado pelos profetas — a sua missão é preparar o caminho antes de Jesus.",
       "licao": "Uma missão pode começar antes mesmo do nascimento — o próprio Zacarias profetiza sobre o papel do filho ainda bebé.",
@@ -3263,6 +3263,12 @@
       "santa_isabel",
       "affinity",
       "primas"
+    ],
+    [
+      "jesus",
+      "joao_batista",
+      "affinity",
+      "parentes (mães primas) · Lc 1:36"
     ],
     [
       "pedro",
@@ -4904,7 +4910,7 @@
           "refs": "Mt 3; Mc 1; Lc 3; Jo 1"
         }
       },
-      "contexto": "Depois da morte de Herodes, o Grande, o seu reino foi dividido entre os filhos — a Galileia, onde Jesus cresce, ficou sob o governo de Herodes Antipas, enquanto a Judeia (incluindo Jerusalém) passou a ser administrada diretamente por prefeitos romanos."
+      "contexto": "Depois da morte de Herodes, o Grande, o seu reino foi dividido entre os filhos — a Galileia, onde Jesus cresce, ficou sob o governo de Herodes Antipas, enquanto a Judeia (incluindo Jerusalém) passou a ser administrada diretamente por prefeitos romanos. João atraía multidões vindas de toda a região, que percorriam o deserto só para o ouvir e serem mergulhadas no rio Jordão em sinal de arrependimento."
     },
     {
       "id": "apostolos_ev",
