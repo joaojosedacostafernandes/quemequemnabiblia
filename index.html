@@ -10,15 +10,15 @@
 <body>
 <div class="app">
   <div class="topbar" id="topbar">
-    <div>
+    <div class="topbar-title">
       <span class="eyebrow">Génesis ao Apocalipse</span>
       <h1>Os Personagens da Bíblia</h1>
+      <p class="hint">Arrasta ou usa as setas para percorrer o tempo. Clica num acontecimento para mergulhares nele — dentro, clica nos personagens e navega entre pais, filhos e cônjuges.</p>
     </div>
     <div class="search-wrap">
       <input id="searchBox" class="search-box" type="text" placeholder="Procura uma personagem (ex: David, Rute, Jesus)..." autocomplete="off" aria-label="Procurar personagem">
       <div id="searchResults" class="search-results" hidden></div>
     </div>
-    <p class="hint">Arrasta ou usa as setas para percorrer o tempo. Clica num acontecimento para mergulhares nele — dentro, clica nos personagens e navega entre pais, filhos e cônjuges.</p>
   </div>
 
   <div class="stage">
@@ -59,7 +59,7 @@
       <div class="event-ambient" id="eventAmbient"></div>
       <div id="eventScroll">
         <div class="event-header">
-          <button class="back-btn" id="backBtn">&larr; Voltar à linha do tempo</button>
+          <button class="back-btn" id="backBtn"><span class="bk-arrow">&larr;</span> <span class="bk-text">Voltar à linha do tempo</span></button>
           <div class="event-icon" id="eventIcon"></div>
           <div class="event-title-wrap">
             <span class="event-title" id="eventTitle"></span>
