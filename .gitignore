@@ -1,2 +1,5 @@
 .superpowers/
 desktop.ini
+
+# Podcast: audio bruto fora do git (transcricoes .txt ficam versionadas)
+podcast/audio/
