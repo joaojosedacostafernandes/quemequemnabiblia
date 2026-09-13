@@ -152,6 +152,14 @@
 
     var maxGen = 0;
     ids.forEach(function (id) { maxGen = Math.max(maxGen, gen[id]); });
+    function placedSpouseSlot(id) {
+      var best = null;
+      family.casais.forEach(function (p) {
+        var o = p[0] === id ? p[1] : (p[1] === id ? p[0] : null);
+        if (o != null && slot[o] !== undefined) { if (best === null || slot[o] < best) best = slot[o]; }
+      });
+      return best;
+    }
     for (var g = 1; g <= maxGen; g++) {
       var rowIds = ids.filter(function (id) { return gen[id] === g; });
       var rowGroups = {}, order = [];
@@ -177,6 +185,16 @@
       var cursor = 0;
       order.forEach(function (key) {
         var group = rowGroups[key];
+        // Aproximar casais: ordenar os irmãos pelo slot do cônjuge já colocado
+        // (cônjuge mais à esquerda → irmão mais à esquerda), para o casal ficar
+        // adjacente em vez de ter outro irmão no meio.
+        group.sort(function (x, y) {
+          var sx = placedSpouseSlot(x), sy = placedSpouseSlot(y);
+          if (sx === null && sy === null) return 0;
+          if (sx === null) return 1;
+          if (sy === null) return -1;
+          return sx - sy;
+        });
         var startSlot = Math.max(cursor, parentSlotOf(key) - (group.length - 1) / 2);
         group.forEach(function (id, i) { slot[id] = startSlot + i; });
         cursor = startSlot + group.length;

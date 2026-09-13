@@ -194,4 +194,20 @@ const EventGraph = sandbox.EventGraph;
   console.log('ok: colocação de grupo independente da ordem dos dados (cônjuge antes do membro)');
 })();
 
+// --- Caso 15: um filho casado com alguém já colocado à esquerda é ordenado
+// para o lado desse cônjuge (fica adjacente), em vez de ter um irmão no meio ---
+(function () {
+  const ids = ['jesse', 'saul', 'david', 'jonatas', 'mical'];
+  const edges = [
+    ['jesse', 'david', 'parent'],
+    ['saul', 'jonatas', 'parent'], ['saul', 'mical', 'parent'],
+    ['david', 'mical', 'spouse']
+  ];
+  const family = EventGraph.deriveFamily(ids, edges);
+  const layout = EventGraph.layoutEvent(ids, family);
+  assert.strictEqual(Math.abs(layout.slot['david'] - layout.slot['mical']), 1,
+    'Mical (casada com David) fica adjacente ao David, não com o Jónatas no meio');
+  console.log('ok: filhos ordenados para aproximar o cônjuge já colocado');
+})();
+
 console.log('\nALL PASS');
