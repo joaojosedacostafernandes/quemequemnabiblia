@@ -55,7 +55,6 @@
     var scrollHintText = document.getElementById('scrollHintText');
     var panelClose = document.getElementById('panelClose');
 
-    document.getElementById('eventInfoToggle').addEventListener('click', function () { eventInfo.classList.toggle('collapsed'); });
     panelClose.addEventListener('click', function () {
       panel.classList.remove('open');
       document.querySelectorAll('.char.focused').forEach(function (el) { el.classList.remove('focused'); });
@@ -160,7 +159,7 @@
       timelineView.classList.add('diving');
       document.body.classList.add('in-event');
       scrollHintText.textContent = 'usa as setas para o acontecimento anterior/seguinte';
-      eventInfo.classList.add('collapsed');
+      eventInfo.scrollTop = 0;
       resetCam();
       currentEvent = ev;
       timelineApi.jumpTo(events.indexOf(ev));
