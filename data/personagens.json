@@ -2021,7 +2021,7 @@
       "era": "Ester",
       "refs": "Et 1–10",
       "resumo": "Jovem judia órfã, criada pelo primo Mardoqueu, torna-se rainha da Pérsia depois de um concurso de beleza em todo o império. Quando um decreto ameaça exterminar todos os judeus, arrisca a própria vida ao apresentar-se ao rei sem ser chamada — \"quem sabe se não foi para uma hora como esta que chegaste à realeza?\" (Et 4:14).",
-      "contexto": "É o único livro da Bíblia que nunca menciona Deus explicitamente — a sua presença lê-se nas \"coincidências\" da trama. A festa judaica do Purim celebra até hoje esta libertação.",
+      "contexto": "É o único livro da Bíblia que nunca menciona Deus explicitamente — a sua presença lê-se nas \"coincidências\" da trama. A festa judaica do Purim celebra até hoje esta libertação: sabias que os judeus leem o livro inteiro em voz alta e, sempre que ouvem o nome do vilão Amã, fazem barulho com matracas para o \"apagar\"? Os cristãos veem nesta rainha humilde e corajosa, que arrisca tudo para salvar o seu povo, uma imagem que faz lembrar Maria.",
       "relacoes": "Prima e filha adotiva de Mardoqueu. Casada com o rei Assuero.",
       "importancia": "Arrisca a própria vida para salvar o seu povo de um decreto de extermínio.",
       "licao": "Às vezes somos colocados onde estamos precisamente para um propósito maior do que imaginamos.",
@@ -2036,8 +2036,8 @@
       "era": "Ester",
       "refs": "Et 2–10",
       "resumo": "Oficial judeu da corte persa, cria a prima órfã Ester \"como sua própria filha\" (Et 2:7). Recusa-se a curvar-se perante Amã, descobre uma conspiração contra o rei, e acaba elevado a segundo homem mais poderoso do império depois da queda de Amã.",
-      "contexto": "O seu nome pode estar relacionado com o deus babilónico Marduk — uma prática comum entre judeus exilados, que adotavam nomes de sonoridade local sem abandonar a sua fé.",
-      "relacoes": "Primo e pai adotivo de Ester.",
+      "contexto": "O seu nome pode estar relacionado com o deus babilónico Marduk — uma prática comum entre judeus exilados, que adotavam nomes de sonoridade local sem abandonar a sua fé. Mardoqueu era da mesma família do antigo rei Saul, enquanto o vilão Amã descendia dos amalecitas, o povo inimigo que Saul enfrentara séculos antes — por isso, uma velha rivalidade parece regressar nesta história.",
+      "relacoes": "Primo e pai adotivo de Ester. Da família do rei Saul.",
       "importancia": "A sua recusa em curvar-se perante Amã acaba por salvar todo o povo judeu.",
       "licao": "Uma pequena recusa de consciência pode, no fim, mudar a história de um povo inteiro.",
       "citacao": "\"Quem sabe se não foi para uma hora como esta que chegaste à realeza?\" — Et 4:14"
@@ -3204,6 +3204,12 @@
       "assuero",
       "ester",
       "spouse"
+    ],
+    [
+      "mardoqueu",
+      "saul",
+      "affinity",
+      "da mesma família (benjamita) · Et 2:5"
     ],
     [
       "sao_jose",
