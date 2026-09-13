@@ -1296,6 +1296,23 @@
       "citacao": "\"Dá, pois, ao teu servo um coração entendido\" — 1 Rs 3:9"
     },
     {
+      "id": "job",
+      "nome": "Job",
+      "tipo": "patriarca",
+      "retrato": "assets/retratos/job.svg",
+      "tier": "standard",
+      "x": 2600,
+      "y": 560,
+      "era": "Job",
+      "refs": "Job 1–42",
+      "resumo": "Homem justo e íntegro que perde tudo o que tem — os bens, os filhos e a própria saúde — sem nunca ter feito mal a ninguém. No meio de um sofrimento imenso, questiona Deus com toda a honestidade, sem deixar de confiar nele — e, no fim, Deus responde-lhe e a sua vida é restaurada.",
+      "contexto": "O livro de Job é um dos livros sapienciais (de sabedoria) da Bíblia e não conta uma história presa a um tempo ou a um lugar certos: Job podia ser qualquer pessoa, em qualquer época. Quando as desgraças caem sobre ele, três amigos vêm consolá-lo, mas acabam por lhe dizer que, se sofre tanto, é porque deve ter feito algo de errado — Job recusa essa ideia, porque sabe que foi sempre um homem bom. No fim, Deus aparece e não lhe dá razões nem explicações: mostra-lhe antes a grandeza de toda a criação e faz-lhe sentir que está perto dele. Job percebe então que não precisa de compreender tudo para confiar em Deus. Da sua história nasceu até uma expressão que ainda hoje usamos: \"ter a paciência de Job\".",
+      "relacoes": "Sem relações familiares registadas no grafo — homem justo das terras de Uz, apresentado à semelhança de Noé e de Abraão.",
+      "importancia": "Mostra que o sofrimento nem sempre é um castigo, e que se pode ser sincero com Deus mesmo no meio da dor.",
+      "licao": "Podemos ser honestos com Deus quando sofremos: ele está perto de nós, mesmo quando não entendemos porquê.",
+      "citacao": "\"O Senhor deu, o Senhor tirou; bendito seja o nome do Senhor\" — Job 1:21"
+    },
+    {
       "id": "rainha_seba",
       "nome": "Rainha de Sabá",
       "tipo": "estrangeiro",
@@ -4153,6 +4170,34 @@
         }
       },
       "contexto": "Sob Salomão (por volta de 970-930 a.C.), Israel beneficia de rotas comerciais internacionais — o comércio com a Fenícia (o rei Hirão de Tiro) traz a madeira de cedro para o Templo, e a visita da Rainha de Sabá reflete ligações comerciais que chegavam até à Arábia. Sabias que Salomão chegou a casar com a filha do faraó do Egito? Era um sinal de como o seu reino passou a ser respeitado por reis de terras muito distantes."
+    },
+    {
+      "id": "job_ev",
+      "nome": "Job, o homem justo que sofre",
+      "era": "Job",
+      "tint": "#8891a8",
+      "desc": "Job é um homem bom que perde tudo sem ter feito mal e pergunta a Deus, com toda a sinceridade, porque sofre. Os amigos dizem-lhe que o sofrimento é sempre um castigo, mas Deus mostra-lhe algo muito maior.",
+      "importancia": "O livro de Job enfrenta de frente a pergunta mais difícil de todas: porque sofrem as pessoas boas?",
+      "mensagem": "Podemos falar com Deus com toda a honestidade, mesmo quando estamos tristes ou revoltados — ele não se afasta de quem sofre.",
+      "passagens": [
+        "Job 1–2 — Job perde tudo o que tem",
+        "Job 3–37 — o longo debate com os três amigos",
+        "Job 38–41 — Deus responde a partir da tempestade",
+        "Job 42 — a vida de Job é restaurada"
+      ],
+      "personagens": [
+        "job"
+      ],
+      "notas": {
+        "job": {
+          "resumo": "Homem justo que sofre muito e questiona Deus com honestidade.",
+          "importancia": "Mostra que o sofrimento nem sempre é castigo e que Deus está perto de quem sofre.",
+          "licao": "Podemos ser sinceros com Deus na nossa dor — ele não nos abandona.",
+          "citacao": "\"O Senhor deu, o Senhor tirou; bendito seja o nome do Senhor\" — Job 1:21",
+          "refs": "Job 1–42"
+        }
+      },
+      "contexto": "Job é uma das figuras dos livros de sabedoria da Bíblia, escritos em poesia para nos ajudar a pensar sobre a vida. A resposta de Deus a Job não é uma lista de explicações: é um passeio maravilhado pela criação — o mar, as estrelas, os animais selvagens — que faz Job perceber como o mundo é muito maior do que aquilo que ele consegue compreender. E, mesmo sendo tão grande, esse Deus faz-se próximo de um só homem que sofre."
     },
     {
       "id": "divisao_ev",
