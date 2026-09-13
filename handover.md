@@ -58,7 +58,24 @@ A pedido do utilizador, para **transcrever e integrar** conteúdo no projeto. Pl
 
 **Transcrição:** máquina tem **NVIDIA RTX 5070** (CUDA) e `faster-whisper 1.2.1` no Python312. Script novo `scripts/transcribe-podcast.py` (faster-whisper, GPU `cuda float16`, modelo `large-v3`, **deteção automática de idioma**, escreve `.txt` + `.srt`, salta já-feitos; **força UTF-8 no stdout** senão os nomes com `？` rebentam no cp1252 do Windows). Correr: `PYTHONUTF8=1 python scripts/transcribe-podcast.py podcast/audio podcast/transcricoes --model large-v3`.
 
-**Onde ficou:** `podcast/audio/` (34 mp3, ~675 MB, **gitignored**) e `podcast/transcricoes/` (`.txt`+`.srt`, versionáveis). ⚠️ **Atenção na integração:** os áudios têm **anúncios** (ex: spot da FNAC no início) que aparecem na transcrição — cortar na curadoria. **Por fazer:** curar/limpar as transcrições e integrar o conteúdo (contexto/resumos) no `data/personagens.json` — ronda futura de conteúdo.
+**Onde ficou:** `podcast/audio/` (34 mp3, ~675 MB) e `podcast/transcricoes/` (`.txt`+`.srt`). ⚠️ **A pasta `podcast/` inteira está `gitignored`** — as transcrições são material de pesquisa derivado de conteúdo com direitos e **nunca devem ser publicadas** no site (se o repo for a origem do deploy, publicá-las seria republicar o podcast). Os áudios têm **anúncios** (ex: spot da FNAC) que aparecem na transcrição.
+
+### Enriquecimento de conteúdo a partir do podcast — programa por lotes CONCLUÍDO (2026-09-13)
+
+Decisão do utilizador: usar as transcrições **só como pesquisa**, **sem nunca referenciar o podcast nem copiar a sua forma** — apenas factos (domínio público), reescritos de raiz na voz do projeto, tom de catequese infantil. Curiosidades **tecidas no campo `contexto`** existente (sem mudar o motor). Spec: `docs/superpowers/specs/2026-09-13-podcast-enriquecimento-proposta.md`; plano: `docs/superpowers/plans/2026-09-13-enriquecimento-podcast.md`.
+
+Executado por **5 lotes por era**, cada um num worktree isolado com o padrão **subagente (opus) → revisão anti-cópia + doutrinal (opus) → merge**:
+- **Lote B — Juízes a Reis:** Ester (Purim, a forca de Amã, Ester↔Maria), Josué, Sansão/Dalila, Rute/Noemi (Rute↔Abraão, genealogia de Jesus), David/Salomão (Bom Pastor, Salmos). Nova ligação `mardoqueu↔saul` (afinidade, benjamitas).
+- **Lote A — Origens & Patriarcas:** Noé/dilúvio (arco = sinal de paz), Caim/Abel, criação (Adão/Eva), Abraão e família, o nome de Deus no Êxodo. (A revisão apanhou 3 frases próximas da fonte → reescritas.)
+- **Lote C — Profetas & Sabedoria:** Jonas; **nova personagem Job** (ficha + retrato `assets/retratos/job.svg` + evento `job_ev` navegável, inserido após `salomao_ev`); "o que é um profeta" tecido em Isaías/Jeremias/Amós; nota sóbria do Cântico dos Cânticos em Salomão.
+- **Lote D — NT Evangelhos:** Maria/José, João Batista/Isabel/Zacarias (+`batismo_ev`), Jesus (historicidade a reforçar a fé; parábolas), Maria Madalena (mito da prostituta corrigido; "apóstola dos apóstolos"; +`ressurreicao_ev`), Pedro, Mateus/João. Nova ligação `jesus↔joao_batista` (afinidade, mães primas, Lc 1:36).
+- **Lote E — Atos, Paulo & Apocalipse:** Paulo (perseguidor→conversão→missionário→cartas, +`paulo_ev`); Apocalipse enquadrado como **livro de esperança** (não fim-do-mundo assustador; +`apocalipse_ev`).
+
+Estado final dos dados: **152 personagens, 41 acontecimentos, 132 ligações**; `node scripts/test-event-graph.js` → ALL PASS; integridade do JSON verificada (sem arestas órfãs). Cada lote passou por revisão anti-cópia dedicada (opus) — factos de domínio público podem recorrer, mas nenhuma frase é reconhecível como da fonte; o produto nunca menciona o podcast.
+
+**Filtragem deliberada para catequese infantil** (registada nos relatórios de lote): removido o registo adulto/crítico das transcrições — debates de historicidade que semeiam dúvida, herem/violência, nacionalismo, temas sexuais (Cânticos, Sansão), embriaguez de Noé, ceticismo sobre a Ressurreição, sensacionalismo do fim-do-mundo no Apocalipse.
+
+**Por fazer (rondas futuras):** (1) a Isabel rever/afinar o conteúdo integrado (ex.: o `contexto` do Jesus ficou denso); (2) uma **secção de "perguntas"** a partir dos 13 episódios "Perguntas dos ouvintes" (adiada); (3) **ronda-irmã dos deuterocanónicos** Tobias/Judite/Macabeus — **a partir da Escritura, não do podcast** (o podcast não os cobre).
 
 ## O projeto
 
