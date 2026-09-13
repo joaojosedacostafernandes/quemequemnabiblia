@@ -1,5 +1,7 @@
 .superpowers/
 desktop.ini
 
-# Podcast: audio bruto fora do git (transcricoes .txt ficam versionadas)
-podcast/audio/
+# Podcast: material de pesquisa (audio + transcricoes) fora do git.
+# Sao derivados de conteudo com direitos e NUNCA devem ser publicados no site;
+# o produto usa so factos reescritos, sem referenciar a fonte.
+podcast/
