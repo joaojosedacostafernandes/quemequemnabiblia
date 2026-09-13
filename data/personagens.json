@@ -1289,11 +1289,28 @@
       "era": "1 Reis · Salomão",
       "refs": "1 Rs 1–11",
       "resumo": "Filho de David e Betsabé, sucede ao pai e pede a Deus sabedoria em vez de riqueza ou longa vida. Constrói o primeiro Templo de Jerusalém e leva o reino de Israel ao auge da sua riqueza e prestígio internacional — mas os seus muitos casamentos políticos acabam por desviar o seu coração.",
-      "contexto": "A construção do Templo (1 Rs 6–8) torna-se o centro religioso e político de Israel durante séculos, e a sua fama de sabedoria, incluindo a visita da Rainha de Sabá, ecoa em tradições muito além do texto bíblico. Sabias como a sabedoria de Salomão ficou famosa? Duas mulheres discutiam por um bebé, cada uma dizendo ser a mãe; Salomão fingiu que ia dividir a criança ao meio — e a verdadeira mãe, para salvar o filho, preferiu logo entregá-lo à outra. Foi assim que Salomão descobriu quem era a mãe verdadeira (1 Rs 3).",
+      "contexto": "A construção do Templo (1 Rs 6–8) torna-se o centro religioso e político de Israel durante séculos, e a sua fama de sabedoria, incluindo a visita da Rainha de Sabá, ecoa em tradições muito além do texto bíblico. Sabias como a sabedoria de Salomão ficou famosa? Duas mulheres discutiam por um bebé, cada uma dizendo ser a mãe; Salomão fingiu que ia dividir a criança ao meio — e a verdadeira mãe, para salvar o filho, preferiu logo entregá-lo à outra. Foi assim que Salomão descobriu quem era a mãe verdadeira (1 Rs 3). A tradição liga também a Salomão o Cântico dos Cânticos, um belíssimo poema de amor que faz parte da Bíblia e que os judeus e os cristãos leem como uma imagem do amor de Deus pelo seu povo e do amor de Cristo pela sua Igreja.",
       "relacoes": "Filho de David e Betsabé. Pai de Roboão.",
       "importancia": "Leva Israel ao auge da sua riqueza e prestígio internacional.",
       "licao": "Pedir sabedoria antes de riqueza mostra onde está realmente o nosso coração.",
       "citacao": "\"Dá, pois, ao teu servo um coração entendido\" — 1 Rs 3:9"
+    },
+    {
+      "id": "job",
+      "nome": "Job",
+      "tipo": "patriarca",
+      "retrato": "assets/retratos/job.svg",
+      "tier": "standard",
+      "x": 2600,
+      "y": 560,
+      "era": "Job",
+      "refs": "Job 1–42",
+      "resumo": "Homem justo e íntegro que perde tudo o que tem — os bens, os filhos e a própria saúde — sem nunca ter feito mal a ninguém. No meio de um sofrimento imenso, questiona Deus com toda a honestidade, sem deixar de confiar nele — e, no fim, Deus responde-lhe e a sua vida é restaurada.",
+      "contexto": "O livro de Job é um dos livros sapienciais (de sabedoria) da Bíblia e não conta uma história presa a um tempo ou a um lugar certos: Job podia ser qualquer pessoa, em qualquer época. Quando as desgraças caem sobre ele, três amigos vêm consolá-lo, mas acabam por lhe dizer que, se sofre tanto, é porque deve ter feito algo de errado — Job recusa essa ideia, porque sabe que foi sempre um homem bom. No fim, Deus aparece e não lhe dá razões nem explicações: mostra-lhe antes a grandeza de toda a criação e faz-lhe sentir que está perto dele. Job percebe então que não precisa de compreender tudo para confiar em Deus. Da sua história nasceu até uma expressão que ainda hoje usamos: \"ter a paciência de Job\".",
+      "relacoes": "Sem relações familiares registadas no grafo — homem justo das terras de Uz, apresentado à semelhança de Noé e de Abraão.",
+      "importancia": "Mostra que o sofrimento nem sempre é um castigo, e que se pode ser sincero com Deus mesmo no meio da dor.",
+      "licao": "Podemos ser honestos com Deus quando sofremos: ele está perto de nós, mesmo quando não entendemos porquê.",
+      "citacao": "\"O Senhor deu, o Senhor tirou; bendito seja o nome do Senhor\" — Job 1:21"
     },
     {
       "id": "rainha_seba",
@@ -1510,7 +1527,7 @@
       "era": "Isaías",
       "refs": "Is 1–66",
       "resumo": "Profeta de Judá, com um ministério que atravessa os reinados de Uzias a Ezequias (cerca de 740–700 a.C.), chamado numa visão do templo — \"Aqui estou, envia-me\" (Is 6:8). Anuncia tanto o juízo sobre a infidelidade de Judá como a esperança de um Messias e de um \"resto\" fiel que sobrevive.",
-      "contexto": "Escreve num período de crescente ameaça assíria — o Reino de Israel (norte) cai em 722 a.C. durante o seu ministério, e Judá vive sob a sombra constante de ser o próximo alvo. Grande parte da tradição cristã lê as suas profecias messiânicas (como Is 7:14 e 53) à luz de Jesus Cristo.",
+      "contexto": "Escreve num período de crescente ameaça assíria — o Reino de Israel (norte) cai em 722 a.C. durante o seu ministério, e Judá vive sob a sombra constante de ser o próximo alvo. Grande parte da tradição cristã lê as suas profecias messiânicas (como Is 7:14 e 53) à luz de Jesus Cristo. Sabias o que faz, na verdade, um profeta? Não é alguém que adivinha o futuro como um vidente: é sobretudo um porta-voz de Deus, alguém que ajuda o povo a compreender o que Deus lhe quer dizer em cada momento.",
       "relacoes": "Casado com \"a profetisa\" (Is 8:3), sem nome próprio no texto. Pai de dois filhos com nomes simbólicos, Sear-Jasube e Maer-Chalal-Hás-Baz. Contemporâneo dos reis Uzias, Acaz e Ezequias.",
       "importancia": "Grande parte da tradição cristã lê as suas profecias messiânicas à luz de Jesus Cristo.",
       "licao": "Responder \"aqui estou, envia-me\" a Deus pode significar uma missão de décadas, não de um dia.",
@@ -1578,7 +1595,7 @@
       "era": "Jeremias",
       "refs": "Jr 1–52",
       "resumo": "Profeta de Judá durante os últimos reis antes do exílio, chamado por Deus ainda muito jovem (\"antes de te formar no ventre, eu te conheci\", Jr 1:5). Anuncia com dor a destruição de Jerusalém como castigo pela infidelidade do povo, sendo perseguido, preso e quase morto por isso — mas também promete uma \"nova aliança\" escrita no coração (Jr 31:31-34).",
-      "contexto": "É testemunha direta da queda de Jerusalém e do início do exílio babilónico em 587 a.C., o momento mais traumático da história de Israel antes de Cristo. Deus manda-o não casar nem ter filhos (Jr 16:2), um sinal profético do desastre que se aproxima — ao contrário de Isaías, que teve mulher e filhos.",
+      "contexto": "É testemunha direta da queda de Jerusalém e do início do exílio babilónico em 587 a.C., o momento mais traumático da história de Israel antes de Cristo. Deus manda-o não casar nem ter filhos (Jr 16:2), um sinal profético do desastre que se aproxima — ao contrário de Isaías, que teve mulher e filhos. A vida de Jeremias mostra bem o que era ser profeta: não era prever o futuro por curiosidade, mas falar em nome de Deus mesmo quando a mensagem era difícil de ouvir, e chamar o povo a voltar-se de novo para ele.",
       "relacoes": "Sem relações familiares registadas no grafo. Baruque é o seu escriba fiel. Contemporâneo dos reis Josias, Joaquim, Sedequias e do governador Godolias.",
       "importancia": "É testemunha direta da queda de Jerusalém e do início do exílio babilónico, o momento mais traumático da história de Israel antes de Cristo.",
       "licao": "Anunciar uma verdade difícil, mesmo perseguido por isso, pode ser exatamente o que Deus pede de nós.",
@@ -1697,7 +1714,7 @@
       "era": "Amós",
       "refs": "Am 1–9; 7:10-17",
       "resumo": "Pastor e cultivador de sicómoros de Tecoa, chamado por Deus para profetizar contra as injustiças sociais do Reino de Israel (norte) — a exploração dos pobres, a corrupção dos ricos, um culto religioso vazio sem justiça verdadeira.",
-      "contexto": "É um dos primeiros profetas a insistir que Deus se preocupa tanto com a justiça social como com o culto religioso correto — uma mensagem repetida por quase todos os profetas depois dele.",
+      "contexto": "É um dos primeiros profetas a insistir que Deus se preocupa tanto com a justiça social como com o culto religioso correto — uma mensagem repetida por quase todos os profetas depois dele. Amós ajuda a perceber outra faceta do que é um profeta: mais do que adivinhar sortes, um profeta dá voz ao que Deus pede — e o que Deus pede inclui defender os mais pobres e denunciar quem os trata mal.",
       "relacoes": "Confrontado pelo sacerdote Amasias, que lhe manda deixar o santuário de Betel.",
       "importancia": "É um dos primeiros profetas a insistir que Deus se preocupa tanto com a justiça social como com o culto religioso correto.",
       "licao": "A fé verdadeira mostra-se em como tratamos os mais pobres, não só no que dizemos acreditar.",
@@ -1748,7 +1765,7 @@
       "era": "Jonas",
       "refs": "Jn 1–4",
       "resumo": "Profeta que tenta fugir da missão de anunciar o castigo de Deus a Nínive, capital do império assírio, e é engolido por um grande peixe durante três dias antes de ser lançado em terra. Quando finalmente prega, toda a cidade se converte — mas Jonas fica aborrecido por Deus ter perdoado os seus inimigos.",
-      "contexto": "É um livro cheio de humor e ironia, usado para ensinar que a misericórdia de Deus não tem fronteiras — alcança até os maiores inimigos de Israel, para grande desagrado do próprio profeta.",
+      "contexto": "É um livro cheio de humor e ironia, usado para ensinar que a misericórdia de Deus não tem fronteiras — alcança até os maiores inimigos de Israel, para grande desagrado do próprio profeta. Sabias que Jonas foi um profeta que tentou fugir de Deus? Em vez de ir a Nínive, apanhou um barco para o lado contrário — e acabou dentro de um grande peixe (a Bíblia fala de um peixe enorme, não de uma baleia) durante três dias, até Deus lhe dar uma segunda oportunidade. Quando finalmente pregou, houve uma grande surpresa: a cidade inteira arrependeu-se, do rei ao mais pequeno. Nínive era uma cidade estrangeira e inimiga, e mesmo assim Deus quis perdoá-la — porque o seu amor é para toda a gente, e não só para um povo. Mais tarde, Jesus fala do \"sinal de Jonas\": tal como Jonas esteve três dias dentro do peixe, também ele havia de ressuscitar ao terceiro dia.",
       "relacoes": "Sem relações familiares registadas no grafo.",
       "importancia": "O livro ensina que a misericórdia de Deus não tem fronteiras — alcança até os maiores inimigos de Israel.",
       "licao": "A misericórdia de Deus pode incomodar-nos quando alcança quem julgamos não a merecer.",
@@ -4153,6 +4170,34 @@
         }
       },
       "contexto": "Sob Salomão (por volta de 970-930 a.C.), Israel beneficia de rotas comerciais internacionais — o comércio com a Fenícia (o rei Hirão de Tiro) traz a madeira de cedro para o Templo, e a visita da Rainha de Sabá reflete ligações comerciais que chegavam até à Arábia. Sabias que Salomão chegou a casar com a filha do faraó do Egito? Era um sinal de como o seu reino passou a ser respeitado por reis de terras muito distantes."
+    },
+    {
+      "id": "job_ev",
+      "nome": "Job, o homem justo que sofre",
+      "era": "Job",
+      "tint": "#8891a8",
+      "desc": "Job é um homem bom que perde tudo sem ter feito mal e pergunta a Deus, com toda a sinceridade, porque sofre. Os amigos dizem-lhe que o sofrimento é sempre um castigo, mas Deus mostra-lhe algo muito maior.",
+      "importancia": "O livro de Job enfrenta de frente a pergunta mais difícil de todas: porque sofrem as pessoas boas?",
+      "mensagem": "Podemos falar com Deus com toda a honestidade, mesmo quando estamos tristes ou revoltados — ele não se afasta de quem sofre.",
+      "passagens": [
+        "Job 1–2 — Job perde tudo o que tem",
+        "Job 3–37 — o longo debate com os três amigos",
+        "Job 38–41 — Deus responde a partir da tempestade",
+        "Job 42 — a vida de Job é restaurada"
+      ],
+      "personagens": [
+        "job"
+      ],
+      "notas": {
+        "job": {
+          "resumo": "Homem justo que sofre muito e questiona Deus com honestidade.",
+          "importancia": "Mostra que o sofrimento nem sempre é castigo e que Deus está perto de quem sofre.",
+          "licao": "Podemos ser sinceros com Deus na nossa dor — ele não nos abandona.",
+          "citacao": "\"O Senhor deu, o Senhor tirou; bendito seja o nome do Senhor\" — Job 1:21",
+          "refs": "Job 1–42"
+        }
+      },
+      "contexto": "Job é uma das figuras dos livros de sabedoria da Bíblia, escritos em poesia para nos ajudar a pensar sobre a vida. A resposta de Deus a Job não é uma lista de explicações: é um passeio maravilhado pela criação — o mar, as estrelas, os animais selvagens — que faz Job perceber como o mundo é muito maior do que aquilo que ele consegue compreender. E, mesmo sendo tão grande, esse Deus faz-se próximo de um só homem que sofre."
     },
     {
       "id": "divisao_ev",
