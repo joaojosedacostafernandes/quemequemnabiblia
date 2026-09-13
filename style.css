@@ -52,7 +52,7 @@ body.in-event h1 { font-size: 16px; }
 @keyframes drift1 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(3vw,2vh); } }
 @keyframes drift2 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-3vw,-2vh); } }
 
-#timelineView { position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; transition: opacity .65s ease, transform .65s cubic-bezier(.3,.7,.4,1); transform-style: preserve-3d; cursor: grab; touch-action: none; }
+#timelineView { position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; transition: opacity .65s ease, transform .65s cubic-bezier(.3,.7,.4,1); transform-style: preserve-3d; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
 #timelineView.dragging { cursor: grabbing; }
 #timelineView.diving { opacity: 0; pointer-events: none; }
 .timeline-track { position: relative; width: 100%; height: 1px; }
@@ -116,7 +116,7 @@ body.in-event h1 { font-size: 16px; }
 .event-info-block ul { margin: 0; padding-left: 16px; font-family: var(--font-ui); font-size: 11.5px; line-height: 1.6; color: var(--ink-dim); }
 
 .event-body { position: relative; z-index: 1; flex: 1; min-height: 0; display: flex; }
-.char-field { flex: 1; position: relative; overflow: hidden; cursor: grab; touch-action: none; }
+.char-field { flex: 1; position: relative; overflow: hidden; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
 .char-field.panning { cursor: grabbing; }
 .char-orbit { position: relative; width: 100%; height: 100%; }
 #camLayer { position: absolute; inset: 0; transform-origin: 50% 50%; will-change: transform; }
