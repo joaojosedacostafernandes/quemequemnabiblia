@@ -93,111 +93,145 @@
     return groups;
   }
 
+  // Layout em árvore genealógica "normal":
+  //  - cônjuges partilham o mesmo nível e ficam LADO A LADO (cadeia de
+  //    casamentos), por isso a linha de casamento é sempre curta;
+  //  - os membros de uma chaveta fraca (irmãos sem pai, afinidade,
+  //    companheiros) ficam contíguos — encadeia-se cada cluster sobre as
+  //    arestas de casamento E as fracas num único caminho (ex:
+  //    José—Maria—Isabel—Zacarias: as "primas" no meio, maridos por fora);
+  //  - o nível de um grupo é o caminho mais longo no DAG de grupos (um filho
+  //    fica um nível abaixo do máximo dos pais); os filhos são colocados por
+  //    baixo dos pais (ordem pela posição real dos pais), para a descendência
+  //    não atravessar o ecrã.
   function layoutEvent(ids, family) {
-    var groups = deriveGroups(family);
-    var parentOf = {};
+    var idSet = {};
+    ids.forEach(function (id) { idSet[id] = true; });
+
+    // grupos de cônjuges (união por casamento) — partilham nível
+    var uf = {};
+    ids.forEach(function (id) { uf[id] = id; });
+    function find(x) { return uf[x] === x ? x : (uf[x] = find(uf[x])); }
+    function union(a, b) { uf[find(a)] = find(b); }
+    family.casais.forEach(function (p) { if (idSet[p[0]] && idSet[p[1]]) union(p[0], p[1]); });
+    var groupOf = {};
+    ids.forEach(function (id) { groupOf[id] = find(id); });
+    var gmembers = {};
+    ids.forEach(function (id) { (gmembers[groupOf[id]] = gmembers[groupOf[id]] || []).push(id); });
+
+    var parentsOf = {};
+    family.filhos.forEach(function (f) { parentsOf[f.filho] = f.pais.slice(); });
+
+    // nível de cada grupo = caminho mais longo no DAG de grupos
+    var gparents = {};
+    Object.keys(gmembers).forEach(function (g) { gparents[g] = {}; });
     family.filhos.forEach(function (f) {
-      parentOf[f.filho] = f.pais.length === 2
-        ? { type: 'uniao', a: f.pais[0], b: f.pais[1] }
-        : { type: 'unico', id: f.pais[0] };
+      var cg = groupOf[f.filho];
+      f.pais.forEach(function (p) { if (idSet[p] && groupOf[p] !== cg) gparents[cg][groupOf[p]] = true; });
     });
+    var level = {};
+    function computeLevel(g, stack) {
+      if (level[g] !== undefined) return level[g];
+      if (stack.indexOf(g) !== -1) return 0; // guarda contra ciclos
+      var ps = Object.keys(gparents[g]);
+      if (!ps.length) return level[g] = 0;
+      stack.push(g);
+      var m = 0;
+      ps.forEach(function (pg) { m = Math.max(m, computeLevel(pg, stack) + 1); });
+      stack.pop();
+      return level[g] = m;
+    }
+    Object.keys(gmembers).forEach(function (g) { computeLevel(g, []); });
     var gen = {};
-    function computeGen(id, path) {
-      if (gen[id] !== undefined) return gen[id];
-      if (path.indexOf(id) !== -1) return gen[id] = 0;
-      path = path.concat([id]);
-      var p = parentOf[id];
-      if (!p) return gen[id] = 0;
-      var pg = p.type === 'uniao' ? Math.max(computeGen(p.a, path), computeGen(p.b, path)) : computeGen(p.id, path);
-      return gen[id] = pg + 1;
-    }
-    ids.forEach(function (id) { computeGen(id, []); });
-
-    var slot = {};
-    var nextSlot = 0;
-    var placed = {};
-    // Colocação da geração 0, INDEPENDENTE da ordem dos dados:
-    //  1) grupos fracos primeiro, para um membro nunca ser "consumido" como
-    //     cônjuge de um id sem grupo que apareça antes no JSON (senão a chaveta
-    //     partia-se). Membros no meio, cônjuges a flanquear por fora
-    //     (ex: [José, Maria, Isabel, Zacarias] — as "primas" no meio).
-    //  2) o resto da geração 0, na ordem dos dados, cada um com os seus
-    //     cônjuges adjacentes (inclui poligamia: Abraão com Sara e Agar).
-    function spousesOf(id) {
-      var out = [];
-      family.casais.forEach(function (p) {
-        var o = p[0] === id ? p[1] : (p[1] === id ? p[0] : null);
-        if (o && gen[o] === 0 && !placed[o]) out.push(o);
-      });
-      return out;
-    }
-    function placeCluster(list) { list.forEach(function (m) { slot[m] = nextSlot++; }); }
-    groups.forEach(function (grp) {
-      var members = grp.ids.filter(function (m) { return gen[m] === 0 && !placed[m]; });
-      if (!members.length) return;
-      members.forEach(function (m) { placed[m] = true; });
-      var left = spousesOf(members[0]);
-      left.forEach(function (s) { placed[s] = true; });
-      var right = members.length > 1 ? spousesOf(members[members.length - 1]) : [];
-      right.forEach(function (s) { placed[s] = true; });
-      placeCluster(left.concat(members).concat(right));
-    });
-    ids.filter(function (id) { return gen[id] === 0; }).forEach(function (id) {
-      if (placed[id]) return;
-      placed[id] = true;
-      var sp = spousesOf(id);
-      sp.forEach(function (s) { placed[s] = true; });
-      placeCluster([id].concat(sp));
-    });
-
+    ids.forEach(function (id) { gen[id] = level[groupOf[id]]; });
     var maxGen = 0;
-    ids.forEach(function (id) { maxGen = Math.max(maxGen, gen[id]); });
-    function placedSpouseSlot(id) {
-      var best = null;
-      family.casais.forEach(function (p) {
-        var o = p[0] === id ? p[1] : (p[1] === id ? p[0] : null);
-        if (o != null && slot[o] !== undefined) { if (best === null || slot[o] < best) best = slot[o]; }
-      });
-      return best;
+    ids.forEach(function (id) { if (gen[id] > maxGen) maxGen = gen[id]; });
+
+    // arestas fracas entre grupos diferentes no MESMO nível
+    var weakPairs = [];
+    family.irmaos.forEach(function (w) {
+      var a = w[0], b = w[1];
+      if (!idSet[a] || !idSet[b]) return;
+      if (groupOf[a] === groupOf[b]) return;
+      if (level[groupOf[a]] !== level[groupOf[b]]) return;
+      weakPairs.push([a, b]);
+    });
+
+    // cluster: grupos de cônjuges ligados por arestas fracas (união por grupo)
+    var guf = {};
+    Object.keys(gmembers).forEach(function (g) { guf[g] = g; });
+    function gfind(x) { return guf[x] === x ? x : (guf[x] = gfind(guf[x])); }
+    weakPairs.forEach(function (w) { guf[gfind(groupOf[w[0]])] = gfind(groupOf[w[1]]); });
+    var clusterGroups = {};
+    Object.keys(gmembers).forEach(function (g) { var r = gfind(g); (clusterGroups[r] = clusterGroups[r] || []).push(g); });
+
+    // ordenar um cluster como um único caminho sobre arestas de casamento +
+    // fracas — casais adjacentes E membros de chaveta adjacentes
+    function orderCluster(groupIds) {
+      var memberSet = {};
+      groupIds.forEach(function (g) { gmembers[g].forEach(function (m) { memberSet[m] = true; }); });
+      var nodes = Object.keys(memberSet);
+      if (nodes.length <= 1) return nodes;
+      var adj = {};
+      nodes.forEach(function (n) { adj[n] = []; });
+      family.casais.forEach(function (p) { if (memberSet[p[0]] && memberSet[p[1]]) { adj[p[0]].push(p[1]); adj[p[1]].push(p[0]); } });
+      weakPairs.forEach(function (w) { if (memberSet[w[0]] && memberSet[w[1]]) { adj[w[0]].push(w[1]); adj[w[1]].push(w[0]); } });
+      var start = null;
+      for (var i = 0; i < nodes.length; i++) { if (adj[nodes[i]].length === 1) { start = nodes[i]; break; } }
+      if (start === null) start = nodes[0];
+      var seen = {}, order = [];
+      (function walk(n) {
+        if (seen[n]) return;
+        seen[n] = true; order.push(n);
+        adj[n].forEach(function (x) { if (!seen[x]) walk(x); });
+      })(start);
+      nodes.forEach(function (n) { if (!seen[n]) order.push(n); });
+      return order;
     }
-    for (var g = 1; g <= maxGen; g++) {
-      var rowIds = ids.filter(function (id) { return gen[id] === g; });
-      var rowGroups = {}, order = [];
-      rowIds.forEach(function (id) {
-        var p = parentOf[id];
-        var key = p.type === 'uniao' ? 'u:' + [p.a, p.b].sort().join('|') : 's:' + p.id;
-        if (!rowGroups[key]) { rowGroups[key] = []; order.push(key); }
-        rowGroups[key].push(id);
+
+    // blocos por nível (cada bloco = membros ordenados de um cluster)
+    var rows = {};
+    Object.keys(clusterGroups).forEach(function (r) {
+      var gs = clusterGroups[r];
+      var lv = level[gs[0]];
+      (rows[lv] = rows[lv] || []).push({ members: orderCluster(gs) });
+    });
+
+    // posições: nível 0 por ordem de entrada; níveis seguintes pela posição
+    // real dos pais (top-down), para os filhos descerem por baixo dos pais.
+    var slot = {};
+    function minInputIndex(members) {
+      var m = Infinity;
+      members.forEach(function (x) { var i = ids.indexOf(x); if (i < m) m = i; });
+      return m;
+    }
+    function baryParentSlot(members) {
+      var xs = [];
+      members.forEach(function (mm) {
+        (parentsOf[mm] || []).forEach(function (p) { if (idSet[p] && slot[p] !== undefined) xs.push(slot[p]); });
       });
-      function parentSlotOf(key) {
-        if (key.charAt(0) === 'u') {
-          var pr = key.slice(2).split('|');
-          return (slot[pr[0]] + slot[pr[1]]) / 2;
-        }
-        return slot[key.slice(2)];
-      }
-      // Colocar os grupos de filhos pela ordem horizontal dos pais (não pela
-      // ordem dos dados) — assim cada filho desce por baixo dos seus pais e a
-      // barra de descendência nunca atravessa o ecrã para alcançar um filho
-      // colocado longe (ex: Jesus, filho de Maria/José, deixa de ser empurrado
-      // para a direita por João Batista).
-      order.sort(function (a, b) { return parentSlotOf(a) - parentSlotOf(b); });
-      var cursor = 0;
-      order.forEach(function (key) {
-        var group = rowGroups[key];
-        // Aproximar casais: ordenar os irmãos pelo slot do cônjuge já colocado
-        // (cônjuge mais à esquerda → irmão mais à esquerda), para o casal ficar
-        // adjacente em vez de ter outro irmão no meio.
-        group.sort(function (x, y) {
-          var sx = placedSpouseSlot(x), sy = placedSpouseSlot(y);
-          if (sx === null && sy === null) return 0;
-          if (sx === null) return 1;
-          if (sy === null) return -1;
-          return sx - sy;
+      if (!xs.length) return null;
+      var s = 0; xs.forEach(function (v) { s += v; }); return s / xs.length;
+    }
+    for (var lv = 0; lv <= maxGen; lv++) {
+      var blocks = rows[lv] || [];
+      if (lv === 0) {
+        blocks.sort(function (A, B) { return minInputIndex(A.members) - minInputIndex(B.members); });
+      } else {
+        blocks.sort(function (A, B) {
+          var a = baryParentSlot(A.members), b = baryParentSlot(B.members);
+          if (a === null && b === null) return minInputIndex(A.members) - minInputIndex(B.members);
+          if (a === null) return 1;
+          if (b === null) return -1;
+          return a - b;
         });
-        var startSlot = Math.max(cursor, parentSlotOf(key) - (group.length - 1) / 2);
-        group.forEach(function (id, i) { slot[id] = startSlot + i; });
-        cursor = startSlot + group.length;
+      }
+      var cursor = 0;
+      blocks.forEach(function (blk) {
+        var b = baryParentSlot(blk.members);
+        var start = b === null ? cursor : Math.max(cursor, b - (blk.members.length - 1) / 2);
+        blk.members.forEach(function (m, i) { slot[m] = start + i; });
+        cursor = start + blk.members.length;
       });
     }
     return { gen: gen, slot: slot, maxGen: maxGen };

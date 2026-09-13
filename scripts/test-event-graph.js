@@ -210,4 +210,18 @@ const EventGraph = sandbox.EventGraph;
   console.log('ok: filhos ordenados para aproximar o cônjuge já colocado');
 })();
 
+// --- Caso 16: árvore genealógica — um cônjuge "raiz" e um cônjuge que é filho
+// no evento partilham o mesmo nível e ficam adjacentes (o casamento entre
+// gerações deixa de ser uma linha diagonal comprida); o pai fica um nível acima ---
+(function () {
+  const ids = ['jesse', 'david', 'abigail'];
+  const edges = [['jesse', 'david', 'parent'], ['david', 'abigail', 'spouse']];
+  const family = EventGraph.deriveFamily(ids, edges);
+  const layout = EventGraph.layoutEvent(ids, family);
+  assert.strictEqual(layout.gen['david'], layout.gen['abigail'], 'os cônjuges partilham nível');
+  assert.strictEqual(Math.abs(layout.slot['david'] - layout.slot['abigail']), 1, 'os cônjuges ficam adjacentes');
+  assert.ok(layout.gen['jesse'] < layout.gen['david'], 'o pai fica um nível acima do filho');
+  console.log('ok: casamento entre gerações partilha nível e fica adjacente');
+})();
+
 console.log('\nALL PASS');
