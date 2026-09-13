@@ -34,9 +34,12 @@ evangelhos, profetas.
   histórico"; nacionalismo; violência; o ep. do "poema erótico"). Simplificar e
   filtrar; usar factos e contexto, não o registo que confundiria uma criança
   sobre a fé. A Isabel decide o enquadramento.
-- **Direitos/atribuição:** factos e contexto histórico reescrevem-se livremente;
-  **não** copiar transcrições/citações longas; **creditar** a fonte. Os áudios
-  têm anúncios (cortar).
+- **NÃO referenciar o podcast (decisão do utilizador):** as transcrições são só
+  **material de pesquisa**. O produto **nunca** menciona o podcast nem credita a
+  fonte, e **nunca** copia frases/citações da transcrição. Usam-se apenas os
+  **factos e o contexto** (de domínio público), **reescritos de raiz** na voz do
+  projeto. Regra prática: se uma frase pudesse ser reconhecida como do podcast,
+  reescreve-se até deixar de o ser.
 - **Volume:** 34×~35KB exige curadoria, não integração automática.
 
 ## Fluxo proposto (ronda de conteúdo dedicada)
@@ -88,11 +91,43 @@ Isto sugere uma `edge` de tipo `descendant`/`affinity` **Ester/Mardoqueu ↔ Sau
 Vasti (a rainha deposta) e uma âncora "amalecitas/Amã↔Saul" apareceriam se se
 quisesse desenhar essa rivalidade — decisão da Isabel numa ronda futura.
 
-### Nota de atribuição (a incluir onde a Isabel achar)
-Conteúdo inspirado no podcast **"As Histórias da Bíblia" (Rádio Observador)**.
+### Atribuição
+**Nenhuma** — por decisão do utilizador, o produto não referencia o podcast. O
+piloto acima já está escrito na voz do projeto, sem citar a fonte.
 
 ---
 
-## Próximo passo sugerido
-Se a Isabel aprovar o piloto da Ester, replicar o mesmo para a **Rute** (episódio
-17) e validar o fluxo antes de escalar aos 34 episódios.
+## Programa aprovado (2026-09-13)
+
+Decisões do utilizador:
+- **Curiosidades tecidas no `contexto`** existente (sem mudança de motor).
+- **Âmbito:** enriquecer o existente **+ preencher lacunas** (novas personagens/
+  eventos + novas `edges`), com **retrato** para cada personagem nova.
+- **Avançar em todos os lotes.**
+- **Não referenciar o podcast** (ver cautela acima).
+- Por defeito: rascunhos preparados em worktree isolado, **Isabel revê o diff
+  antes do merge**; "Perguntas dos ouvintes" alimentam o contexto, mas uma
+  secção de perguntas fica para outra ronda.
+
+**Unidade de trabalho (por episódio):** transcrição → destilar factos/contexto/
+curiosidades e simplificar para crianças → mapear a personagem/acontecimento →
+enriquecer `contexto`/`licao`/`citacao`/`mensagem`/`notas` + `edges` novas + (se
+lacuna) personagem/evento novo com retrato → rascunho → revisão da Isabel → merge.
+
+**Lotes (cada um: spec → plano → worktree → revisão → Isabel → merge):**
+- **A — Origens & Patriarcas:** Noé(01), Caim/Abel(22), Abraão(21), criação(33),
+  o nome de Deus(32).
+- **B — Juízes a Reis:** Josué(20), Sansão/Dalila(19), Rute(17), Ester(15),
+  David/Salomão(31). *(começar por aqui — mais narrativo e já tem o piloto Ester)*
+- **C — Profetas & Sabedoria:** Job/Jonas(13), "o que é um profeta"(28),
+  Cânticos(30, filtrar).
+- **D — NT (Evangelhos):** pais de Jesus(09), João Batista(11), Jesus(07), Maria
+  Madalena(05), Pedro(03), ressurreição(25), parábolas/Messias(26), evangelhos(27).
+- **E — Atos, Paulo & Apocalipse:** São Paulo(24), Apocalipse(23).
+- Transversais (Q&A + trauma(29) + "livro mais vendido"(34)): factos aproveitados
+  onde encaixarem nos lotes; sem secção própria nesta ronda.
+
+**Ronda-irmã (fonte diferente, não o podcast):** deuterocanónicos narrativos
+**Tobias / Judite / Macabeus** — sem episódios; preencher a partir da Escritura
+numa ronda à parte, para não misturar fontes.
+
