@@ -58,16 +58,9 @@
     <div id="eventView">
       <div class="event-ambient" id="eventAmbient"></div>
       <div id="eventScroll">
-        <div class="event-header">
-          <button class="back-btn" id="backBtn"><span class="bk-arrow">&larr;</span> <span class="bk-text">Voltar à linha do tempo</span></button>
-          <div class="event-icon" id="eventIcon"></div>
-          <div class="event-title-wrap">
-            <span class="event-title" id="eventTitle"></span>
-            <span class="event-era-tag" id="eventEra"></span>
-          </div>
-        </div>
         <div class="event-body">
           <aside class="event-info" id="eventInfo">
+            <button class="back-btn" id="backBtn" type="button" aria-label="Voltar à linha do tempo" title="Voltar à linha do tempo"><span class="bk-arrow">&larr;</span></button>
             <span class="event-info-label">Sobre este acontecimento</span>
             <p class="event-desc" id="eventDesc"></p>
             <div class="event-info-grid">
@@ -77,17 +70,26 @@
               <div class="event-info-block"><h3>Passagens-chave</h3><ul id="eventPassagens"></ul></div>
             </div>
           </aside>
-          <div class="char-field" id="charField">
-            <div class="char-orbit" id="charOrbit">
-              <div id="camLayer">
-                <svg class="char-lines" id="charLines"></svg>
-                <div id="charButtons"></div>
+          <div class="event-main">
+            <div class="event-heading">
+              <div class="event-icon" id="eventIcon"></div>
+              <div class="event-title-wrap">
+                <span class="event-title" id="eventTitle"></span>
+                <span class="event-era-tag" id="eventEra"></span>
               </div>
             </div>
-            <div class="zoom-controls">
-              <button id="zoomIn" type="button" aria-label="Ampliar">+</button>
-              <button id="zoomOut" type="button" aria-label="Reduzir">&minus;</button>
-              <button id="zoomReset" type="button" aria-label="Repor vista">&#8634;</button>
+            <div class="char-field" id="charField">
+              <div class="char-orbit" id="charOrbit">
+                <div id="camLayer">
+                  <svg class="char-lines" id="charLines"></svg>
+                  <div id="charButtons"></div>
+                </div>
+              </div>
+              <div class="zoom-controls">
+                <button id="zoomIn" type="button" aria-label="Ampliar">+</button>
+                <button id="zoomOut" type="button" aria-label="Reduzir">&minus;</button>
+                <button id="zoomReset" type="button" aria-label="Repor vista">&#8634;</button>
+              </div>
             </div>
           </div>
         </div>
